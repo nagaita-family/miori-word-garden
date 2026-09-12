@@ -111,7 +111,7 @@
 <div class="water-wrap" id="waterWrap"><div class="jar"><div class="fill" id="fill"></div></div><div style="font-weight:900;max-width:250px" id="waterText">Fill the water jar for this word!</div></div>
 <div class="mode" id="mode"></div><div class="prompt"><div class="big" id="title"></div><p class="muted" id="hint"></p></div>
 <div class="listen-row"><button class="listen" id="listen">🔊 Listen</button><button class="listen slow" id="listenSlow">🐢 Listen slower</button></div>
-<div class="mwg-ai-voice-disclosure" id="mwgAiVoiceDisclosure">🔊 Word Pack voice is AI-generated when available.</div>
+<div class="mwg-ai-voice-disclosure" id="mwgAiVoiceDisclosure">🎙️ Human pronunciation from Wikimedia Commons is preferred when available.</div>
 <div class="word-help-row"><button class="word-help" id="meaningBtn">💡 Meaning</button><button class="word-help" id="sentenceBtn">💬 Sentence</button></div>
 <div class="learning-aid" id="learningAid" aria-live="polite"></div>
 <div class="word-picture" id="wordPicture" aria-label="picture clue"></div>
@@ -121,7 +121,7 @@
 
 <section id="parent" class="screen">
 <div class="card"><h2>Parent corner</h2><div class="note">Weekly spelling words are the priority. My Words stay in the long-term library and appear as optional Bonus Seeds.</div>
-<div class="voice-panel"><h3 style="margin-bottom:8px">🔊 Pronunciation voice</h3><p class="tiny">Choose an English voice available on this device. Play has normal and slower listening buttons.</p><div class="field"><label>Voice</label><select id="voiceSelect"><option value="">Loading voices…</option></select></div><button class="secondary" id="testVoice">Test this voice</button>
+<div class="voice-panel"><h3 style="margin-bottom:8px">🔊 Fallback pronunciation voice</h3><p class="tiny">Word Garden first tries a real human pronunciation from Wikimedia Commons. If one is not available, it uses the best English voice on this device. You can choose that fallback voice here.</p><div class="field"><label>Voice</label><select id="voiceSelect"><option value="">Loading voices…</option></select></div><button class="secondary" id="testVoice">Test this voice</button>
 <div class="mwg-prompt-setting"><div class="field"><label>What should Miori hear before spelling?</label><select id="promptModeSelect"><option value="word">Read the word</option><option value="meaningEn">Read Meaning (English) — do not say the word</option></select></div><div class="tiny">English Meaning mode is for definition → spelling practice. If a word has no English meaning, Play falls back to the word.</div></div></div>
 <div class="parent-tabs"><button class="parent-tab active" data-parent="thisWeek">This Week</button><button class="parent-tab" data-parent="myWords">My Words</button><button class="parent-tab" data-parent="library">Word Library</button><button class="parent-tab" data-parent="past">Past Weeks</button></div></div>
 
@@ -129,18 +129,18 @@
  <div class="card"><div class="week-head"><div><span class="week-chip">📅 Current spelling set</span><div style="margin-top:8px"><input id="weekTitle" class="week-title-input" value="This Week"></div></div><button class="danger" id="newWeekBtn">Start New Week</button></div><div class="stats-grid"><div class="statbox"><strong id="weekCount">0/15</strong><span>WORDS</span></div><div class="statbox"><strong id="introducedCount">0</strong><span>INTRODUCED</span></div><div class="statbox"><strong id="readyCount">0</strong><span>LOOKING GOOD</span></div></div><div class="week-limit">Up to 15 words. Most weeks can simply use 10.</div></div>
  <div class="card"><h3>Add this week's words</h3><p class="tiny">Fill as many rows as you need, then add them together. If a word already exists in My Words or the Library, it will be linked instead of duplicated.</p><div id="weeklyEntryRows"></div><button class="primary" id="addWeeklyBtn">Add these words to This Week</button><div class="feedback" id="weeklyFeedback"></div></div>
  <div class="card mwg-wordpack-card" id="wordPackCard">
-  <div class="mwg-wordpack-head"><div><span class="mwg-wordpack-chip">✨ NEW · WEB</span><h3>Create Word Pack from School PDF</h3></div><span class="mwg-wordpack-lock">🔐 Server-side</span></div>
-  <p class="tiny">Upload the school spelling PDF. Word Garden will keep the school English meaning as written, then prepare Japanese meaning, a simple example sentence, phonics focus, a picture cue, and natural AI-generated audio.</p>
+  <div class="mwg-wordpack-head"><div><span class="mwg-wordpack-chip">✨ v0.15 · NO API KEY</span><h3>Import ChatGPT Word Pack</h3></div><span class="mwg-wordpack-lock">🎙️ Human voice first</span></div>
+  <p class="tiny">In ChatGPT, upload the school spelling PDF and say <strong>“Word Garden用にして”</strong>. Download the Word Pack JSON, then import it here. Word Garden will automatically look for a real U.S. English pronunciation on Wikimedia Commons and use the browser voice only when no human recording is found.</p>
   <div class="mwg-wordpack-drop" id="wordPackDrop">
-   <input type="file" id="wordPackPdf" accept="application/pdf,.pdf" hidden>
-   <button class="secondary" id="wordPackChoose" type="button">📄 Choose School PDF</button>
-   <div><strong id="wordPackFileName">No PDF selected</strong><div class="tiny">PDF only · up to 4 MB · up to 15 spelling words</div></div>
+   <input type="file" id="wordPackJson" accept="application/json,.json" hidden>
+   <button class="secondary" id="wordPackChoose" type="button">📦 Choose Word Pack</button>
+   <div><strong id="wordPackFileName">No Word Pack selected</strong><div class="tiny">JSON · up to 15 spelling words · no OpenAI API key needed</div></div>
   </div>
-  <div class="btnrow" style="margin-top:12px"><button class="primary" id="wordPackGenerate" type="button" disabled>✨ Generate Word Pack</button><button class="secondary" id="wordPackRetryAudio" type="button" style="display:none">🔊 Retry audio</button></div>
+  <div class="btnrow" style="margin-top:12px"><button class="secondary" id="wordPackRetryHuman" type="button" style="display:none">🎙️ Find human pronunciations again</button></div>
   <div class="mwg-wordpack-progress" id="wordPackProgress" aria-live="polite"></div>
   <div id="wordPackPreview"></div>
   <div class="btnrow" id="wordPackActions" style="display:none;margin-top:12px"><button class="primary" id="wordPackAdd" type="button">Add Word Pack to This Week</button><button class="secondary" id="wordPackClear" type="button">Clear</button></div>
-  <div class="tiny mwg-wordpack-foot">The OpenAI API key stays on the web server and is never placed in this page. Generated voice is AI-generated, not a human recording.</div>
+  <div class="tiny mwg-wordpack-foot">Human word recordings come from Wikimedia Commons when available. The recording source and license are shown in the preview. Meanings and example sentences are read with your selected device voice. No OpenAI API is called by this website.</div>
  </div>
  <div class="card" id="bulkImportCard"><h3>Import Words</h3><p class="tiny">Paste a list made from the school PDF. Use one word per line: <strong>word | English meaning</strong>.</p><textarea id="bulkImportText" class="mwg-import-text" rows="8" placeholder="responsible | someone you can trust to do the right thing
 silent | making no sound

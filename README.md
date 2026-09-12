@@ -1,19 +1,22 @@
-# Miori's Word Garden — v0.14.9 Web Word Pack
+# Miori's Word Garden — v0.15.0 Human Voice Word Pack
 
-Based on **v0.14.8 Growth Feedback Update**. The v0.14.1 functional design remains the learning baseline.
+Based on the v0.14.1 learning design, with the Growth Path / XP feedback from v0.14.8.
 
-## New in v0.14.9
-- Parent can upload a school spelling PDF directly in the **web version**.
-- The server creates a Word Pack with: school English meaning, Japanese meaning, a child-friendly example sentence, phonics focus, picture cue, and natural audio.
-- School English meanings are source-preserving: when the PDF supplies wording, Word Garden keeps that wording rather than silently rewriting it.
-- Four audio types are supported: normal word, slow Hint word, English meaning, and example sentence.
-- Generated audio is stored locally in the browser (IndexedDB); no cloud account or cross-device progress is added in this phase.
-- Word Pack audio is preferred throughout Play, including the Step 3/4 Hint. Browser speech synthesis remains the fallback.
-- Manual `word | English meaning` import remains available.
-- OpenAI API calls are server-side through Netlify Functions, so the API key is never shipped in the page.
+## New in v0.15.0
+- **No OpenAI API key is required by the website.**
+- Parent workflow is now: school PDF → ChatGPT → downloadable Word Pack JSON → Word Garden import.
+- Word Garden automatically looks for a **real human English pronunciation** on Wikimedia Commons. U.S. English is preferred.
+- If no human recording is found, Word Garden falls back to the best English speech-synthesis voice available on the device.
+- The selected human audio source and license are stored with the word and shown in the Parent preview.
+- Human word audio is preferred throughout Play, including the slower Hint path.
+- Meanings and example sentences use the selected device voice.
+- Manual `word | English meaning` import still works.
 
-## Web setup
-The Netlify site needs a secret environment variable named `OPENAI_API_KEY`. Optional overrides are `MWG_WORDPACK_MODEL`, `MWG_TTS_MODEL`, and `MWG_TTS_VOICE`. See `docs/WORD_PACK_V0149.md`.
+## Word Pack format
+See `docs/WORD_PACK_V0150.md` and `docs/WORD_PACK_EXAMPLE_V0150.json`.
 
-## Local / Chromebook fallback
-`Miori_Word_Garden_v0149_Standalone.html` still runs as the local spelling game. The new PDF-to-Word-Pack generation needs the deployed web backend; all existing offline learning features still work.
+## Hosting
+This is now a static Netlify site. There are no Netlify Functions and no OpenAI environment variables required.
+
+## Web-first release
+v0.15.0 is focused on the web version because human pronunciation lookup needs internet access. The learning data still stays in the browser; no account or cloud-save layer is added.

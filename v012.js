@@ -2206,129 +2206,198 @@ window.MWG_TEST_HOOKS.runBonusSunV131=()=>runBonusSun(()=>{});
 
 })();
 
-// ================= v0.14.9 Web Parent Word Pack =================
-// Phase 1 + 2 prototype: web-hosted app + School PDF -> structured Word Pack +
-// high-quality pre-generated audio. Word metadata remains in normal game state;
-// audio blobs are stored locally in IndexedDB so no cloud progress account is required.
+// ================= v0.15.0 Human Pronunciation Word Pack =================
 (function(){
-  const V149_API_PACK='/api/wordpack';
-  const V149_API_AUDIO='/api/audio';
-  const V149_MAX_PDF_BYTES=4*1024*1024;
-  const V149_DB='miori-word-garden-assets';
-  const V149_STORE='audio';
-  const v149Urls=new Map();
-  let v149CurrentAudio=null;
-  let v149Pack=null;
-  let v149SelectedPdf=null;
-  let v149Generating=false;
+  const V15_COMMONS_API='https://commons.wikimedia.org/w/api.php';
+  const V15_WIKT_API='https://en.wiktionary.org/w/api.php';
+  const V15_ALLOWED_AUDIO_HOSTS=['upload.wikimedia.org','commons.wikimedia.org'];
+  let v15Pack=null;
+  let v15Audio=null;
+  let v15LookupRun=0;
 
-  function v149Db(){
-    return new Promise((resolve,reject)=>{
-      if(!('indexedDB' in window))return reject(new Error('IndexedDB is unavailable'));
-      let req=indexedDB.open(V149_DB,1);
-      req.onupgradeneeded=()=>{let db=req.result;if(!db.objectStoreNames.contains(V149_STORE))db.createObjectStore(V149_STORE)};
-      req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('Could not open audio storage'));
-    });
+  function v15Now(){return Date.now()}
+  function v15StripHtml(s){let d=document.createElement('div');d.innerHTML=String(s||'');return (d.textContent||'').trim()}
+  function v15SafeUrl(url){
+    try{let u=new URL(String(url||''));if(u.protocol!=='https:')return '';if(!V15_ALLOWED_AUDIO_HOSTS.some(h=>u.hostname===h||u.hostname.endsWith('.'+h)))return '';return u.href}catch(e){return ''}
   }
-  async function v149PutAudio(key,blob){
-    let db=await v149Db();await new Promise((resolve,reject)=>{let tx=db.transaction(V149_STORE,'readwrite');tx.objectStore(V149_STORE).put(blob,key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close();
-    let old=v149Urls.get(key);if(old)try{URL.revokeObjectURL(old)}catch(e){};v149Urls.set(key,URL.createObjectURL(blob));return true;
+  function v15MetaValue(meta,key){return v15StripHtml(meta&&meta[key]&&meta[key].value||'')}
+  function v15SafePageUrl(url){try{let u=new URL(String(url||''));if(u.protocol!=='https:')return '';if(u.hostname!=='commons.wikimedia.org'&&!u.hostname.endsWith('.commons.wikimedia.org'))return '';return u.href}catch(e){return ''}}
+  function v15WordKey(s){return String(s||'').trim().toLowerCase().replace(/[’']/g,"'")}
+  function v15TitleWord(s){return String(s||'').trim().replace(/\s+/g,'-')}
+  function v15CancelAudio(){try{if(v15Audio){v15Audio.pause();v15Audio.src='';v15Audio=null}}catch(e){}try{if('speechSynthesis' in window)speechSynthesis.cancel()}catch(e){}}
+
+  function v15BrowserSpeak(text,slow=false){
+    if(!text||!('speechSynthesis' in window))return;
+    v15CancelAudio();
+    let u=new SpeechSynthesisUtterance(String(text));
+    let ja=typeof isJapanese==='function'&&isJapanese(text);
+    u.lang=ja?'ja-JP':'en-US';u.rate=ja?(slow?.75:.96):(slow?.72:.94);u.pitch=1;
+    if(!ja&&typeof availableVoices!=='undefined'){
+      let v=availableVoices.find(v=>(v.voiceURI||v.name)===state.settings.voiceURI)||availableVoices[0];if(v)u.voice=v;
+    }
+    speechSynthesis.speak(u);
   }
-  async function v149GetAudio(key){
-    if(v149Urls.has(key))return v149Urls.get(key);
-    let db=await v149Db();let blob=await new Promise((resolve,reject)=>{let tx=db.transaction(V149_STORE,'readonly'),r=tx.objectStore(V149_STORE).get(key);r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error)});db.close();if(!blob)return null;let u=URL.createObjectURL(blob);v149Urls.set(key,u);return u;
-  }
-  async function v149PreloadAudio(){
+
+  function v15PlayHuman(meta,word,slow=false){
+    let url=v15SafeUrl(meta&&meta.url);if(!url)return false;
+    v15CancelAudio();
     try{
-      let keys=[];(state.words||[]).forEach(w=>{let a=w.audioPack||{};['word','slow','meaning','example'].forEach(k=>{if(a[k])keys.push(a[k])})});keys=[...new Set(keys)];
-      await Promise.all(keys.map(k=>v149GetAudio(k).catch(()=>null)));
-    }catch(e){}
+      let a=new Audio();v15Audio=a;a.preload='auto';a.src=url;a.playbackRate=slow?.82:1;
+      try{a.preservesPitch=true;a.mozPreservesPitch=true;a.webkitPreservesPitch=true}catch(e){}
+      a.onended=()=>{if(v15Audio===a)v15Audio=null};
+      a.onerror=()=>{if(v15Audio===a)v15Audio=null;v15BrowserSpeak(word,slow)};
+      let p=a.play();if(p&&p.catch)p.catch(()=>{if(v15Audio===a)v15Audio=null;v15BrowserSpeak(word,slow)});
+      return true;
+    }catch(e){v15BrowserSpeak(word,slow);return false}
   }
-  function v149PlayKey(key){
-    if(!key)return false;let u=v149Urls.get(key);if(!u){v149GetAudio(key).catch(()=>null);return false}
-    try{if('speechSynthesis' in window)speechSynthesis.cancel()}catch(e){}
-    try{if(v149CurrentAudio){v149CurrentAudio.pause();v149CurrentAudio.currentTime=0}}catch(e){}
-    try{let a=new Audio(u);v149CurrentAudio=a;a.onended=()=>{if(v149CurrentAudio===a)v149CurrentAudio=null};a.play().catch(()=>{});return true}catch(e){return false}
-  }
-  function v149PlayWord(w,kind){return !!(w&&w.audioPack&&v149PlayKey(w.audioPack[kind]))}
-  window.MWG_AUDIO={play:v149PlayKey,playWord:v149PlayWord,preload:v149PreloadAudio};
 
-  function v149AssetKey(word,kind){return 'v149:'+norm(word)+':'+kind}
-  function v149Base64ToBlob(b64,mime='audio/mpeg'){
-    let bin=atob(b64),len=bin.length,arr=new Uint8Array(len);for(let i=0;i<len;i++)arr[i]=bin.charCodeAt(i);return new Blob([arr],{type:mime});
+  async function v15FetchJson(base,params){
+    let u=new URL(base);Object.entries(params||{}).forEach(([k,v])=>{if(v!==undefined&&v!==null)u.searchParams.set(k,String(v))});u.searchParams.set('origin','*');
+    let r=await fetch(u.href,{mode:'cors',credentials:'omit',cache:'default'});if(!r.ok)throw new Error('Pronunciation lookup failed');return r.json();
   }
-  function v149ReadDataUrl(file){return new Promise((resolve,reject)=>{let r=new FileReader();r.onload=()=>resolve(String(r.result||''));r.onerror=()=>reject(r.error||new Error('Could not read PDF'));r.readAsDataURL(file)})}
-  async function v149JsonFetch(url,body){
-    let r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),txt=await r.text(),d=null;try{d=JSON.parse(txt)}catch(e){}
-    if(!r.ok)throw new Error(d?.error||d?.message||('Server error '+r.status));if(!d)throw new Error('Server returned an unreadable response.');return d;
-  }
-  function v149SetProgress(text,busy=false,bad=false){let el=document.getElementById('wordPackProgress');if(!el)return;el.textContent=text||'';el.classList.toggle('busy',!!busy);el.style.color=bad?'#a7535a':''}
-  function v149AudioStatus(w){let expected=['word','slow'];if(w.meaningEn)expected.push('meaning');if(w.example)expected.push('example');let n=expected.filter(k=>w.audioKeys&&w.audioKeys[k]).length;return {n,total:expected.length,ready:n===expected.length}}
-  function v149RenderPack(){
-    let area=document.getElementById('wordPackPreview'),actions=document.getElementById('wordPackActions'),retry=document.getElementById('wordPackRetryAudio');if(!area||!actions)return;
-    if(!v149Pack||!Array.isArray(v149Pack.words)){area.innerHTML='';actions.style.display='none';if(retry)retry.style.display='none';return}
-    let wk=currentWeek(),slots=Math.max(0,15-(wk?.wordIds?.length||0)),fail=0,totalAudio=0,readyAudio=0;
-    let rows=v149Pack.words.map(w=>{let a=v149AudioStatus(w);totalAudio+=a.total;readyAudio+=a.n;if(!a.ready)fail++;let existing=(state.words||[]).find(x=>norm(x.word)===norm(w.word)),inWeek=!!(existing&&wk?.wordIds?.includes(existing.id));let cls=a.ready?'ready':a.n?'partial':'failed';let status=a.ready?'Audio ready':a.n+'/'+a.total+' audio';return `<div class="mwg-wordpack-row"><div class="mwg-wordpack-row-top"><div><span class="mwg-wordpack-word">${esc(w.word)}</span>${w.pictureCue?`<span class="mwg-wordpack-picture">${esc(w.pictureCue)}</span>`:''}</div><span class="mwg-wordpack-audio ${cls}">${status}</span></div><div class="mwg-wordpack-field"><b>School EN:</b> ${esc(w.meaningEn||'—')}</div><div class="mwg-wordpack-field"><b>日本語:</b> ${esc(w.meaningJa||'—')}</div><div class="mwg-wordpack-field"><b>Example:</b> ${esc(w.example||'—')}</div>${w.phonicsFocus?`<span class="mwg-wordpack-phonics">Phonics: ${esc(w.phonicsFocus)}</span>`:''}<div class="btnrow" style="margin-top:8px"><button class="mini-action mwg-wp-play" data-key="${esc(w.audioKeys?.word||'')}" ${w.audioKeys?.word?'':'disabled'}>▶ Word</button><button class="mini-action mwg-wp-play" data-key="${esc(w.audioKeys?.slow||'')}" ${w.audioKeys?.slow?'':'disabled'}>🐢 Slow</button></div><div class="tiny" style="margin-top:5px">${inWeek?'Already in This Week':existing?'Already in Library · will update/link':'New word'}</div></div>`}).join('');
-    area.innerHTML=`<div class="mwg-wordpack-summary"><strong>${esc(v149Pack.packTitle||'School Word Pack')}</strong> · ${v149Pack.words.length} words · ${readyAudio}/${totalAudio} audio clips ready · ${slots} open weekly slots</div><div class="mwg-wordpack-preview">${rows}</div>`;
-    area.querySelectorAll('.mwg-wp-play').forEach(b=>b.onclick=()=>{let k=b.dataset.key;if(k)v149PlayKey(k)});
-    actions.style.display='flex';if(retry)retry.style.display=fail?'':'none';
-  }
-  async function v149GenerateOneAudio(w,kind,text){
-    if(!text)return;let key=v149AssetKey(w.word,kind),d=await v149JsonFetch(V149_API_AUDIO,{text,kind,word:w.word}),blob=v149Base64ToBlob(d.audioBase64,d.contentType||'audio/mpeg');await v149PutAudio(key,blob);w.audioKeys=w.audioKeys||{};w.audioKeys[kind]=key;
-  }
-  async function v149RunPool(tasks,limit=3,onTick=()=>{}){
-    let idx=0,done=0;async function worker(){while(true){let i=idx++;if(i>=tasks.length)return;try{await tasks[i]()}catch(e){tasks[i].error=e}finally{done++;onTick(done,tasks.length)}}}await Promise.all(Array.from({length:Math.min(limit,tasks.length||1)},worker));
-  }
-  async function v149GenerateAudioForPack(onlyMissing=false){
-    if(!v149Pack)return;let tasks=[];for(let w of v149Pack.words){w.audioKeys=w.audioKeys||{};let specs=[['word',w.word],['slow',w.word],['meaning',w.meaningEn],['example',w.example]];for(let [kind,text] of specs){if(!text)continue;if(onlyMissing&&w.audioKeys[kind])continue;let fn=async()=>{await v149GenerateOneAudio(w,kind,text)};tasks.push(fn)}}
-    if(!tasks.length){v149SetProgress('Word Pack audio is ready.');v149RenderPack();return}
-    let failures=0;v149SetProgress(`Creating natural audio… 0 / ${tasks.length}`,true);
-    await v149RunPool(tasks,3,(done,total)=>{v149SetProgress(`Creating natural audio… ${done} / ${total}`,true);v149RenderPack()});
-    // A task records its error on the function object.
-    failures=tasks.filter(t=>t.error).length;v149RenderPack();
-    if(failures)v149SetProgress(`Word Pack created. ${failures} audio clip${failures===1?'':'s'} could not be generated; you can retry.`,false,true);else v149SetProgress('Word Pack ready! Check the preview, then add it to This Week. ✨');
-  }
-  async function v149GeneratePack(){
-    if(v149Generating||!v149SelectedPdf)return;if(v149SelectedPdf.size>V149_MAX_PDF_BYTES){v149SetProgress('This PDF is over 4 MB. Please use a smaller school PDF.',false,true);return}
-    v149Generating=true;let btn=document.getElementById('wordPackGenerate');if(btn)btn.disabled=true;document.getElementById('wordPackActions').style.display='none';document.getElementById('wordPackPreview').innerHTML='';v149Pack=null;
-    try{
-      v149SetProgress('Reading the school PDF and building the Word Pack…',true);let dataUrl=await v149ReadDataUrl(v149SelectedPdf),base64=dataUrl.split(',')[1]||'';
-      let d=await v149JsonFetch(V149_API_PACK,{filename:v149SelectedPdf.name,pdfBase64:base64});if(!d.wordPack||!Array.isArray(d.wordPack.words)||!d.wordPack.words.length)throw new Error('No spelling words were found in the PDF.');
-      v149Pack=d.wordPack;v149Pack.words=v149Pack.words.slice(0,15).map(w=>({...w,word:norm(w.word),audioKeys:{}})).filter(w=>w.word);v149RenderPack();await v149GenerateAudioForPack(false);
-    }catch(e){v149SetProgress(e.message||'Could not create the Word Pack.',false,true)}finally{v149Generating=false;if(btn)btn.disabled=!v149SelectedPdf}
-  }
-  function v149UpsertPackWord(p){
-    let n=norm(p.word),w=(state.words||[]).find(x=>norm(x.word)===n);if(!w){w={id:id(),word:n,meaning:'',meaningEn:'',mistake:'',focus:'',example:'',picture:'',autoMeaning:'',autoExample:'',createdAt:Date.now()};state.words.push(w);state.stats[w.id]={life:emptyLife(),weekly:{}}}
-    // School source fields and generated support fields intentionally overwrite older pack fields.
-    w.meaningEn=String(p.meaningEn||'').trim();w.meaning=String(p.meaningJa||'').trim();w.example=String(p.example||'').trim();w.focus=String(p.phonicsFocus||'').trim();if(p.pictureCue)w.picture=String(p.pictureCue).trim();w.audioPack={...(w.audioPack||{}),...(p.audioKeys||{})};w.wordPackSource={version:1,source:'school-pdf',packTitle:v149Pack?.packTitle||'',importedAt:Date.now()};return w;
-  }
-  function v149CommitPack(){
-    if(!v149Pack)return;let wk=currentWeek(),added=0,updated=0,audioCount=0;for(let p of v149Pack.words){if(wk.wordIds.length>=15)break;let existed=(state.words||[]).find(w=>norm(w.word)===norm(p.word)),w=v149UpsertPackWord(p);if(existed)updated++;if(addToCurrentWeek(w))added++;audioCount+=Object.keys(p.audioKeys||{}).length}state.daily=freshDaily();save();v149PreloadAudio();renderParent();renderGarden();v149SetProgress(`Added ${added} word${added===1?'':'s'} to This Week${updated?' · updated '+updated+' Library word'+(updated===1?'':'s'):''} · ${audioCount} audio clips linked. 🌱`);let actions=document.getElementById('wordPackActions');if(actions)actions.style.display='none';
-  }
-  function v149ClearPack(){v149Pack=null;v149SelectedPdf=null;let inp=document.getElementById('wordPackPdf');if(inp)inp.value='';let name=document.getElementById('wordPackFileName');if(name)name.textContent='No PDF selected';let btn=document.getElementById('wordPackGenerate');if(btn)btn.disabled=true;v149SetProgress('');v149RenderPack()}
 
-  let choose=document.getElementById('wordPackChoose'),inp=document.getElementById('wordPackPdf'),gen=document.getElementById('wordPackGenerate'),add=document.getElementById('wordPackAdd'),clear=document.getElementById('wordPackClear'),retry=document.getElementById('wordPackRetryAudio');
-  if(choose&&inp)choose.onclick=()=>inp.click();
-  if(inp)inp.onchange=()=>{let f=inp.files&&inp.files[0];if(!f)return;v149SelectedPdf=f;let n=document.getElementById('wordPackFileName');if(n)n.textContent=f.name;if(gen)gen.disabled=false;v149SetProgress('Ready to generate a Word Pack from this PDF.')};
-  if(gen)gen.onclick=v149GeneratePack;if(add)add.onclick=v149CommitPack;if(clear)clear.onclick=v149ClearPack;if(retry)retry.onclick=()=>v149GenerateAudioForPack(true);
+  function v15InfoFromPage(page,accentHint=''){
+    if(!page||page.missing||!page.imageinfo||!page.imageinfo[0])return null;
+    let ii=page.imageinfo[0],url=v15SafeUrl(ii.url);if(!url)return null;
+    let em=ii.extmetadata||{},title=String(page.title||'').replace(/^File:/i,'');
+    let lower=title.toLowerCase();let accent=/en-us-|us[-_ ]english|american/i.test(lower+' '+accentHint)?'US':(/en-uk-|british|uk[-_ ]english/i.test(lower+' '+accentHint)?'UK':'English');
+    return {url,sourcePage:v15SafePageUrl(ii.descriptionurl)||('https://commons.wikimedia.org/wiki/'+encodeURIComponent(page.title||'')),source:'Wikimedia Commons',filename:title,license:v15MetaValue(em,'LicenseShortName')||v15MetaValue(em,'UsageTerms')||'',artist:v15MetaValue(em,'Artist')||'',accent};
+  }
 
-  // Prefer installed Word Pack audio everywhere the learning flow already asks to speak.
-  const v149SpeakBase=speak;
+  async function v15CommonsInfo(titles,accentHints={}){
+    if(!titles.length)return [];
+    let d=await v15FetchJson(V15_COMMONS_API,{action:'query',format:'json',formatversion:2,prop:'imageinfo',iiprop:'url|mime|extmetadata',titles:titles.join('|')});
+    return (d.query&&d.query.pages||[]).map(p=>v15InfoFromPage(p,accentHints[p.title]||'')).filter(Boolean);
+  }
+
+  function v15ScoreAudio(meta,word){
+    let f=(meta.filename||'').toLowerCase(),w=v15TitleWord(word).toLowerCase();let s=0;
+    if(meta.accent==='US')s+=100;else if(meta.accent==='English')s+=45;else if(meta.accent==='UK')s+=25;
+    if(f===`en-us-${w}.ogg`)s+=80;if(f.includes(`-${w}.`))s+=45;if(f.includes(w))s+=20;
+    if(/pronunciation|audio/.test(f))s+=2;return s;
+  }
+
+  async function v15ExactLookup(word){
+    let w=v15TitleWord(word),low=w.toLowerCase(),cap=w.charAt(0).toUpperCase()+w.slice(1);let stems=[w,low,cap];let titles=[];
+    for(let stem of [...new Set(stems)])for(let ext of ['ogg','oga','wav','mp3','webm'])titles.push(`File:En-us-${stem}.${ext}`);
+    let infos=await v15CommonsInfo(titles);infos.sort((a,b)=>v15ScoreAudio(b,word)-v15ScoreAudio(a,word));return infos[0]||null;
+  }
+
+  function v15ExtractWiktionaryAudio(wikitext){
+    let out=[],s=String(wikitext||''),m;
+    let modern=/\{\{\s*audio\s*\|\s*en\s*\|\s*([^|}\n]+\.(?:ogg|oga|wav|mp3|webm))([^}]*)\}\}/gi;
+    while((m=modern.exec(s)))out.push({file:m[1].trim(),tail:m[2]||''});
+    let legacy=/\{\{\s*audio\s*\|\s*([^|}\n]+\.(?:ogg|oga|wav|mp3|webm))([^}]*)\}\}/gi;
+    while((m=legacy.exec(s))){let tail=m[2]||'';if(/(?:^|\|)\s*lang\s*=\s*en(?:\||$)/i.test(tail))out.push({file:m[1].trim(),tail})}
+    let seen=new Set();return out.filter(x=>{let k=x.file.toLowerCase();if(seen.has(k))return false;seen.add(k);return true});
+  }
+
+  async function v15WiktionaryLookup(word){
+    let d=await v15FetchJson(V15_WIKT_API,{action:'parse',format:'json',formatversion:2,page:word,prop:'wikitext'});let wt=d.parse&&d.parse.wikitext||'';let files=v15ExtractWiktionaryAudio(wt);if(!files.length)return null;
+    files.sort((a,b)=>{let score=x=>/en-us-|\ba\s*=\s*US\b/i.test(x.file+' '+x.tail)?100:/en-(?:ca|au)-/i.test(x.file)?50:/en-uk-/i.test(x.file)?20:40;return score(b)-score(a)});
+    let titles=files.slice(0,12).map(x=>'File:'+x.file);let hints={};files.slice(0,12).forEach(x=>hints['File:'+x.file]=x.tail);
+    let infos=await v15CommonsInfo(titles,hints);infos.sort((a,b)=>v15ScoreAudio(b,word)-v15ScoreAudio(a,word));return infos[0]||null;
+  }
+
+  async function v15SearchLookup(word){
+    let q=`\"${String(word).replace(/\"/g,'')}\" incategory:\"U.S. English pronunciation\"`;
+    let d=await v15FetchJson(V15_COMMONS_API,{action:'query',format:'json',formatversion:2,list:'search',srnamespace:6,srlimit:10,srsearch:q});let results=d.query&&d.query.search||[];
+    let titles=results.map(x=>x.title).filter(t=>/\.(ogg|oga|wav|mp3|webm)$/i.test(t));if(!titles.length)return null;
+    let infos=await v15CommonsInfo(titles);infos=infos.filter(x=>(x.filename||'').toLowerCase().includes(v15TitleWord(word).toLowerCase()));infos.sort((a,b)=>v15ScoreAudio(b,word)-v15ScoreAudio(a,word));return infos[0]||null;
+  }
+
+  async function v15LookupHumanAudio(word){
+    word=String(word||'').trim();if(!word)return null;
+    try{let x=await v15ExactLookup(word);if(x)return x}catch(e){}
+    try{let x=await v15WiktionaryLookup(word);if(x)return x}catch(e){}
+    try{let x=await v15SearchLookup(word);if(x)return x}catch(e){}
+    return null;
+  }
+
+  function v15MaybeLookupStateWord(w,force=false){
+    if(!w||!w.word)return Promise.resolve(null);if(!force&&w.humanAudio&&v15SafeUrl(w.humanAudio.url))return Promise.resolve(w.humanAudio);
+    if(!force&&w.humanAudioLookup&&w.humanAudioLookup.status==='missing')return Promise.resolve(null);
+    if(w._v15LookupPromise)return w._v15LookupPromise;
+    w._v15LookupPromise=v15LookupHumanAudio(w.word).then(meta=>{if(meta){w.humanAudio=meta;w.humanAudioLookup={status:'found',checkedAt:v15Now()}}else w.humanAudioLookup={status:'missing',checkedAt:v15Now()};delete w._v15LookupPromise;save();return meta}).catch(()=>{delete w._v15LookupPromise;return null});
+    return w._v15LookupPromise;
+  }
+
+  function v15SpeakWord(w,slow=false){
+    if(w&&w.humanAudio&&v15SafeUrl(w.humanAudio.url)){v15PlayHuman(w.humanAudio,w.word,slow);return true}
+    if(w)v15MaybeLookupStateWord(w,false);v15BrowserSpeak(w&&w.word||'',slow);return false;
+  }
+
+  // Replace the v0.14.9 AI-audio preference: v0.15 never needs OpenAI audio.
   speak=function(t,slow=false){
-    try{if(current){let tx=String(t||'').trim(),isAnswer=norm(tx)===norm(current.word);if(isAnswer){if(state.settings?.promptMode==='meaningEn'&&String(current.meaningEn||'').trim()){if(v149PlayWord(current,'meaning'))return}else if(v149PlayWord(current,slow?'slow':'word'))return}if(tx&&tx===String(current.meaningEn||'').trim()&&v149PlayWord(current,'meaning'))return;if(tx&&tx===String(current.example||'').trim()&&v149PlayWord(current,'example'))return}}catch(e){}
-    return v149SpeakBase(t,slow)
+    try{if(current){let tx=String(t||'').trim();if(v15WordKey(tx)===v15WordKey(current.word))return v15SpeakWord(current,slow);}}
+    catch(e){}
+    return v15BrowserSpeak(t,slow);
   };
-  if(typeof speakAny==='function'){
-    const v149SpeakAnyBase=speakAny;
-    speakAny=function(t,slow=false){try{if(current){let tx=String(t||'').trim();if(tx&&tx===String(current.meaningEn||'').trim()&&v149PlayWord(current,'meaning'))return;if(tx&&tx===String(current.example||'').trim()&&v149PlayWord(current,'example'))return;if(norm(tx)===norm(current.word)&&v149PlayWord(current,slow?'slow':'word'))return}}catch(e){}return v149SpeakAnyBase(t,slow)};
+  if(typeof speakAny==='function')speakAny=function(t,slow=false){
+    try{if(current){let tx=String(t||'').trim();if(v15WordKey(tx)===v15WordKey(current.word))return v15SpeakWord(current,slow);}}
+    catch(e){}
+    return v15BrowserSpeak(t,slow);
+  };
+
+  // Improve fallback voice ranking while preserving a parent's explicit selection when possible.
+  voiceScore=function(v){let s=0,n=(v.name||'').toLowerCase(),l=(v.lang||'').toLowerCase();if(l==='en-us')s+=50;else if(l.startsWith('en-us'))s+=46;else if(l.startsWith('en'))s+=20;if(v.default)s+=3;if(/natural|neural|enhanced|premium|online/.test(n))s+=25;if(/google us english|chrome os us english|samantha|ava|allison|aria|jenny/.test(n))s+=18;if(/compact|espeak/.test(n))s-=8;return s};
+  loadVoices=function(){
+    if(!('speechSynthesis' in window))return;availableVoices=speechSynthesis.getVoices().filter(v=>(v.lang||'').toLowerCase().startsWith('en')).sort((a,b)=>voiceScore(b)-voiceScore(a));let sel=document.getElementById('voiceSelect');if(!sel)return;let previous=state.settings.voiceURI;sel.innerHTML='';if(!availableVoices.length){sel.innerHTML='<option value="">Default English voice</option>';return}availableVoices.forEach((v,i)=>{let o=document.createElement('option');o.value=v.voiceURI||v.name;o.textContent=(i===0?'⭐ Recommended · ':'')+v.name+' ('+v.lang+')'+(v.default?' · default':'');sel.appendChild(o)});let exists=availableVoices.some(v=>(v.voiceURI||v.name)===previous);if(!exists&&availableVoices[0])state.settings.voiceURI=availableVoices[0].voiceURI||availableVoices[0].name;sel.value=state.settings.voiceURI;save()};
+  try{loadVoices();if('speechSynthesis' in window&&'onvoiceschanged' in speechSynthesis)speechSynthesis.onvoiceschanged=loadVoices}catch(e){}
+
+  function v15NormalizePronunciation(p){
+    if(!p)return null;let x=p.pronunciation||p.humanAudio||p.audio||null;if(!x||typeof x!=='object')return null;let url=v15SafeUrl(x.url||x.wordUrl||x.audioUrl);if(!url)return null;return {url,sourcePage:v15SafePageUrl(x.sourcePage||x.page||''),source:String(x.source||'Wikimedia Commons'),filename:String(x.filename||''),license:String(x.license||''),artist:String(x.artist||''),accent:String(x.accent||'US')};
+  }
+  function v15NormalizePack(raw){
+    let words=Array.isArray(raw)?raw:(raw&&raw.words);if(!Array.isArray(words)||!words.length)throw new Error('This file does not contain a Word Pack word list.');
+    let clean=words.slice(0,15).map(p=>({word:String(p.word||'').trim(),meaningEn:String(p.meaningEn||p.englishMeaning||'').trim(),meaningJa:String(p.meaningJa||p.meaning||'').trim(),example:String(p.example||'').trim(),phonicsFocus:String(p.phonicsFocus||p.focus||'').trim(),pictureCue:String(p.pictureCue||p.picture||'').trim(),humanAudio:v15NormalizePronunciation(p),humanAudioLookup:null})).filter(w=>w.word);
+    if(!clean.length)throw new Error('No spelling words were found in this Word Pack.');
+    clean.forEach(w=>{if(w.humanAudio)w.humanAudioLookup={status:'found',checkedAt:v15Now()}});
+    return {format:'miori-word-garden-wordpack',version:Number(raw&&raw.version)||2,packTitle:String(raw&&raw.packTitle||raw&&raw.title||'ChatGPT Word Pack').trim(),words:clean};
   }
 
-  // Bring stored audio back into memory after reload. Browser TTS remains the fallback.
-  setTimeout(v149PreloadAudio,120);
-  try{let build=document.getElementById('mwgRuntimeBuild');if(build)build.textContent='Build v0.14.9 · Web Word Pack'}catch(e){}
-  window.MWG_DIAGNOSTICS=window.MWG_DIAGNOSTICS||{};window.MWG_DIAGNOSTICS.version='0.14.9-web-word-pack';
-  window.MWG_TEST_HOOKS=window.MWG_TEST_HOOKS||{};
-  window.MWG_TEST_HOOKS.wordPackPreview=pack=>{v149Pack=JSON.parse(JSON.stringify(pack));v149Pack.words=(v149Pack.words||[]).map(w=>({...w,audioKeys:w.audioKeys||{}}));v149RenderPack();return v149Pack};
-  window.MWG_TEST_HOOKS.wordPackCommit=()=>v149CommitPack();
-  window.MWG_TEST_HOOKS.wordPackAudioStatus=()=>v149Pack?.words?.map(w=>({word:w.word,...v149AudioStatus(w)}))||[];
+  function v15SetProgress(text,busy=false,bad=false){let el=document.getElementById('wordPackProgress');if(!el)return;el.textContent=text||'';el.classList.toggle('busy',!!busy);el.style.color=bad?'#a7535a':''}
+  function v15Status(w){if(w.humanAudio&&v15SafeUrl(w.humanAudio.url))return {cls:'human',label:'🎙️ Human voice'};if(w._searching)return {cls:'searching',label:'Finding voice…'};return {cls:'fallback',label:'🔊 Device voice'} }
+  function v15RenderPack(){
+    let area=document.getElementById('wordPackPreview'),actions=document.getElementById('wordPackActions'),retry=document.getElementById('wordPackRetryHuman');if(!area||!actions)return;
+    if(!v15Pack){area.innerHTML='';actions.style.display='none';if(retry)retry.style.display='none';return}
+    let wk=currentWeek(),slots=Math.max(0,15-(wk&&wk.wordIds?wk.wordIds.length:0)),human=0,searching=0;
+    let rows=v15Pack.words.map((w,i)=>{let st=v15Status(w);if(st.cls==='human')human++;if(st.cls==='searching')searching++;let existing=(state.words||[]).find(x=>v15WordKey(x.word)===v15WordKey(w.word)),inWeek=!!(existing&&wk&&wk.wordIds.includes(existing.id));let src='';if(w.humanAudio){let m=w.humanAudio,safePage=v15SafePageUrl(m.sourcePage),link=safePage?`<a href="${esc(safePage)}" target="_blank" rel="noopener noreferrer">Wikimedia Commons ↗</a>`:'Wikimedia Commons';let bits=[m.accent?m.accent+' English':'',m.artist?('by '+m.artist):'',m.license||''].filter(Boolean).map(esc).join(' · ');src=`<div class="mwg-human-source"><span class="mwg-audio-source-chip">🎙️ ${link}</span>${bits?`<span>${bits}</span>`:''}</div>`}else src='<div class="mwg-human-note">No matching human recording found yet. Word Garden will use the selected device voice.</div>';
+      return `<div class="mwg-wordpack-row"><div class="mwg-wordpack-row-top"><div><span class="mwg-wordpack-word">${esc(w.word)}</span>${w.pictureCue?`<span class="mwg-wordpack-picture">${esc(w.pictureCue)}</span>`:''}</div><span class="mwg-wordpack-audio ${st.cls}">${st.label}</span></div><div class="mwg-wordpack-field"><b>School EN:</b> ${esc(w.meaningEn||'—')}</div><div class="mwg-wordpack-field"><b>日本語:</b> ${esc(w.meaningJa||'—')}</div><div class="mwg-wordpack-field"><b>Example:</b> ${esc(w.example||'—')}</div>${w.phonicsFocus?`<span class="mwg-wordpack-phonics">Phonics: ${esc(w.phonicsFocus)}</span>`:''}<div class="btnrow" style="margin-top:8px"><button class="mini-action mwg-v15-play" data-i="${i}">▶ Word</button><button class="mini-action mwg-v15-slow" data-i="${i}">🐢 Slow</button></div>${src}<div class="tiny" style="margin-top:5px">${inWeek?'Already in This Week':existing?'Already in Library · will update/link':'New word'}</div></div>`}).join('');
+    area.innerHTML=`<div class="mwg-wordpack-summary"><strong>${esc(v15Pack.packTitle)}</strong> · ${v15Pack.words.length} words · ${human} human recording${human===1?'':'s'}${searching?' · '+searching+' searching':''} · ${slots} open weekly slots</div><div class="mwg-wordpack-preview">${rows}</div>`;
+    area.querySelectorAll('.mwg-v15-play').forEach(b=>b.onclick=()=>{let w=v15Pack.words[Number(b.dataset.i)];if(w.humanAudio)v15PlayHuman(w.humanAudio,w.word,false);else v15BrowserSpeak(w.word,false)});
+    area.querySelectorAll('.mwg-v15-slow').forEach(b=>b.onclick=()=>{let w=v15Pack.words[Number(b.dataset.i)];if(w.humanAudio)v15PlayHuman(w.humanAudio,w.word,true);else v15BrowserSpeak(w.word,true)});
+    actions.style.display='flex';if(retry)retry.style.display='';
+  }
+
+  async function v15RunPool(tasks,limit=3,onTick=()=>{}){let idx=0,done=0;async function worker(){while(true){let i=idx++;if(i>=tasks.length)return;try{await tasks[i]()}catch(e){}finally{done++;onTick(done,tasks.length)}}}await Promise.all(Array.from({length:Math.min(limit,tasks.length||1)},worker))}
+  async function v15ResolvePackAudio(force=false){
+    if(!v15Pack)return;let run=++v15LookupRun,tasks=[];for(let w of v15Pack.words){if(!force&&w.humanAudio)continue;w._searching=true;if(force){w.humanAudio=null;w.humanAudioLookup=null}tasks.push(async()=>{let meta=await v15LookupHumanAudio(w.word);if(run!==v15LookupRun)return;w._searching=false;if(meta){w.humanAudio=meta;w.humanAudioLookup={status:'found',checkedAt:v15Now()}}else w.humanAudioLookup={status:'missing',checkedAt:v15Now()}})}
+    if(!tasks.length){v15SetProgress('Human pronunciation is ready for this Word Pack.');v15RenderPack();return}
+    v15SetProgress(`Looking for real human pronunciations… 0 / ${tasks.length}`,true);v15RenderPack();
+    await v15RunPool(tasks,3,(done,total)=>{if(run===v15LookupRun){v15SetProgress(`Looking for real human pronunciations… ${done} / ${total}`,done<total);v15RenderPack()}});
+    if(run!==v15LookupRun)return;let n=v15Pack.words.filter(w=>w.humanAudio).length;v15SetProgress(`Ready! Found human pronunciation for ${n} of ${v15Pack.words.length} words. The rest will use the selected device voice.`);v15RenderPack();
+  }
+
+  function v15UpsertPackWord(p){
+    let n=String(p.word||'').trim(),w=(state.words||[]).find(x=>v15WordKey(x.word)===v15WordKey(n));if(!w){w={id:id(),word:n,meaning:'',meaningEn:'',mistake:'',focus:'',example:'',picture:'',autoMeaning:'',autoExample:'',createdAt:Date.now()};state.words.push(w);state.stats[w.id]={life:emptyLife(),weekly:{}}}
+    w.meaningEn=String(p.meaningEn||'').trim();w.meaning=String(p.meaningJa||'').trim();w.example=String(p.example||'').trim();w.focus=String(p.phonicsFocus||'').trim();if(p.pictureCue)w.picture=String(p.pictureCue).trim();if(p.humanAudio){w.humanAudio=p.humanAudio;w.humanAudioLookup={status:'found',checkedAt:v15Now()}}else if(!w.humanAudio&&p.humanAudioLookup)w.humanAudioLookup=p.humanAudioLookup;delete w.audioPack;w.wordPackSource={version:2,source:'chatgpt-wordpack',packTitle:v15Pack&&v15Pack.packTitle||'',importedAt:v15Now()};return w;
+  }
+  function v15CommitPack(){
+    if(!v15Pack)return;let wk=currentWeek(),added=0,updated=0,human=0;for(let p of v15Pack.words){if(wk.wordIds.length>=15)break;let existed=(state.words||[]).find(w=>v15WordKey(w.word)===v15WordKey(p.word)),w=v15UpsertPackWord(p);if(existed)updated++;if(addToCurrentWeek(w))added++;if(w.humanAudio)human++}state.daily=freshDaily();save();renderParent();renderGarden();v15SetProgress(`Added ${added} word${added===1?'':'s'} to This Week${updated?' · updated '+updated+' Library word'+(updated===1?'':'s'):''} · ${human} human pronunciation${human===1?'':'s'} linked. 🌱`);let a=document.getElementById('wordPackActions');if(a)a.style.display='none';
+  }
+  function v15ClearPack(){v15LookupRun++;v15Pack=null;let inp=document.getElementById('wordPackJson');if(inp)inp.value='';let name=document.getElementById('wordPackFileName');if(name)name.textContent='No Word Pack selected';v15SetProgress('');v15RenderPack()}
+  async function v15LoadFile(file){
+    if(!file)return;if(file.size>700000){v15SetProgress('This Word Pack file is unexpectedly large.',false,true);return}
+    try{v15SetProgress('Reading Word Pack…',true);let raw=JSON.parse(await file.text());v15Pack=v15NormalizePack(raw);let name=document.getElementById('wordPackFileName');if(name)name.textContent=file.name;v15RenderPack();await v15ResolvePackAudio(false)}catch(e){v15Pack=null;v15SetProgress(e.message||'Could not read this Word Pack.',false,true);v15RenderPack()}
+  }
+
+  let choose=document.getElementById('wordPackChoose'),inp=document.getElementById('wordPackJson'),add=document.getElementById('wordPackAdd'),clear=document.getElementById('wordPackClear'),retry=document.getElementById('wordPackRetryHuman');
+  if(choose&&inp)choose.onclick=()=>inp.click();if(inp)inp.onchange=()=>v15LoadFile(inp.files&&inp.files[0]);if(add)add.onclick=v15CommitPack;if(clear)clear.onclick=v15ClearPack;if(retry)retry.onclick=()=>v15ResolvePackAudio(true);
+  let drop=document.getElementById('wordPackDrop');if(drop){drop.ondragover=e=>{e.preventDefault();drop.classList.add('dragover')};drop.ondragleave=()=>drop.classList.remove('dragover');drop.ondrop=e=>{e.preventDefault();drop.classList.remove('dragover');let f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)v15LoadFile(f)}}
+
+  try{let build=document.getElementById('mwgRuntimeBuild');if(build)build.textContent='Build v0.15.0 · Human Voice Word Pack'}catch(e){}
+  try{let d=document.getElementById('mwgAiVoiceDisclosure');if(d)d.textContent='🎙️ Human pronunciation from Wikimedia Commons is preferred when available.'}catch(e){}
+  window.MWG_DIAGNOSTICS=window.MWG_DIAGNOSTICS||{};window.MWG_DIAGNOSTICS.version='0.15.0-human-voice-word-pack';window.MWG_DIAGNOSTICS.pronunciation='Wikimedia Commons → device voice fallback';
+  window.MWG_TEST_HOOKS=window.MWG_TEST_HOOKS||{};window.MWG_TEST_HOOKS.v15NormalizePack=v15NormalizePack;window.MWG_TEST_HOOKS.v15LookupHumanAudio=v15LookupHumanAudio;window.MWG_TEST_HOOKS.v15Pack=()=>v15Pack;
 })();

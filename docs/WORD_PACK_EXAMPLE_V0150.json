@@ -1,0 +1,23 @@
+{
+  "format": "miori-word-garden-wordpack",
+  "version": 2,
+  "packTitle": "Example Word Pack",
+  "words": [
+    {
+      "word": "sturdy",
+      "meaningEn": "strong and not easily broken",
+      "meaningJa": "じょうぶな、しっかりした",
+      "example": "The sturdy table can hold many books.",
+      "phonicsFocus": "ur",
+      "pictureCue": "🪵"
+    },
+    {
+      "word": "silent",
+      "meaningEn": "making no sound",
+      "meaningJa": "音を立てない、静かな",
+      "example": "The room became silent when the story began.",
+      "phonicsFocus": "i-e",
+      "pictureCue": "🤫"
+    }
+  ]
+}
