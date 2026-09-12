@@ -1,0 +1,93 @@
+name: Fix Play word loop
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-play-loop.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch Play flow
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('index.html')
+          text = path.read_text()
+          marker = 'WORD_LOOP_V2_20260913'
+          if marker in text:
+              print('Play loop patch already applied.')
+              raise SystemExit(0)
+
+          css = r'''
+          /* WORD_LOOP_V2_20260913 */
+          .wordpic{width:min(190px,46vw);height:122px;margin:12px auto 4px;border-radius:28px;background:linear-gradient(145deg,#eef5e9,#fff4e8);display:grid;place-items:center;position:relative;overflow:hidden;box-shadow:inset 0 0 0 1px #ffffffcc,0 9px 22px #5e493518}
+          .wordpic:before{content:"";position:absolute;width:105px;height:105px;border-radius:50%;background:#ffffff85;right:-24px;top:-32px}
+          .wordpic .art{font-size:44px;letter-spacing:.08em;filter:drop-shadow(0 5px 4px #6b59421c);position:relative;z-index:1;white-space:nowrap}
+          .wordpic img{width:100%;height:100%;object-fit:cover;display:block}
+          .wordpic small{position:absolute;left:12px;bottom:9px;z-index:2;background:#fffdf8d9;border-radius:99px;padding:4px 8px;color:var(--muted);font-size:9px;font-weight:850;letter-spacing:.04em}
+          .rewardwrap{min-height:430px;display:grid;place-items:center;text-align:center;padding:8px}
+          .rewardpic{transform:scale(1.08);margin-bottom:8px}
+          .rewardword{font-size:36px;font-weight:950;letter-spacing:.04em;margin:7px 0 2px}
+          .rewardchips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:13px 0 4px}
+          .rewardchips span{background:#eef4e9;border-radius:99px;padding:8px 12px;font-size:11px;font-weight:850;color:#58705a}
+          .rewardchips span.gift{background:#f4e9f7;color:#705c78}
+          @media(max-height:700px) and (min-width:700px){.wordpic{height:96px;width:155px;margin-top:7px}.wordpic .art{font-size:36px}.q{padding-top:7px}.q h2{margin-top:7px}.listen{width:68px;height:68px;margin-top:8px}.choices{margin-top:12px}.support{margin-top:10px}}
+          '''
+          text = text.replace('</style>', css + '\n</style>', 1)
+
+          block1 = r'''function startPlay(){if(!S.week.ids.length)return toast('Add words in Parent first.');P={count:0,last:'',q:null,doneIds:[],goal:Math.min(GOAL,S.week.ids.length)};view='play';$$('.tab').forEach(b=>b.classList.remove('on'));playView();tone('tap')}
+          function chooseWord(){let all=S.week.ids.map(id=>S.lib[id]).filter(Boolean),pool=all.filter(w=>!P.doneIds.includes(w.id));if(pool.length>1)pool=pool.filter(w=>w.id!==P.last);let arr=pool.map(w=>{let l=w.learn,max=Math.max(0,...l.weak),rate=l.attempts?l.mistakes/l.attempts:0,score=Math.min(rate*8,6)+Math.min(l.mistakes,6)*.45+max*.65+Math.random()+(w.mioriSpelling&&w.mioriSpelling!==w.word?5:0);return{w,score}});arr.sort((a,b)=>b.score-a.score);return arr[0]?.w}
+          '''
+          pat1 = r"function startPlay\(\)\{[^\n]*\}\nfunction chooseWord\(\)\{[^\n]*\}\n"
+          text, n1 = re.subn(pat1, lambda m: block1, text, count=1)
+
+          block2 = r'''const WORD_PICS={beetle:'🪲  🍃',butterfly:'🦋  🌸',cricket:'🌙  🦗  ♪',grasshopper:'🌿  🦗  ↗',honeybee:'🌼  🐝  🍯',insect:'🐞  🐜  🦋',ladybug:'🍃  🐞',raisin:'🍇  ☀️  →  🟤',riding:'🚲  💨',thicket:'🌿 🌿  🐇  🌿 🌿'};
+          function wordPic(w,extra=''){let raw=WORD_PICS[w.word]||w.pictureCue||'✨',url=/^(https?:\/\/|data:image\/)/i.test(raw);return`<div class="wordpic ${extra}">${url?`<img src="${esc(raw)}" alt="Picture clue">`:`<div class="art">${esc(raw)}</div>`}<small>Picture clue</small></div>`}
+          function newQ(w,stage=1,r=null){r=r||focus(w);let q={id:w.id,stage,r,first:true,wrong:[],answer:'',feedback:null};if(stage===1)q.choices=wholeChoices(w,r);if(stage===2)q.choices=gapChoices(w,r);return q}
+          function playView(){if(!P)return startPlay();if(P.count>=P.goal)return done();if(!P.q){let w=chooseWord();if(!w)return done();P.last=w.id;P.q=newQ(w,1)}let q=P.q,w=S.lib[q.id],names=['','Listen & Choose','Fill the Gap','Write the Gap','Full Spelling'];$('#host').innerHTML=`<section class="play"><div class="card"><div class="pips">${[1,2,3,4].map(n=>`<i class="pip ${n<q.stage?'done':n===q.stage?'now':''}"></i>`).join('')}</div><div class="round"><span>${names[q.stage]}</span><span>${P.count} / ${P.goal} words complete</span></div><div class="q">${wordPic(w)}<span class="badge">Stage ${q.stage}</span><h2>${['','Which spelling matches the sound?','Which letters fit here?','Write the missing part.','Write the whole word.'][q.stage]}</h2><p>${q.stage>=3?'Write directly with Apple Pencil using iPad Scribble.':'Listen carefully, then choose.'}</p>${q.stage===1||q.stage===4?'<button class="listen" id="listen">🔊</button>':''}</div><div id="ans">${answer(w,q)}</div>${feedback(w,q)}<div class="support">${q.stage>=3?'<button class="help" data-s="hint">✨ Hint</button><button class="help" data-s="peek">👀 Peek</button>':''}<button data-s="meaning">💡 Meaning</button><button data-s="example">💬 Example</button></div><div id="drawer">${drawer(w)}</div></div></section>`;bindPlay(w,q);if(q.stage===1||q.stage===2)setTimeout(()=>speak(w,false),120);if(q.stage>=3)setTimeout(()=>$('#write')?.focus(),100)}
+          '''
+          pat2 = r"function newQ\(w\)\{[^\n]*\}\nfunction playView\(\)\{[^\n]*\}\n"
+          text, n2 = re.subn(pat2, lambda m: block2, text, count=1)
+
+          block3 = r'''function right(w,q){let l=w.learn;l.attempts++;l.correct++;if(q.first)l.first++;l.last=today();for(let i=q.r.start;i<q.r.end;i++)l.weak[i]=Math.max(0,(l.weak[i]||0)-1);q.feedback={bad:false};tone('right');if(q.stage<4){save();playView();setTimeout(()=>{if(!P?.q||P.q.id!==w.id||P.q.stage!==q.stage)return;P.q=newQ(w,q.stage+1,q.r);support='';playView()},650);return}let old=S.xp,gain=30;l.stage=1;l.loops=(l.loops||0)+1;S.xp+=gain;S.garden.growth++;P.count++;if(!P.doneIds.includes(w.id))P.doneIds.push(w.id);save();playView();xp(gain);let up=Math.floor(old/LEVEL)<Math.floor(S.xp/LEVEL),unlock=rewards.find(r=>r.xp>old&&r.xp<=S.xp);setTimeout(()=>wordReward(w,gain,up,unlock),650)}
+          function wordReward(w,gain,up,unlock){let finished=P.count>=P.goal;$('#host').innerHTML=`<section class="play"><div class="card"><div class="rewardwrap"><div>${wordPic(w,'rewardpic')}<span class="badge">Word complete ✦</span><div class="rewardword">${esc(w.word)}</div><p style="color:var(--muted);margin:4px 0 0">You finished Stage 1 → 2 → 3 → 4!</p><div class="rewardchips"><span>＋${gain} XP</span><span>🌱 Garden grew</span>${up?`<span class="gift">✨ Level ${Math.floor(S.xp/LEVEL)+1}</span>`:''}${unlock?`<span class="gift">🎁 ${esc(unlock.n)}</span>`:''}</div><button class="check" id="nextWord">${finished?'Finish & see Garden':'Next word →'}</button></div></div></div></section>`;$('#nextWord').onclick=()=>{if(finished)done();else{P.q=null;support='';playView()}};if(up||unlock)tone('level')}
+          function next(){P.q=null;support='';playView()}
+          function done(){$('#host').innerHTML=`<section class="play"><div class="card" style="display:grid;place-items:center;text-align:center;min-height:440px"><div><div style="font-size:70px">🌷</div><span class="badge">Practice complete</span><h2 style="font-size:31px;margin:13px 0 7px">Look what your practice grew!</h2><p style="color:var(--muted)">You completed all 4 stages for ${P.count} words. XP stays forever.</p><button class="check" id="see">See my Garden</button><button class="small" id="more" style="margin-top:9px">Keep playing</button></div></div></section>`;$('#see').onclick=()=>render('garden');$('#more').onclick=()=>{P={count:0,last:'',q:null,doneIds:[],goal:Math.min(GOAL,S.week.ids.length)};playView()};tone('level')}
+          '''
+          pat3 = r"function right\(w,q\)\{[^\n]*\}\nfunction next\(\)\{[^\n]*\}\nfunction done\(\)\{[^\n]*\}\n"
+          text, n3 = re.subn(pat3, lambda m: block3, text, count=1)
+
+          if (n1, n2, n3) != (1, 1, 1):
+              raise SystemExit(f'Patch failed: start/choose={n1}, question/play={n2}, reward/done={n3}')
+
+          path.write_text(text)
+
+          Path('sw.js').write_text("""const CACHE='mwg-v2-playloop-20260913';
+          const CORE=['./','./index.html'];
+          self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
+          self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+          self.addEventListener('fetch',e=>{if(e.request.mode==='navigate'){e.respondWith(fetch(e.request,{cache:'no-store'}).then(r=>{let copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))));return}e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))});
+          """)
+          print('Patched index.html and refreshed service worker cache policy.')
+          PY
+      - name: Commit patch
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html sw.js
+          git commit -m "Keep all 4 stages on one word and show picture cues"
+          git push
