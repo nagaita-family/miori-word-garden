@@ -1,18 +1,17 @@
-/* Miori's Word Garden v0.13 art manifest.
-   TEMP assets are deliberate placeholders. High-quality generated art can replace
-   these files without changing learning/game logic. */
+/* Miori's Word Garden v0.15.3 art manifest.
+   Kawaii character set: sticker-like chibi animals with state-specific poses. */
 window.MWG_ART = {
-  version: 13,
+  version: 153,
   background: 'assets/background/garden-base-dev.svg',
   backgroundHasRabbit: false,
   backgroundHasStaticFlowers: false,
   animals: {
-    rabbit: {idle:'assets/animals/rabbit/idle-temp.svg',water:'assets/animals/rabbit/water-temp.svg',happy:'assets/animals/rabbit/happy-temp.svg',eat:'assets/animals/rabbit/eat-temp.svg'},
-    cat: {idle:'assets/animals/cat/idle-temp.svg',water:'assets/animals/cat/water-temp.svg',happy:'assets/animals/cat/happy-temp.svg',eat:'assets/animals/cat/eat-temp.svg'},
-    squirrel: {idle:'assets/animals/squirrel/idle-temp.svg',water:'assets/animals/squirrel/water-temp.svg',happy:'assets/animals/squirrel/happy-temp.svg',eat:'assets/animals/squirrel/eat-temp.svg'},
-    duck: {idle:'assets/animals/duck/idle-temp.svg',water:'assets/animals/duck/water-temp.svg',happy:'assets/animals/duck/happy-temp.svg',eat:'assets/animals/duck/eat-temp.svg'},
-    hedgehog: {idle:'assets/animals/hedgehog/idle-temp.svg',water:'assets/animals/hedgehog/water-temp.svg',happy:'assets/animals/hedgehog/happy-temp.svg',eat:'assets/animals/hedgehog/eat-temp.svg'},
-    bird: {idle:'assets/animals/bird/idle-temp.svg',water:'assets/animals/bird/water-temp.svg',happy:'assets/animals/bird/happy-temp.svg',eat:'assets/animals/bird/eat-temp.svg'},
-    dog: {idle:'assets/animals/dog/idle-temp.svg',water:'assets/animals/dog/water-temp.svg',happy:'assets/animals/dog/happy-temp.svg',eat:'assets/animals/dog/eat-temp.svg'}
+    rabbit: {idle:'assets/animals/rabbit/idle-v0153.svg',water:'assets/animals/rabbit/water-v0153.svg',happy:'assets/animals/rabbit/happy-v0153.svg',eat:'assets/animals/rabbit/eat-v0153.svg'},
+    cat: {idle:'assets/animals/cat/idle-v0153.svg',water:'assets/animals/cat/water-v0153.svg',happy:'assets/animals/cat/happy-v0153.svg',eat:'assets/animals/cat/eat-v0153.svg'},
+    squirrel: {idle:'assets/animals/squirrel/idle-v0153.svg',water:'assets/animals/squirrel/water-v0153.svg',happy:'assets/animals/squirrel/happy-v0153.svg',eat:'assets/animals/squirrel/eat-v0153.svg'},
+    duck: {idle:'assets/animals/duck/idle-v0153.svg',water:'assets/animals/duck/water-v0153.svg',happy:'assets/animals/duck/happy-v0153.svg',eat:'assets/animals/duck/eat-v0153.svg'},
+    hedgehog: {idle:'assets/animals/hedgehog/idle-v0153.svg',water:'assets/animals/hedgehog/water-v0153.svg',happy:'assets/animals/hedgehog/happy-v0153.svg',eat:'assets/animals/hedgehog/eat-v0153.svg'},
+    bird: {idle:'assets/animals/bird/idle-v0153.svg',water:'assets/animals/bird/water-v0153.svg',happy:'assets/animals/bird/happy-v0153.svg',eat:'assets/animals/bird/eat-v0153.svg'},
+    dog: {idle:'assets/animals/dog/idle-v0153.svg',water:'assets/animals/dog/water-v0153.svg',happy:'assets/animals/dog/happy-v0153.svg',eat:'assets/animals/dog/eat-v0153.svg'}
   }
 };
