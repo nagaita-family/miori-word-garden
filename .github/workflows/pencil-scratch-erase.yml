@@ -1,0 +1,88 @@
+name: Enable Pencil scratch erase in Stages 3 and 4
+
+on:
+  push:
+    paths:
+      - '.github/workflows/pencil-scratch-erase.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch Pencil scratch erase
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p=Path('index.html')
+          s=p.read_text()
+          marker='PENCIL_SCRATCH_ERASE_V1_20260913'
+          if marker in s:
+              print('already patched')
+              raise SystemExit(0)
+
+          css=r'''
+/* PENCIL_SCRATCH_ERASE_V1_20260913 */
+.erasetip{margin:7px auto 0;display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:99px;background:#f3eee8;color:#756b67;font-size:11px;font-weight:850;letter-spacing:.02em}
+.lettertile.eraseflash{animation:eraseflash .28s ease}
+@keyframes eraseflash{45%{transform:scale(.88);opacity:.35}100%{transform:scale(1);opacity:1}}
+'''
+          s=s.replace('</style>',css+'\n</style>',1)
+
+          old='''<div class="handtip">✎ <b>Write across the boxes</b> with Apple Pencil — one letter lands in each box.</div>${inlineHint(w,q)}'''
+          new='''<div class="handtip">✎ <b>Write across the boxes</b> with Apple Pencil — one letter lands in each box.</div><div class="erasetip" aria-label="Scratch a letter with Apple Pencil to erase">✎ 〰︎〰︎〰︎ → ⌫</div>${inlineHint(w,q)}'''
+          if old not in s:
+              raise SystemExit('handtip anchor not found')
+          s=s.replace(old,new,1)
+
+          anchor='function bindPlay(w,q){'
+          if anchor not in s:
+              raise SystemExit('bindPlay anchor not found')
+
+          helper=r'''function bindPencilErase(w,q,i){let box=$('#tileword');if(!box||!i)return;let stroke=null;const pt=e=>({x:e.clientX,y:e.clientY,t:performance.now()});i.onpointerdown=e=>{if(e.pointerType!=='pen')return;let r=box.getBoundingClientRect();if(e.clientX<r.left-8||e.clientX>r.right+8||e.clientY<r.top-12||e.clientY>r.bottom+12)return;stroke={id:e.pointerId,pts:[pt(e)],before:norm(q.answer)}};i.onpointermove=e=>{if(!stroke||e.pointerId!==stroke.id||e.pointerType!=='pen')return;stroke.pts.push(pt(e))};let finish=e=>{if(!stroke||e.pointerId!==stroke.id)return;stroke.pts.push(pt(e));let st=stroke;stroke=null;if(st.pts.length<6)return;let xs=st.pts.map(p=>p.x),ys=st.pts.map(p=>p.y),minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys),width=maxX-minX,height=maxY-minY,duration=st.pts.at(-1).t-st.pts[0].t,path=0,reversals=0,lastDir=0;for(let n=1;n<st.pts.length;n++){let dx=st.pts[n].x-st.pts[n-1].x,dy=st.pts[n].y-st.pts[n-1].y;path+=Math.hypot(dx,dy);if(Math.abs(dx)>=4){let dir=Math.sign(dx);if(lastDir&&dir!==lastDir)reversals++;lastDir=dir}}let tiles=[...box.querySelectorAll('.lettertile')],tileW=tiles[0]?.getBoundingClientRect().width||48,tileH=tiles[0]?.getBoundingClientRect().height||58;let scratch=duration<1500&&width>=Math.max(24,tileW*.58)&&height<=tileH*1.25&&reversals>=2&&path>=width*2.0;if(!scratch)return;let cx=st.pts.reduce((a,p)=>a+p.x,0)/st.pts.length,full=0,best=1e9;tiles.forEach((t,n)=>{let r=t.getBoundingClientRect(),d=Math.abs(cx-(r.left+r.right)/2);if(d<best){best=d;full=n}});let p=practiceTarget(w,q),rel=full-p.start;if(q.stage===3&&(full<p.start||full>=p.end))return;if(rel<0||rel>=p.text.length)return;setTimeout(()=>{let nativeNow=norm(i.value||q.answer);if(nativeNow!==st.before){q.answer=nativeNow.slice(0,p.text.length);q.feedback=null;q.hint=null;refreshTiles(w,q);return}let chars=[...st.before];if(rel>=chars.length)return;chars.splice(rel,1);q.answer=chars.join('').slice(0,p.text.length);i.value=q.answer;q.feedback=null;q.hint=null;refreshTiles(w,q);let t=tiles[full];if(t){t.classList.remove('eraseflash');void t.offsetWidth;t.classList.add('eraseflash')}if(navigator.vibrate)navigator.vibrate(8)},90)};i.onpointerup=finish;i.onpointercancel=()=>{stroke=null}}
+'''
+          s=s.replace(anchor,helper+anchor,1)
+
+          old2="i.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();check()}}}$('#check')"
+          new2="i.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();check()}};bindPencilErase(w,q,i)}$('#check')"
+          if old2 not in s:
+              raise SystemExit('bindPlay insertion anchor not found')
+          s=s.replace(old2,new2,1)
+
+          p.write_text(s)
+
+          sw=Path('sw.js')
+          sws=sw.read_text()
+          sws=re.sub(r"const CACHE='[^']+';","const CACHE='mwg-v2-pencil-erase-20260913';",sws,count=1)
+          sw.write_text(sws)
+          PY
+      - name: Validate JavaScript
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text()
+          m=re.search(r'<script>(.*)</script>',s,re.S)
+          if not m: raise SystemExit('script missing')
+          Path('/tmp/app.js').write_text(m.group(1))
+          for x in ['PENCIL_SCRATCH_ERASE_V1_20260913','function bindPencilErase','〰︎〰︎〰︎ → ⌫']:
+              if x not in s: raise SystemExit('missing '+x)
+          PY
+          node --check /tmp/app.js
+      - name: Commit and push
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html sw.js
+          git commit -m "Enable Apple Pencil scratch-to-erase in spelling boxes"
+          git push
