@@ -1,0 +1,27 @@
+/* LETTER_BOX_WRITING_V3_20260913 */
+.spellwrap{width:min(720px,100%);margin:14px auto 0;text-align:center}
+.spellinput{position:relative;width:100%;padding:4px 0}
+.tileword{display:grid;grid-template-columns:repeat(var(--letters),minmax(0,1fr));gap:5px;width:100%;position:relative;z-index:1}
+.lettertile{height:62px;border:2px solid #d9cdbf;border-radius:15px;background:#fffdfa;display:grid;place-items:center;font-size:clamp(19px,4.2vw,31px);font-weight:950;text-transform:lowercase;box-shadow:inset 0 -7px #faf5ee;transition:.15s ease;color:#544b48;min-width:0}
+.lettertile.fixed{background:#f0ece6;border-color:#ded4c8;color:#746a65;box-shadow:none}
+.lettertile.filled{background:#fffaf2;border-color:#cdbba8}
+.lettertile.ok{background:#e9f4e7;border-color:#84b38a;color:#467654;box-shadow:none}
+.lettertile.bad{background:#fae8e8;border-color:#d98686;color:#a44e4e;box-shadow:none}
+.lettertile.missing{background:#fff7f6;border-color:#dc8c8c;border-style:dashed;box-shadow:none}
+.lettertile.active{border-color:#b8a1cf;box-shadow:0 0 0 3px #bba8d327,inset 0 -7px #faf5ee}
+.lettertile.hintfocus{background:#eee5f8;border-color:#8f6fb2;color:#654d7d;box-shadow:0 0 0 5px #a98dc42f;animation:hintpulse 1.1s ease-in-out infinite}
+@keyframes hintpulse{50%{transform:translateY(-2px);box-shadow:0 0 0 8px #a98dc418}}
+.scribbleCapture{position:absolute;inset:4px 0;width:100%;height:62px;z-index:3;border:0;outline:0;background:transparent;color:transparent;-webkit-text-fill-color:transparent;caret-color:transparent;font-size:34px;letter-spacing:.15em;text-align:center;border-radius:15px}
+.scribbleCapture::selection{background:transparent}
+.handtip{margin-top:8px;color:var(--muted);font-size:11px;font-weight:750}
+.handtip b{color:#6e5a80}
+.inlinehint{margin:13px auto 2px;background:#f4eef9;border:1.5px solid #d4c2e4;border-radius:20px;padding:13px 14px;width:min(560px,100%);box-shadow:0 8px 20px #65507515}
+.inlinehint .hintlead{font-weight:950;color:#665178;font-size:13px}
+.inlinehint .hintprompt{color:#6f646f;font-size:11px;margin:4px 0 10px}
+.inlinehint .hchoices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0}
+.inlinehint .hchoices button{height:52px;border:2px solid transparent;border-radius:15px;background:#fffdf8;font-size:23px;font-weight:950}
+.inlinehint .hchoices button.nope{border-color:#e09a9a;background:#fae8e8;color:#a85050;animation:hintshake .2s linear 2}
+.inlinehint .removechoice{grid-column:1/-1;font-size:15px!important}
+.inlinehint .hintbackbtn{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800;margin-top:8px;padding:5px 10px}
+@media(max-width:560px){.tileword{gap:3px}.lettertile{height:54px;border-radius:11px;font-size:clamp(17px,6vw,25px)}.scribbleCapture{height:54px}.inlinehint{padding:11px}.inlinehint .hchoices button{height:48px}}
+@media(max-height:700px) and (min-width:700px){.lettertile{height:52px}.scribbleCapture{height:52px}.spellwrap{margin-top:9px}.handtip{margin-top:5px}.inlinehint{margin-top:8px;padding:10px}}
