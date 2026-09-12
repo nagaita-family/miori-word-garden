@@ -48,5 +48,5 @@ jobs:
             echo 'No changes to commit.'
             exit 0
           fi
-          git commit -m 'Update Word Garden to v0.15.2 garden joy and clear zones'
+          git commit -m 'Update Word Garden to v0.15.3 kawaii garden'
           git push
