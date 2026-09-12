@@ -20,37 +20,62 @@ jobs:
           from pathlib import Path
           import re
 
-          p=Path('index.html')
-          s=p.read_text()
+          p = Path('index.html')
+          s = p.read_text()
+          marker = 'HINT_FLOW_V2_20260913'
+          if marker in s:
+              print('Hint UX patch already applied.')
+              raise SystemExit(0)
 
-          # Replace the old persistent bottom-sheet Hint with a dismissible modal
-          # that clearly marks the exact letter position being helped.
-          css_re=r"\.hint\{position:fixed;z-index:90;.*?\.hchoices button\{.*?\}"
-          css_new=r'''.hintback{position:fixed;z-index:90;inset:0;background:#40342d33;backdrop-filter:blur(3px);display:grid;place-items:center;padding:18px}.hintbox{position:relative;width:min(560px,100%);background:#fffdf8;border-radius:28px;padding:22px;box-shadow:0 25px 70px #40342c44;text-align:center}.hintbox h3{margin:0 36px 5px;font-size:21px}.hintbox>p{font-size:12px;color:var(--muted);margin:4px 0}.hintclose{position:absolute;right:12px;top:12px;width:36px;height:36px;border:0;border-radius:50%;background:#f0ebe4;font-size:22px;line-height:1}.hintwhere{display:inline-block;margin:11px 0 7px;padding:5px 10px;border-radius:99px;background:#ece6f5;color:#655a76;font-size:11px;font-weight:900}.hintmap{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin:7px auto 14px;max-width:500px}.hchar{width:34px;height:42px;border-radius:11px;background:#f0ebe4;display:grid;place-items:center;font-size:21px;font-weight:950;border:2px solid transparent}.hchar.fixed{background:#f5f1eb;color:#625957}.hchar.ok{background:#e6f2e4;color:#4f825d}.hchar.bad{background:#f9e4e4;color:#b85a5a;text-decoration:line-through}.hchar.focus{background:#eee6f7;border-color:#9e83bd;color:#6d5885;box-shadow:0 0 0 4px #bda8d52b}.hintnote{min-height:18px;font-size:12px;font-weight:800;color:#675d5b}.hchoices{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.hchoices button{height:58px;border:2px solid transparent;border-radius:16px;background:#f0eae2;font-size:24px;font-weight:950}.hchoices button.nope{border-color:#e2a1a1;background:#fae8e8;color:#a95252;animation:hintshake .2s linear 2}.hintcancel{margin-top:12px;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:800;padding:8px 14px}@keyframes hintshake{50%{transform:translateX(3px)}}'''
-          s,n=re.subn(css_re,css_new,s,count=1,flags=re.S)
-          if n!=1:
+          css_re = r"\.hint\{position:fixed;z-index:90;.*?\.hchoices button\{.*?\}"
+          css_new = r'''/* HINT_FLOW_V2_20260913 */
+          .hintback{position:fixed;z-index:90;inset:0;background:#40342d33;backdrop-filter:blur(3px);display:grid;place-items:center;padding:18px}
+          .hintbox{position:relative;width:min(560px,100%);background:#fffdf8;border-radius:28px;padding:22px;box-shadow:0 25px 70px #40342c44;text-align:center}
+          .hintbox h3{margin:0 36px 5px;font-size:21px}
+          .hintbox>p{font-size:12px;color:var(--muted);margin:4px 0}
+          .hintclose{position:absolute;right:12px;top:12px;width:36px;height:36px;border:0;border-radius:50%;background:#f0ebe4;font-size:22px;line-height:1}
+          .hintwhere{display:inline-block;margin:11px 0 7px;padding:5px 10px;border-radius:99px;background:#ece6f5;color:#655a76;font-size:11px;font-weight:900}
+          .hintmap{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin:7px auto 14px;max-width:500px}
+          .hchar{width:34px;height:42px;border-radius:11px;background:#f0ebe4;display:grid;place-items:center;font-size:21px;font-weight:950;border:2px solid transparent}
+          .hchar.fixed{background:#f5f1eb;color:#625957}
+          .hchar.ok{background:#e6f2e4;color:#4f825d}
+          .hchar.bad{background:#f9e4e4;color:#b85a5a;text-decoration:line-through}
+          .hchar.focus{background:#eee6f7;border-color:#9e83bd;color:#6d5885;box-shadow:0 0 0 4px #bda8d52b}
+          .hintnote{min-height:18px;font-size:12px;font-weight:800;color:#675d5b}
+          .hchoices{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}
+          .hchoices button{height:58px;border:2px solid transparent;border-radius:16px;background:#f0eae2;font-size:24px;font-weight:950}
+          .hchoices button.nope{border-color:#e2a1a1;background:#fae8e8;color:#a95252;animation:hintshake .2s linear 2}
+          .hintcancel{margin-top:12px;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:800;padding:8px 14px}
+          @keyframes hintshake{50%{transform:translateX(3px)}}'''
+          s, n = re.subn(css_re, lambda m: css_new, s, count=1, flags=re.S)
+          if n != 1:
               raise SystemExit(f'Hint CSS replacement count was {n}')
 
-          # Always remove any stale Hint overlay before the Play screen re-renders.
-          old="function playView(){if(!P)"
+          old = "function playView(){if(!P)"
           if old not in s:
               raise SystemExit('playView anchor not found')
-          s=s.replace(old,"function playView(){closeHint();if(!P)",1)
+          s = s.replace(old, "function playView(){closeHint();if(!P)", 1)
 
-          help_re=r"function help\(t,w,q\)\{.*?\}\nfunction speak\(w,slow\)"
-          help_new=r'''function closeHint(refocus=false){let e=document.querySelector('.hintback');if(e)e.remove();if(refocus)setTimeout(()=>$('#write')?.focus(),80)}
-function hintInfo(w,q){let target=q.stage===3?w.word.slice(q.r.start,q.r.end):w.word,cur=norm(q.answer),i=0;while(i<target.length&&cur[i]===target[i])i++;if(i>=target.length)i=Math.max(0,target.length-1);let full=q.stage===3?q.r.start+i:i,typed=cur[i]||'',correct=target[i]||target[target.length-1]||'',last=norm(w.learn.lastWrong||''),old=q.stage===3?last[i]||'':last[full]||'';return{target,cur,i,full,typed,correct,old}}
-function hintMap(w,q,h){let out=[];for(let j=0;j<w.word.length;j++){let inside=q.stage===4||(j>=q.r.start&&j<q.r.end),rel=q.stage===3?j-q.r.start:j;if(!inside){out.push(`<span class="hchar fixed">${w.word[j]}</span>`);continue}if(j===h.full){out.push(`<span class="hchar focus">${h.typed?esc(h.typed):'?'}</span>`);continue}let typed=h.cur[rel]||'';if(typed&&typed===w.word[j])out.push(`<span class="hchar ok">${typed}</span>`);else if(typed)out.push(`<span class="hchar bad">${typed}</span>`);else out.push('<span class="hchar">·</span>')}return out.join('')}
-function hintOptions(w,h){let map={b:['p','d'],p:['b','d'],d:['b','t'],e:['i','a'],i:['e','y'],y:['i','e'],c:['k','s'],k:['c','g'],s:['c','z'],t:['d','f'],a:['e','o'],o:['a','u'],u:['o','a'],l:['r','i'],r:['l','n'],g:['j','c'],h:['','w']},a=[];if(h.typed&&h.typed!==h.correct)a.push(h.typed);if(h.old&&h.old!==h.correct)a.push(h.old);for(let x of (map[h.correct]||['a','e','i']))if(x&&x!==h.correct)a.push(x);a=[...new Set(a)];while(a.length<2){let x='abcdefghijklmnopqrstuvwxyz'[(h.full+a.length*7)%26];if(x!==h.correct&&!a.includes(x))a.push(x)}return shuffle([h.correct,...a.slice(0,2)])}
-function applyHintLetter(q,h,c){let a=[...q.answer];while(a.length<h.i)a.push(' ');a[h.i]=c;q.answer=a.join('')}
-function openHint(w,q){closeHint();document.activeElement?.blur();w.learn.hints++;save();speak(w,true);let h=hintInfo(w,q),opts=hintOptions(w,h),e=document.createElement('div');e.className='hintback';let note=h.typed&&h.typed!==h.correct?`You wrote <b>${esc(h.typed)}</b> in this spot. Which letter belongs here?`:`This is the next spot to work on. Which letter belongs here?`;e.innerHTML=`<div class="hintbox" role="dialog" aria-modal="true" aria-label="Spelling hint"><button class="hintclose" aria-label="Close hint">×</button><h3>✨ Let’s fix one spot</h3><p>Look for the purple box.</p><div class="hintwhere">Letter ${h.full+1} of ${w.word.length}</div><div class="hintmap">${hintMap(w,q,h)}</div><div class="hintnote">${note}</div><div class="hchoices">${opts.map(x=>`<button data-h="${x}">${x}</button>`).join('')}</div><button class="hintcancel">Back to writing</button><p>Using Hint never reduces XP.</p></div>`;document.body.appendChild(e);let close=()=>closeHint(true);$('.hintclose',e).onclick=close;$('.hintcancel',e).onclick=close;e.onclick=x=>{if(x.target===e)close()};let key=x=>{if(x.key==='Escape'){document.removeEventListener('keydown',key);close()}};document.addEventListener('keydown',key,{once:true});$$('[data-h]',e).forEach(b=>b.onclick=()=>{if(b.dataset.h===h.correct){applyHintLetter(q,h,h.correct);tone('right');closeHint();playView()}else{tone('wrong');b.classList.remove('nope');void b.offsetWidth;b.classList.add('nope')}})}
-function help(t,w,q){if(t==='peek'){closeHint();w.learn.peeks++;save();speak(w,true);let e=document.createElement('div');e.className='peek';e.innerHTML=`<b>${w.word}</b>`;document.body.appendChild(e);setTimeout(()=>e.remove(),2050);return}if(t==='hint'){openHint(w,q);return}support=support===t?'':t;playView()}
-function speak(w,slow)'''
-          s,n=re.subn(help_re,help_new,s,count=1,flags=re.S)
-          if n!=1:
+          help_re = r"function help\(t,w,q\)\{.*?\}\nfunction speak\(w,slow\)"
+          help_new = r'''function closeHint(refocus=false){let e=document.querySelector('.hintback');if(e)e.remove();if(refocus)setTimeout(()=>$('#write')?.focus(),80)}
+          function hintInfo(w,q){let target=q.stage===3?w.word.slice(q.r.start,q.r.end):w.word,cur=norm(q.answer),i=0;while(i<target.length&&cur[i]===target[i])i++;if(i>=target.length)i=Math.max(0,target.length-1);let full=q.stage===3?q.r.start+i:i,typed=cur[i]||'',correct=target[i]||target[target.length-1]||'',last=norm(w.learn.lastWrong||''),old=q.stage===3?last[i]||'':last[full]||'';return{target,cur,i,full,typed,correct,old}}
+          function hintMap(w,q,h){let out=[];for(let j=0;j<w.word.length;j++){let inside=q.stage===4||(j>=q.r.start&&j<q.r.end),rel=q.stage===3?j-q.r.start:j;if(!inside){out.push(`<span class="hchar fixed">${w.word[j]}</span>`);continue}if(j===h.full){out.push(`<span class="hchar focus">${h.typed?esc(h.typed):'?'}</span>`);continue}let typed=h.cur[rel]||'';if(typed&&typed===w.word[j])out.push(`<span class="hchar ok">${typed}</span>`);else if(typed)out.push(`<span class="hchar bad">${typed}</span>`);else out.push('<span class="hchar">·</span>')}return out.join('')}
+          function hintOptions(w,h){let map={b:['p','d'],p:['b','d'],d:['b','t'],e:['i','a'],i:['e','y'],y:['i','e'],c:['k','s'],k:['c','g'],s:['c','z'],t:['d','f'],a:['e','o'],o:['a','u'],u:['o','a'],l:['r','i'],r:['l','n'],g:['j','c'],h:['w','n']},a=[];if(h.typed&&h.typed!==h.correct)a.push(h.typed);if(h.old&&h.old!==h.correct)a.push(h.old);for(let x of (map[h.correct]||['a','e','i']))if(x&&x!==h.correct)a.push(x);a=[...new Set(a)];while(a.length<2){let x='abcdefghijklmnopqrstuvwxyz'[(h.full+a.length*7)%26];if(x!==h.correct&&!a.includes(x))a.push(x)}return shuffle([h.correct,...a.slice(0,2)])}
+          function applyHintLetter(q,h,c){let a=[...q.answer];while(a.length<h.i)a.push(' ');a[h.i]=c;q.answer=a.join('')}
+          function openHint(w,q){closeHint();document.activeElement?.blur();w.learn.hints++;save();speak(w,true);let h=hintInfo(w,q),opts=hintOptions(w,h),e=document.createElement('div');e.className='hintback';let note=h.typed&&h.typed!==h.correct?`You wrote <b>${esc(h.typed)}</b> in this spot. Which letter belongs here?`:`This is the next spot to work on. Which letter belongs here?`;e.innerHTML=`<div class="hintbox" role="dialog" aria-modal="true" aria-label="Spelling hint"><button class="hintclose" aria-label="Close hint">×</button><h3>✨ Let’s fix one spot</h3><p>Look for the purple box.</p><div class="hintwhere">Letter ${h.full+1} of ${w.word.length}</div><div class="hintmap">${hintMap(w,q,h)}</div><div class="hintnote">${note}</div><div class="hchoices">${opts.map(x=>`<button data-h="${x}">${x}</button>`).join('')}</div><button class="hintcancel">Back to writing</button><p>Using Hint never reduces XP.</p></div>`;document.body.appendChild(e);let close=()=>closeHint(true);$('.hintclose',e).onclick=close;$('.hintcancel',e).onclick=close;e.onclick=x=>{if(x.target===e)close()};$$('[data-h]',e).forEach(b=>b.onclick=()=>{if(b.dataset.h===h.correct){applyHintLetter(q,h,h.correct);tone('right');closeHint();playView()}else{tone('wrong');b.classList.remove('nope');void b.offsetWidth;b.classList.add('nope')}})}
+          function help(t,w,q){if(t==='peek'){closeHint();w.learn.peeks++;save();speak(w,true);let e=document.createElement('div');e.className='peek';e.innerHTML=`<b>${w.word}</b>`;document.body.appendChild(e);setTimeout(()=>e.remove(),2050);return}if(t==='hint'){openHint(w,q);return}support=support===t?'':t;playView()}
+          function speak(w,slow)'''
+          s, n = re.subn(help_re, lambda m: help_new, s, count=1, flags=re.S)
+          if n != 1:
               raise SystemExit(f'help() replacement count was {n}')
 
           p.write_text(s)
+
+          sw = Path('sw.js')
+          if sw.exists():
+              t = sw.read_text()
+              t = re.sub(r"const CACHE='[^']+';", "const CACHE='mwg-v2-hintflow-20260913';", t, count=1)
+              sw.write_text(t)
           PY
 
           python - <<'PY'
@@ -62,17 +87,18 @@ function speak(w,slow)'''
           Path('/tmp/app.js').write_text(m.group(1))
           PY
           node --check /tmp/app.js
-
-          # Sanity checks for the intended UX.
-          grep -q "Let’s fix one spot" index.html
-          grep -q "Letter \${h.full+1} of \${w.word.length}" index.html
+          grep -q "HINT_FLOW_V2_20260913" index.html
           grep -q "function closeHint" index.html
           grep -q "if(t==='hint'){openHint" index.html
       - name: Commit Hint UX update
         shell: bash
         run: |
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
+          git add index.html sw.js
           git commit -m "Clarify handwriting Hint position and dismissal"
           git push
