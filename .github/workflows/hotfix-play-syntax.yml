@@ -13,22 +13,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fix syntax and final reward transition
+      - name: Fix picture cue URL test and final reward transition
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
           p=Path('index.html')
           s=p.read_text()
-          old=r"url=/^(https?:\\/\\/|data:image\\/)/i.test(raw);"
-          new="url=raw.startsWith('http://')||raw.startsWith('https://')||raw.startsWith('data:image/');"
-          if old not in s:
-              raise SystemExit('Expected picture URL test not found')
-          s=s.replace(old,new,1)
-          old2="save();playView();xp(gain);let up="
-          if old2 not in s:
-              raise SystemExit('Expected final-stage transition not found')
-          s=s.replace(old2,"save();xp(gain);let up=",1)
+
+          start=s.index('function wordPic(')
+          end=s.index('\nfunction newQ',start)
+          block=s[start:end]
+          new_test="url=raw.startsWith('http://')||raw.startsWith('https://')||raw.startsWith('data:image/');return"
+          block2,n=re.subn(r'url=.*?;return',new_test,block,count=1)
+          if n!=1:
+              raise SystemExit('Could not replace picture URL test')
+          s=s[:start]+block2+s[end:]
+
+          old2='save();playView();xp(gain);let up='
+          if old2 in s:
+              s=s.replace(old2,'save();xp(gain);let up=',1)
+
           p.write_text(s)
           PY
           python - <<'PY'
@@ -43,8 +49,12 @@ jobs:
       - name: Commit hotfix
         shell: bash
         run: |
+          if git diff --quiet; then
+            echo "No changes needed."
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Fix Play picture cue syntax and reward transition"
+          git commit -m "Validate Play loop and smooth word reward transition"
           git push
