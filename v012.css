@@ -272,3 +272,108 @@ body.mwg-play-mode .app{height:100vh;overflow:hidden}
 .mwg-wordpack-audio.human{background:#e8f8ed;color:#2f7954}.mwg-wordpack-audio.fallback{background:#eef3fb;color:#58708b}.mwg-wordpack-audio.searching{background:#fff4d7;color:#8b6a25}
 .mwg-audio-source-chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 7px;background:#f3f6f5;font-weight:850}
 .mwg-human-note{margin-top:8px;padding:8px 10px;border-radius:12px;background:#f6faf8;color:#617069;font-size:11px}
+
+/* ================= v0.15.1 One-Screen Garden ================= */
+#garden.active{padding-top:8px;overflow:visible}
+#garden .v151-dashboard{display:flex;flex-direction:column;gap:7px;min-height:0}
+#garden .v151-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:42px;padding:0 3px}
+#garden .v11-garden-head{margin:0;align-items:center;min-width:0}
+#garden .v11-garden-head h2{font-size:clamp(21px,2.2vw,29px);line-height:1.05}
+#garden .v11-garden-head .subtitle{font-size:12px;margin-top:2px}
+#garden .v11-week-chip{padding:7px 11px;font-size:12px;box-shadow:0 4px 12px #6d4e3616}
+#garden .v151-stage-shell{display:flex;flex-direction:column;gap:8px;min-height:0}
+#garden .v11-stage{aspect-ratio:auto!important;height:clamp(355px,calc(100dvh - 250px),455px);min-height:355px;border-radius:29px;border-width:6px}
+#garden .v11-stage:after{box-shadow:inset 0 -76px 92px #45663b0d,inset 0 0 55px #ffffff2d}
+
+/* Give the left 70% of the world to the garden itself. */
+#garden .v11-flower-meadow{left:5.5%;bottom:12%;width:34%;height:18%}
+#garden .v11-fountain-glow{left:40.5%;top:43%;width:17%;height:16%}
+#garden .v11-farm-surface{left:39.5%!important;right:auto!important;top:48%!important;width:28%!important;height:28%!important;border-radius:25px;transform:rotate(1deg)}
+#garden .v11-farm-surface>span{top:5%;font-size:clamp(8px,1vw,11px)}
+#garden .v11-farm-surface .v11-soil.p1{left:7%!important;top:25%!important;width:40%!important;height:55%!important}
+#garden .v11-farm-surface .v11-soil.p2{left:53%!important;top:25%!important;width:40%!important;height:55%!important}
+#garden .v11-farm-surface .v11-soil.p3,#garden .v11-farm-surface .v11-soil.p4{display:none!important}
+#garden .v11-plot.p1{left:43.8%!important;top:53.5%!important;width:11.5%!important;height:16%!important}
+#garden .v11-plot.p2{left:56.4%!important;top:53.5%!important;width:11.5%!important;height:16%!important}
+#garden .v11-plot.p3,#garden .v11-plot.p4{display:none!important}
+#garden .v11-seed-house{left:6.5%;top:24%;width:26%;height:35%}
+#garden .v11-seed-count{left:18.5%;top:31%;padding:6px 10px;font-size:12px}
+#garden .v11-seed-drawer{left:4.5%;top:13%;width:min(31%,285px);max-height:52%;overflow:auto}
+#garden .v11-challenge-sign{display:none!important}
+
+/* Growth Path becomes part of the illustrated world, not a second page below it. */
+#garden .v147-growth-card{position:absolute!important;z-index:27!important;right:1.2%!important;top:2.4%!important;bottom:22%!important;left:auto!important;width:27.5%!important;margin:0!important;padding:12px 12px 10px!important;border-radius:22px!important;display:flex!important;flex-direction:column!important;gap:8px!important;background:linear-gradient(160deg,rgba(255,255,250,.93),rgba(239,249,229,.91))!important;border:2px solid rgba(255,255,255,.88)!important;box-shadow:0 13px 28px rgba(52,79,47,.19),inset 0 1px 0 #fff!important;backdrop-filter:blur(7px);overflow:hidden!important;pointer-events:none}
+#garden .v147-growth-card:after{display:none!important}
+#garden .v151-growth-head{display:flex;align-items:center;justify-content:space-between;gap:7px}
+#garden .v151-place{display:flex;align-items:center;gap:6px;min-width:0;color:#355c3b}
+#garden .v151-place>span{font-size:22px;line-height:1}
+#garden .v151-place strong{font-size:clamp(13px,1.45vw,18px);line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#garden .v151-level-pill{flex:none;background:#fff7d7;border:1px solid #ead392;color:#7b6125;border-radius:999px;padding:4px 7px;font-size:11px;font-weight:950}
+#garden .v151-level-progress{height:9px;border-radius:999px;background:#dfe7d7;overflow:hidden;box-shadow:inset 0 1px 2px #50644620}
+#garden .v151-level-progress i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#75b95f,#f1cc5e);transition:width .55s ease}
+#garden .v151-next{display:grid;grid-template-columns:auto 1fr;gap:1px 5px;align-items:center;color:#5d594d;font-size:10px;line-height:1.15}
+#garden .v151-next b{font-size:12px;color:#4c704e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#garden .v151-next span{grid-column:2;color:#8b7c63;font-weight:850}
+#garden .v151-vine-map{position:relative;flex:1;min-height:170px;margin-top:1px}
+#garden .v151-vine-track{position:absolute;left:20px;top:11px;bottom:9px;width:8px;border-radius:999px;background:#d7ddcb;box-shadow:inset 0 0 0 2px #ffffff66;overflow:hidden}
+#garden .v151-vine-track i{position:absolute;left:0;right:0;bottom:0;border-radius:999px;background:linear-gradient(0deg,#5ea95b,#9bca6f 55%,#f4d565);transition:height .7s ease}
+#garden .v151-vine-track:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(25deg,transparent 0 13px,rgba(255,255,255,.4) 13px 16px,transparent 16px 28px)}
+#garden .v151-vine-rabbit{position:absolute;left:2px;transform:translateY(48%);font-size:24px;z-index:3;filter:drop-shadow(0 2px 2px #40543a3c);transition:bottom .7s ease}
+#garden .v151-vine-node{position:absolute;left:39px;right:0;transform:translateY(50%);display:flex;align-items:center;gap:5px;color:#8a8173;opacity:.73;font-size:9px}
+#garden .v151-vine-node:before{content:"";position:absolute;left:-23px;width:12px;height:12px;border-radius:50%;background:#e7e6dc;border:2px solid #c8c7bb;box-sizing:border-box}
+#garden .v151-vine-node span{font-size:15px}
+#garden .v151-vine-node b{font-size:9px;line-height:1.05}
+#garden .v151-vine-node.done{color:#456f49;opacity:1}
+#garden .v151-vine-node.done:before{background:#7dbd69;border-color:#5a9d54}
+#garden .v151-vine-node.current{font-weight:950;color:#725e2d;opacity:1;transform:translateY(50%) scale(1.04);transform-origin:left center}
+#garden .v151-vine-node.current:before{background:#ffd969;border-color:#cda83d;box-shadow:0 0 0 4px #ffe69640}
+
+/* Route buttons live inside the garden picture, like a compact control shelf. */
+#garden #viewport>.v11-stage-dock{position:absolute!important;z-index:31!important;left:1.5%!important;right:1.5%!important;bottom:1.7%!important;top:auto!important;transform:none!important;width:auto!important;margin:0!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important;padding:6px!important;border-width:3px!important;border-radius:17px!important;background:linear-gradient(180deg,rgba(248,220,177,.96),rgba(194,134,80,.96))!important;box-shadow:0 5px 0 #744a34,0 10px 22px #42533c3d!important;backdrop-filter:blur(4px)}
+#garden #viewport>.v11-stage-dock .v11-stage-btn{min-height:58px!important;padding:6px 4px!important;border-radius:11px!important}
+#garden #viewport>.v11-stage-dock .v11-stage-btn .ico{font-size:23px!important;margin-bottom:2px!important}
+#garden #viewport>.v11-stage-dock .v11-stage-btn span{font-size:11px!important}
+#garden #viewport>.v11-stage-dock .v11-stage-btn small{display:block!important;font-size:8px!important;margin-top:2px!important}
+
+/* Session state becomes a thin strip under the world instead of another big card. */
+#garden .v11-under{margin:0!important;min-height:46px;padding:8px 11px!important;border-radius:15px!important;gap:8px!important;box-shadow:0 6px 16px #4b383214!important;background:rgba(255,253,248,.94)!important;flex-wrap:nowrap!important}
+#garden .v11-session{flex:1 1 auto!important;min-width:0}
+#garden .v11-session strong{font-size:13px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+#garden .v11-session p{font-size:10px!important;line-height:1.15!important;margin:2px 0 0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#garden .v11-actions{flex:none!important;gap:5px!important;flex-wrap:nowrap!important}
+#garden .v11-actions button{min-height:34px!important;padding:7px 9px!important;border-radius:10px!important;font-size:10px!important;white-space:nowrap}
+
+@media(min-width:761px){
+  html,body{overscroll-behavior-y:none}
+  body:has(#garden.active){overflow:hidden}
+  body:has(#garden.active) .app{padding-bottom:8px}
+}
+
+@media(max-width:900px) and (min-width:721px){
+  #garden .v11-stage{height:clamp(345px,calc(100dvh - 242px),425px);min-height:345px}
+  #garden .v147-growth-card{width:29%!important;right:1%!important}
+  #garden .v11-farm-surface{left:37.5%!important;width:30%!important}
+  #garden .v11-plot.p1{left:42%!important}.v11-plot.p2{left:55.5%!important}
+}
+
+@media(max-width:720px){
+  /* Small screens still prioritize usability; the desktop no-scroll rule is not forced. */
+  #garden .v151-topbar{min-height:36px}
+  #garden .v11-garden-head .subtitle{display:none}
+  #garden .v11-stage{height:440px;min-height:440px;border-width:4px;border-radius:23px}
+  #garden .v147-growth-card{width:35%!important;right:1.2%!important;bottom:27%!important;padding:8px!important;border-radius:16px!important}
+  #garden .v151-place strong{font-size:11px}.v151-place>span{font-size:18px}
+  #garden .v151-level-pill{font-size:9px;padding:3px 5px}
+  #garden .v151-next{font-size:8px}.v151-next b{font-size:9px}
+  #garden .v151-vine-node b{display:none}.v151-vine-node{left:35px}.v151-vine-node span{font-size:14px}
+  #garden .v11-farm-surface{left:33%!important;top:51%!important;width:32%!important;height:24%!important}
+  #garden .v11-plot.p1{left:37%!important;top:56%!important;width:13%!important;height:15%!important}
+  #garden .v11-plot.p2{left:51.5%!important;top:56%!important;width:13%!important;height:15%!important}
+  #garden .v11-seed-house{left:3%;top:25%;width:27%;height:32%}
+  #garden .v11-seed-count{left:13%;top:31%;font-size:9px;padding:4px 7px}
+  #garden #viewport>.v11-stage-dock{grid-template-columns:repeat(2,minmax(0,1fr))!important;bottom:1.2%!important;gap:4px!important;padding:4px!important}
+  #garden #viewport>.v11-stage-dock .v11-stage-btn{min-height:43px!important;padding:4px 2px!important}
+  #garden #viewport>.v11-stage-dock .v11-stage-btn .ico{font-size:18px!important}
+  #garden #viewport>.v11-stage-dock .v11-stage-btn small{display:none!important}
+  #garden .v11-under{flex-wrap:wrap!important}.v11-actions{width:auto!important}
+}

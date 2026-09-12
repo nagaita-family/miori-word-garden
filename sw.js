@@ -1,4 +1,4 @@
-const CACHE='mwg-v0150';
+const CACHE='mwg-v0151';
 const ASSETS=[
   './','./index.html','./v012.css','./v012.js','./assets/art-manifest.js',
   './assets/background/garden-base-dev.svg',
