@@ -1,4 +1,4 @@
-const CACHE='mwg-v0153';
+const CACHE='mwg-v0154-hotfix';
 const ASSETS=[
   './',
   './index.html',
@@ -6,34 +6,13 @@ const ASSETS=[
   './v012.js',
   './assets/art-manifest.js',
   './assets/background/garden-base-dev.svg',
-  './assets/animals/rabbit/idle-v0153.svg',
-  './assets/animals/rabbit/water-v0153.svg',
-  './assets/animals/rabbit/happy-v0153.svg',
-  './assets/animals/rabbit/eat-v0153.svg',
-  './assets/animals/cat/idle-v0153.svg',
-  './assets/animals/cat/water-v0153.svg',
-  './assets/animals/cat/happy-v0153.svg',
-  './assets/animals/cat/eat-v0153.svg',
-  './assets/animals/squirrel/idle-v0153.svg',
-  './assets/animals/squirrel/water-v0153.svg',
-  './assets/animals/squirrel/happy-v0153.svg',
-  './assets/animals/squirrel/eat-v0153.svg',
-  './assets/animals/duck/idle-v0153.svg',
-  './assets/animals/duck/water-v0153.svg',
-  './assets/animals/duck/happy-v0153.svg',
-  './assets/animals/duck/eat-v0153.svg',
-  './assets/animals/hedgehog/idle-v0153.svg',
-  './assets/animals/hedgehog/water-v0153.svg',
-  './assets/animals/hedgehog/happy-v0153.svg',
-  './assets/animals/hedgehog/eat-v0153.svg',
-  './assets/animals/bird/idle-v0153.svg',
-  './assets/animals/bird/water-v0153.svg',
-  './assets/animals/bird/happy-v0153.svg',
-  './assets/animals/bird/eat-v0153.svg',
-  './assets/animals/dog/idle-v0153.svg',
-  './assets/animals/dog/water-v0153.svg',
-  './assets/animals/dog/happy-v0153.svg',
-  './assets/animals/dog/eat-v0153.svg'
+  './assets/animals/rabbit/idle-temp.svg',
+  './assets/animals/cat/idle-temp.svg',
+  './assets/animals/squirrel/idle-temp.svg',
+  './assets/animals/duck/idle-temp.svg',
+  './assets/animals/hedgehog/idle-temp.svg',
+  './assets/animals/bird/idle-temp.svg',
+  './assets/animals/dog/idle-temp.svg'
 ];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
