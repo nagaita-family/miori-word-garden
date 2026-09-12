@@ -3,7 +3,7 @@ name: Apply Word Garden Patch
 on:
   push:
     paths:
-      - 'mwg_update_*.patch.gz.b64'
+      - 'mwg_update_*.trigger'
 
 permissions:
   contents: write
@@ -22,14 +22,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          PAYLOAD="$(ls -1t mwg_update_*.patch.gz.b64 2>/dev/null | head -n 1 || true)"
-          if [ -z "$PAYLOAD" ]; then
-            echo 'No patch payload found.'
+          TRIGGER="$(ls -1t mwg_update_*.trigger 2>/dev/null | head -n 1 || true)"
+          if [ -z "$TRIGGER" ]; then
+            echo 'No patch trigger found.'
             exit 0
           fi
-          base64 -d "$PAYLOAD" | gunzip > /tmp/word-garden.patch
+          BASE="${TRIGGER%.trigger}"
+          PARTS=("${BASE}.part"*)
+          if [ ! -e "${PARTS[0]}" ]; then
+            echo 'Patch parts are missing.'
+            exit 1
+          fi
+          cat "${BASE}.part"* | base64 -d | gunzip > /tmp/word-garden.patch
           git apply --whitespace=nowarn /tmp/word-garden.patch
-          rm -f "$PAYLOAD"
+          rm -f "$TRIGGER" "${BASE}.part"*
 
       - name: Commit applied patch
         shell: bash
