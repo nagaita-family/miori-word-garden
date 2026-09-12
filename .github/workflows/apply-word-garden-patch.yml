@@ -1,0 +1,46 @@
+name: Apply Word Garden Patch
+
+on:
+  push:
+    paths:
+      - 'mwg_update_*.patch.gz.b64'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply latest Word Garden patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          PAYLOAD="$(ls -1t mwg_update_*.patch.gz.b64 2>/dev/null | head -n 1 || true)"
+          if [ -z "$PAYLOAD" ]; then
+            echo 'No patch payload found.'
+            exit 0
+          fi
+          base64 -d "$PAYLOAD" | gunzip > /tmp/word-garden.patch
+          git apply --whitespace=nowarn /tmp/word-garden.patch
+          rm -f "$PAYLOAD"
+
+      - name: Commit applied patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Update Word Garden to v0.15.0 human voice pack'
+          git push
