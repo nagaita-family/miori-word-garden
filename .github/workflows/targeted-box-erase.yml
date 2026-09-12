@@ -1,0 +1,82 @@
+name: Target Pencil erase to scratched box
+
+on:
+  push:
+    paths:
+      - '.github/workflows/targeted-box-erase.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch exact-box Pencil erase behavior
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text()
+          marker='TARGETED_BOX_ERASE_V3_20260913'
+          if marker in s:
+              print('already patched')
+              raise SystemExit(0)
+
+          start=s.find('function writingTiles(w,q){')
+          end=s.find('\nfunction inlineHint(w,q){',start)
+          if start<0 or end<0:
+              raise SystemExit('writingTiles function not found')
+          writing="function writingTiles(w,q){let p=practiceTarget(w,q),raw=norm(q.answer),a=alignChars(p.text,raw),bad=!!q.feedback?.bad,h=q.hint?.fullIndex,out=[],hole=Number.isInteger(q.eraseAt)?q.eraseAt:-1,next=hole>=0?-1:(raw.length<p.text.length?p.start+raw.length:-1);for(let j=0;j<w.word.length;j++){if(q.stage===3&&(j<p.start||j>=p.end)){out.push(`<span class=\"lettertile fixed\" data-i=\"${j}\">${w.word[j]}</span>`);continue}let rel=j-p.start,slot=a.slots[rel],shown='',cls='';if(bad){shown=slot?.typed||'';cls=slot?.state==='ok'?'ok':slot?.state==='bad'?'bad':'missing'}else if(hole>=0){if(rel===hole){shown='';cls='active'}else{let ri=rel-(rel>hole?1:0);shown=raw[ri]||'';cls=shown?'filled':''}}else{shown=raw[rel]||'';cls=shown?'filled':'';if(!q.hint&&j===next)cls+=' active'}if(j===h)cls+=' hintfocus';out.push(`<span class=\"lettertile ${cls.trim()}\" data-i=\"${j}\">${esc(shown)}</span>`)}return out.join('')}"
+          s=s[:start]+writing+s[end:]
+
+          start=s.find('function bindPencilErase(w,q,i){')
+          end=s.find('\nfunction bindPlay(w,q){',start)
+          if start<0 or end<0:
+              raise SystemExit('bindPencilErase function not found')
+          erase="function bindPencilErase(w,q,i){let box=$('#tileword'),surface=i?.closest('.spellinput')||i;if(!box||!i||!surface)return;let stroke=null;const tiles=()=>[...box.querySelectorAll('.lettertile')];const hit=(x,y)=>{let ts=tiles(),inside=-1,best=-1,bestD=1e9;ts.forEach((t,n)=>{let r=t.getBoundingClientRect(),cx=(r.left+r.right)/2,cy=(r.top+r.bottom)/2;if(x>=r.left-5&&x<=r.right+5&&y>=r.top-10&&y<=r.bottom+10)inside=n;let d=Math.hypot(x-cx,(y-cy)*.35);if(d<bestD){bestD=d;best=n}});return inside>=0?inside:best};const add=e=>{if(!stroke)return;let es=e.getCoalescedEvents?.()||[e];for(let x of es)if(Number.isFinite(x.clientX)&&Number.isFinite(x.clientY))stroke.pts.push({x:x.clientX,y:x.clientY,t:performance.now()})};const cleanup=()=>{window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',finish,true);window.removeEventListener('pointercancel',finish,true)};const move=e=>{if(!stroke||e.pointerId!==stroke.id||e.pointerType!=='pen')return;add(e)};const finish=e=>{if(!stroke||e.pointerId!==stroke.id)return;add(e);let st=stroke;stroke=null;cleanup();let p=practiceTarget(w,q);setTimeout(()=>{let nativeNow=norm(i.value),pts=st.pts;if(nativeNow.length>st.before.length){q.eraseAt=null;q.answer=nativeNow.slice(0,p.text.length);q.feedback=null;q.hint=null;refreshTiles(w,q);return}let xs=pts.map(x=>x.x),ys=pts.map(x=>x.y),width=xs.length?Math.max(...xs)-Math.min(...xs):0,height=ys.length?Math.max(...ys)-Math.min(...ys):0,duration=pts.length>1?pts[pts.length-1].t-pts[0].t:0,path=0,reversals=0,lastDir=0;for(let n=1;n<pts.length;n++){let dx=pts[n].x-pts[n-1].x,dy=pts[n].y-pts[n-1].y;path+=Math.hypot(dx,dy);if(Math.abs(dx)>=2){let dir=Math.sign(dx);if(lastDir&&dir!==lastDir)reversals++;lastDir=dir}}let ts=tiles(),tileW=ts[0]?.getBoundingClientRect().width||48,tileH=ts[0]?.getBoundingClientRect().height||58,scratch=pts.length>=2&&duration<2200&&width>=Math.max(9,tileW*.15)&&height<=tileH*1.9&&path>=Math.max(17,tileW*.35)&&(reversals>=1||path>=Math.max(30,width*1.55)),nativeErased=nativeNow.length<st.before.length;if(!scratch&&!nativeErased){if(nativeNow!==st.before){q.eraseAt=null;q.answer=nativeNow.slice(0,p.text.length);q.feedback=null;q.hint=null;refreshTiles(w,q)}return}let full=st.full,rel=full-p.start;if(q.stage===3&&(full<p.start||full>=p.end))return;if(rel<0||rel>=p.text.length)return;let a=alignChars(p.text,st.before),slot=a.slots[rel],typedIndex=slot?.typedIndex;if(typedIndex==null){q.answer=st.before;i.value=st.before;q.eraseAt=null;refreshTiles(w,q);return}let chars=[...st.before];chars.splice(typedIndex,1);q.answer=chars.join('').slice(0,p.text.length);q.eraseAt=rel;i.value=q.answer;q.feedback=null;q.hint=null;refreshTiles(w,q);requestAnimationFrame(()=>{try{i.focus({preventScroll:true});i.setSelectionRange(typedIndex,typedIndex)}catch{}});let fresh=tiles()[full];if(fresh){fresh.classList.remove('eraseflash');void fresh.offsetWidth;fresh.classList.add('eraseflash')}if(navigator.vibrate)navigator.vibrate(8)},120)};surface.addEventListener('pointerdown',e=>{if(e.pointerType!=='pen')return;let r=box.getBoundingClientRect();if(e.clientX<r.left-10||e.clientX>r.right+10||e.clientY<r.top-14||e.clientY>r.bottom+14)return;let p=practiceTarget(w,q),full=hit(e.clientX,e.clientY);if(full<0)return;if(q.stage===3&&(full<p.start||full>=p.end))return;cleanup();stroke={id:e.pointerId,pts:[],before:norm(i.value||q.answer),full};add(e);window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',finish,true);window.addEventListener('pointercancel',finish,true)},true)}"
+          s=s[:start]+erase+s[end:]
+
+          old="i.oninput=e=>{let p=practiceTarget(w,q);q.answer=norm(e.target.value).slice(0,p.text.length);e.target.value=q.answer;q.feedback=null;q.hint=null;"
+          new="i.oninput=e=>{let p=practiceTarget(w,q),before=q.answer,v=norm(e.target.value).slice(0,p.text.length);if(Number.isInteger(q.eraseAt)&&v!==before)q.eraseAt=null;q.answer=v;e.target.value=q.answer;q.feedback=null;q.hint=null;"
+          if old not in s:
+              raise SystemExit('oninput anchor not found')
+          s=s.replace(old,new,1)
+
+          s=s.replace('/* SCRIBBLE_BOX_ALIGNMENT_V1_20260913 */','/* SCRIBBLE_BOX_ALIGNMENT_V1_20260913 */\n/* TARGETED_BOX_ERASE_V3_20260913 */',1)
+          p.write_text(s)
+
+          sw=Path('sw.js')
+          sws=sw.read_text()
+          sws=re.sub(r"const CACHE='[^']+';","const CACHE='mwg-v2-targeted-box-erase-20260913';",sws,count=1)
+          sw.write_text(sws)
+          PY
+      - name: Validate JavaScript and behavior markers
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text()
+          m=re.search(r'<script>(.*)</script>',s,re.S)
+          if not m:
+              raise SystemExit('script missing')
+          Path('/tmp/app.js').write_text(m.group(1))
+          for x in ['TARGETED_BOX_ERASE_V3_20260913','q.eraseAt=rel','i.setSelectionRange(typedIndex,typedIndex)','nativeErased=nativeNow.length<st.before.length']:
+              if x not in s:
+                  raise SystemExit('missing '+x)
+          PY
+          node --check /tmp/app.js
+      - name: Commit and push
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html sw.js
+          git commit -m "Erase the exact spelling box scratched with Apple Pencil"
+          git push
