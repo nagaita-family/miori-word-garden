@@ -2496,3 +2496,93 @@ window.MWG_TEST_HOOKS.runBonusSunV131=()=>runBonusSun(()=>{});
 // v0.15.1 final build marker
 try{let b=document.getElementById('mwgRuntimeBuild');if(b)b.textContent='Build v0.15.1 · One-Screen Garden'}catch(e){}
 window.MWG_DIAGNOSTICS=window.MWG_DIAGNOSTICS||{};window.MWG_DIAGNOSTICS.version='0.15.1-one-screen-garden';
+
+// ================= v0.15.2 Garden Joy + Clear Zones =================
+(function(){
+  const V152_PLOT_POS=[[63.5,64],[83,64]];
+  const V152_FLOWER_POS=[[13,76],[20,82],[28,75],[37,82],[12,66],[22,65],[33,66],[43,73],[16,88],[34,88]];
+  const V152_RESIDENT_POS=[[42,36],[39,58],[46,72],[27,63],[34,45],[46,52],[22,72],[39,84]];
+  const V152_SPECIAL_POS=[[46,27],[29,87],[17,64],[44,64],[24,86],[41,76]];
+
+  function v152Mood(){
+    try{
+      let wk=currentWeek(),d=ensureDaily(),sh=state.garden&&state.garden.seedHouse;
+      if(!wk||!wk.wordIds||!wk.wordIds.length)return ['🌱','Ready for a new week'];
+      if(growthRunning||v11Busy)return ['💧','Something is growing!'];
+      if(v11PlantMode)return ['🌰','Choose a veggie bed'];
+      if(d.ended)return ['🌙','Garden resting happily'];
+      if(d.phase==='focus')return ['💧','Watering adventure'];
+      if(d.phase==='review')return ['🌰','Seed mission'];
+      if(sh&&sh.seeds&&sh.seeds.length)return ['🌱','A seed is waiting!'];
+      if(!d.bonusSunDone&&selectBonusWord())return ['☀️','Sunshine is ready'];
+      return ['🌷','Today’s garden is happy'];
+    }catch(e){return ['✨','Garden adventure']}
+  }
+
+  function v152MigrateLayout(){
+    try{
+      v11NormalizeGarden();
+      if(Number(state.garden.layoutVersion||0)>=152)return;
+      (state.garden.flowerSpots||[]).forEach((f,i)=>{let p=V152_FLOWER_POS[i%V152_FLOWER_POS.length];f.x=p[0];f.y=p[1]});
+      (state.garden.residents||[]).forEach((a,i)=>{let p=V152_RESIDENT_POS[i%V152_RESIDENT_POS.length];a.x=p[0];a.y=p[1]});
+      (state.garden.specialItems||[]).forEach((s,i)=>{if(s.type==='treehouse'){s.x=84;s.y=26}else{let p=V152_SPECIAL_POS[i%V152_SPECIAL_POS.length];s.x=p[0];s.y=p[1]}});
+      state.garden.layoutVersion=152;save();
+    }catch(e){console.error('v0.15.2 layout migration recovery',e)}
+  }
+
+  // Fix watering coordinates to match the new two-bed positions.
+  v11WaterTarget=function(){
+    let growing=[];
+    state.garden.farmPlots.slice(0,2).forEach((p,i)=>{if(p&&p.stage>0&&p.stage<4)growing.push({kind:'veg',index:i,stage:p.stage,plantedAt:p.plantedAt||0,x:V152_PLOT_POS[i][0],y:V152_PLOT_POS[i][1]})});
+    if(growing.length){growing.sort((a,b)=>b.stage-a.stage||a.plantedAt-b.plantedAt);return growing[0]}
+    let flowers=state.garden.flowerSpots.filter(f=>f.stage>0&&f.stage<4);if(flowers.length){let f=flowers[0];return{kind:'flower',id:f.id,x:f.x,y:f.y,stage:f.stage}}
+    let empty=state.garden.flowerSpots.find(f=>f.stage===0);if(empty)return{kind:'flower',id:empty.id,x:empty.x,y:empty.y,stage:0};
+    let f=state.garden.flowerSpots.find(f=>f.stage===4)||state.garden.flowerSpots[0];return f?{kind:'flowerFull',id:f.id,x:f.x,y:f.y,stage:4}:null;
+  };
+
+  v11RenderPlants=function(stage){
+    state.garden.flowerSpots.forEach(f=>{if(!f.stage)return;let el=document.createElement('div');el.className='v11-plant v11-flower'+(f.special?' special':'');el.style.left=f.x+'%';el.style.top=f.y+'%';el.innerHTML=v11PlantSVG(f,'flower');stage.appendChild(el)});
+    state.garden.farmPlots.slice(0,2).forEach((p,i)=>{
+      if(!p)return;let pos=V152_PLOT_POS[i],el=document.createElement('div');
+      el.className='v11-plant v11-veg'+(p.stage===4?' ready':'')+(p.stage===1?' seed-stage':'');el.style.left=pos[0]+'%';el.style.top=pos[1]+'%';
+      el.innerHTML=v11PlantSVG(p,'veg')+(p.stage===1?'<span class="v152-seed-spark">🌱</span><span class="v152-seed-tag">PLANTED</span>':'')+(p.stage===4?'<span class="v11-ready-star">✨</span>':'');
+      if(p.stage===4){el.onclick=e=>{e.stopPropagation();v11Harvest(i)}}stage.appendChild(el)
+    });
+  };
+
+  v11Harvest=function(i){
+    if(v11Busy)return;let p=state.garden.farmPlots[i];if(!p||p.stage<4)return;v11Busy=true;
+    try{if(window.MWG_GROWTH_AWARD)window.MWG_GROWTH_AWARD(1,'harvest','Harvest')}catch(e){}
+    let veg=v11Veg(p.type),stage=document.getElementById('world'),resident=stage&&stage.querySelector('.v11-resident');if(resident)resident.classList.add('eating');
+    let pos=V152_PLOT_POS[i]||V152_PLOT_POS[0],bubble=document.createElement('div');bubble.className='v11-harvest-bubble';bubble.style.left=pos[0]+'%';bubble.style.top=(pos[1]-10)+'%';bubble.textContent='Yum! '+veg.emoji+' 💛';if(stage)stage.appendChild(bubble);ding();
+    setTimeout(()=>{state.garden.farmPlots[i]=null;v11Busy=false;save();renderGarden();v11Notice('😊 Yum! That veggie bed is ready for another seed.',2400)},1500);
+  };
+
+  v11StageMarkup=function(){return `<div class="v152-dashboard"><div class="v152-topbar"><div class="v152-title"><span class="v152-kicker">✨ TODAY'S GARDEN ADVENTURE</span><h2>Miori's Garden</h2><div class="subtitle">Every word makes this little world grow.</div></div><div class="v152-top-right"><div class="v152-mood" id="v152Mood">🌱 Ready to grow</div><div class="v11-week-chip" id="weekHint">This Week</div></div></div><div id="rewardArea"></div><div class="v152-stage-shell"><div class="v152-scene-grid"><div class="viewport v11-stage" id="viewport"><div class="world" id="world"><img class="v11-base" src="${v12Background()}" alt="Miori's garden"><div class="v11-flower-meadow"></div><div class="v11-farm-surface"><i class="v11-soil p1"></i><i class="v11-soil p2"></i><span>VEGGIE BEDS</span></div><div class="v11-fountain-glow"></div><button class="v11-hotspot v11-seed-house" id="v11SeedHouse" aria-label="Open Seed House"></button><div class="v11-seed-count" id="v11SeedCount">🌰 0 / 5</div><button class="v11-plot p1" data-plot="0" aria-label="Veggie bed 1"></button><button class="v11-plot p2" data-plot="1" aria-label="Veggie bed 2"></button><button class="v11-challenge-sign locked" id="v11ChallengeSign"><span>🔒 Weekly Challenge</span><small id="v11ChallengeSmall">Finish Focus Words</small><div class="v11-progress"><i id="v11ChallengeProgress"></i></div></button><div class="v11-notice" id="v11Notice"></div></div></div><aside class="v152-journey-slot" id="v152JourneySlot" aria-label="Garden level journey"></aside></div><div class="v152-menu-slot" id="v152MenuSlot"><div class="v11-stage-dock" id="v126GardenMenu"><button class="v11-stage-btn" id="v11Focus"><span class="ico">💧</span><span>Focus Words</span><small>Learn · water</small></button><button class="v11-stage-btn" id="v11Review"><span class="ico">🌰</span><span>Quick Review</span><small>Review · seed</small></button><button class="v11-stage-btn" id="v11Bonus"><span class="ico">☀️</span><span>Bonus Sun</span><small>My Words · sunshine</small></button><button class="v11-stage-btn" id="challengeBtn"><span class="ico">🔒</span><span>Challenge</span><small>Unlock a friend</small></button></div></div><div class="v11-under"><div class="v11-session"><div id="sessionBanner"></div><p id="todayText"></p></div><div class="v11-actions" id="gardenActions"></div></div></div><div id="challengeCard" style="display:none"><p id="challengeText"></p></div></div>`};
+
+  function v152PostRender(){
+    let viewport=document.getElementById('viewport'),journey=document.getElementById('v152JourneySlot'),menu=document.getElementById('v152MenuSlot'),card=document.querySelector('.v147-growth-card'),dock=document.getElementById('v126GardenMenu');
+    if(card&&journey&&card.parentElement!==journey)journey.appendChild(card);
+    if(dock&&menu&&dock.parentElement!==menu)menu.appendChild(dock);
+    let mood=document.getElementById('v152Mood'),m=v152Mood();if(mood)mood.textContent=m[0]+' '+m[1];
+    let build=document.getElementById('mwgRuntimeBuild');if(build)build.textContent='Build v0.15.2 · Garden Joy + Clear Zones';
+  }
+
+  // The previous one-screen renderer still does the learning-state wiring; this layer only
+  // changes where its visual pieces live after every redraw.
+  const v152RenderBase=renderGarden;
+  renderGarden=function(){v152MigrateLayout();let out=v152RenderBase();try{v152PostRender()}catch(e){console.error('v0.15.2 post-render recovery',e)}return out};
+
+  // Make the main navigation feel like part of the game without changing screen behavior.
+  try{
+    let tabs=document.querySelectorAll('.tab');if(tabs[0])tabs[0].textContent='🌿 Garden';if(tabs[1])tabs[1].textContent='✏️ Play';if(tabs[2])tabs[2].textContent='⚙️ Parent';
+    let brand=document.querySelector('.brand');if(brand)brand.textContent="🌷 Miori's Word Garden";
+    v152MigrateLayout();gardenSection.innerHTML=v11StageMarkup();renderGarden();
+  }catch(e){console.error('v0.15.2 Garden boot recovery',e)}
+
+  window.addEventListener('resize',()=>{if(document.getElementById('garden')?.classList.contains('active')){try{v152PostRender()}catch(e){}}},{passive:true});
+  window.MWG_DIAGNOSTICS=window.MWG_DIAGNOSTICS||{};window.MWG_DIAGNOSTICS.version='0.15.2-garden-joy-clear-zones';window.MWG_DIAGNOSTICS.gardenLayout='v0.15.2-split-scene-visible-seeds';
+  window.MWG_TEST_HOOKS=window.MWG_TEST_HOOKS||{};window.MWG_TEST_HOOKS.v152Layout=()=>({plots:state.garden.farmPlots.slice(0,2),flowers:state.garden.flowerSpots.map(f=>[f.x,f.y]),layoutVersion:state.garden.layoutVersion});
+})();
+
+try{let b=document.getElementById('mwgRuntimeBuild');if(b)b.textContent='Build v0.15.2 · Garden Joy + Clear Zones'}catch(e){}
