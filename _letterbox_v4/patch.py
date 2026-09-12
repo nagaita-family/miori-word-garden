@@ -1,0 +1,82 @@
+from pathlib import Path
+import re
+
+p = Path('index.html')
+s = p.read_text()
+
+css = r'''
+/* LETTER_BOX_WRITING_V4_20260913 */
+.spellwrap{width:min(760px,100%);margin:14px auto 0;text-align:center}
+.spellinput{position:relative;width:100%;padding:5px 0}
+.tileword{display:grid;grid-template-columns:repeat(var(--letters),minmax(0,1fr));gap:6px;width:100%;position:relative;z-index:1}
+.lettertile{height:64px;border:2px solid #d9cdbf;border-radius:15px;background:#fffdfa;display:grid;place-items:center;font-size:clamp(19px,4vw,31px);font-weight:950;text-transform:lowercase;box-shadow:inset 0 -7px #faf5ee;transition:.15s ease;color:#544b48;min-width:0}
+.lettertile.fixed{background:#f0ece6;border-color:#ded4c8;color:#746a65;box-shadow:none}
+.lettertile.filled{background:#fffaf2;border-color:#cdbba8}
+.lettertile.ok{background:#e9f4e7;border-color:#84b38a;color:#467654;box-shadow:none}
+.lettertile.bad{background:#fae8e8;border-color:#d98686;color:#a44e4e;box-shadow:none}
+.lettertile.missing{background:#fff7f6;border-color:#dc8c8c;border-style:dashed;box-shadow:none}
+.lettertile.active{border-color:#b8a1cf;box-shadow:0 0 0 3px #bba8d327,inset 0 -7px #faf5ee}
+.lettertile.hintfocus{background:#eee5f8;border-color:#8f6fb2;color:#654d7d;box-shadow:0 0 0 5px #a98dc42f;animation:hintpulse 1.1s ease-in-out infinite}
+@keyframes hintpulse{50%{transform:translateY(-2px);box-shadow:0 0 0 8px #a98dc418}}
+.scribbleCapture{position:absolute;inset:5px 0;width:100%;height:64px;z-index:3;border:0;outline:0;background:transparent;color:transparent;-webkit-text-fill-color:transparent;caret-color:transparent;font-size:36px;letter-spacing:.15em;text-align:center;border-radius:15px}
+.scribbleCapture::selection{background:transparent}
+.handtip{margin-top:8px;color:var(--muted);font-size:11px;font-weight:750}
+.handtip b{color:#6e5a80}
+.inlinehint{margin:13px auto 2px;background:#f4eef9;border:1.5px solid #d4c2e4;border-radius:20px;padding:13px 14px;width:min(560px,100%);box-shadow:0 8px 20px #65507515}
+.inlinehint .hintlead{font-weight:950;color:#665178;font-size:13px}
+.inlinehint .hintprompt{color:#6f646f;font-size:11px;margin:4px 0 10px}
+.inlinehint .hchoices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0}
+.inlinehint .hchoices button{height:52px;border:2px solid transparent;border-radius:15px;background:#fffdf8;font-size:23px;font-weight:950}
+.inlinehint .hchoices button.nope{border-color:#e09a9a;background:#fae8e8;color:#a85050;animation:hintshake .2s linear 2}
+.inlinehint .removechoice{grid-column:1/-1;font-size:15px!important}
+.inlinehint .hintbackbtn{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800;margin-top:8px;padding:5px 10px}
+.boxmode{display:inline-block;margin-top:7px;padding:4px 8px;border-radius:99px;background:#f1eaf7;color:#6c587d;font-size:9px;font-weight:900;letter-spacing:.06em}
+@media(max-width:560px){.tileword{gap:3px}.lettertile{height:54px;border-radius:11px;font-size:clamp(16px,5.8vw,24px)}.scribbleCapture{height:54px}.inlinehint{padding:11px}.inlinehint .hchoices button{height:48px}}
+@media(max-height:700px) and (min-width:700px){.lettertile{height:52px}.scribbleCapture{height:52px}.spellwrap{margin-top:9px}.handtip{margin-top:5px}.inlinehint{margin-top:8px;padding:10px}}
+'''
+s = s.replace('</style>', css + '\n</style>', 1)
+
+anchor = "function playView(){closeHint();if(!P)"
+if anchor not in s:
+    raise SystemExit('playView anchor missing')
+s = s.replace(anchor, "function playView(){if(!P)", 1)
+focus = "if(q.stage>=3)setTimeout(()=>$('#write')?.focus(),100)"
+if focus not in s:
+    raise SystemExit('focus anchor missing')
+s = s.replace(focus, "if(q.stage>=3&&!q.hint)setTimeout(()=>$('#write')?.focus(),120)", 1)
+
+writing = r'''function practiceTarget(w,q){return q.stage===3?{text:w.word.slice(q.r.start,q.r.end),start:q.r.start,end:q.r.end}:{text:w.word,start:0,end:w.word.length}}
+function alignChars(target,typed){target=norm(target);typed=norm(typed);let n=target.length,m=typed.length,d=Array.from({length:n+1},()=>Array(m+1).fill(0));for(let i=0;i<=n;i++)d[i][0]=i;for(let j=0;j<=m;j++)d[0][j]=j;for(let i=1;i<=n;i++)for(let j=1;j<=m;j++)d[i][j]=Math.min(d[i-1][j-1]+(target[i-1]===typed[j-1]?0:1),d[i-1][j]+1,d[i][j-1]+1);let slots=Array(n),extras=[],i=n,j=m;while(i||j){let diag=i&&j?d[i-1][j-1]+(target[i-1]===typed[j-1]?0:1):1e9;if(i&&j&&d[i][j]===diag){let same=target[i-1]===typed[j-1];slots[i-1]={expected:target[i-1],typed:typed[j-1],typedIndex:j-1,insertAt:j-1,state:same?'ok':'bad'};i--;j--;continue}if(i&&d[i][j]===d[i-1][j]+1){slots[i-1]={expected:target[i-1],typed:'',typedIndex:null,insertAt:j,state:'missing'};i--;continue}if(j){extras.push({char:typed[j-1],typedIndex:j-1,before:i});j--}}return{slots,extras:extras.reverse(),typed}}
+function writingTiles(w,q){let p=practiceTarget(w,q),raw=norm(q.answer),a=alignChars(p.text,raw),bad=!!q.feedback?.bad,h=q.hint?.fullIndex,out=[],next=raw.length<p.text.length?p.start+raw.length:-1;for(let j=0;j<w.word.length;j++){if(q.stage===3&&(j<p.start||j>=p.end)){out.push(`<span class="lettertile fixed">${w.word[j]}</span>`);continue}let rel=j-p.start,slot=a.slots[rel],shown='',cls='';if(bad){shown=slot?.typed||'';cls=slot?.state==='ok'?'ok':slot?.state==='bad'?'bad':'missing'}else{shown=raw[rel]||'';cls=shown?'filled':'';if(!q.hint&&j===next)cls+=' active'}if(j===h)cls+=' hintfocus';out.push(`<span class="lettertile ${cls.trim()}">${esc(shown)}</span>`)}return out.join('')}
+function inlineHint(w,q){let h=q.hint;if(!h)return'<div id="inlineHint"></div>';if(h.kind==='remove')return`<div class="inlinehint" id="inlineHint"><div class="hintlead">✨ This extra letter does not belong.</div><div class="hintprompt">The purple box shows where the spelling got off track.</div><div class="hchoices"><button class="removechoice" data-removehint="1">Remove “${esc(h.extraChar)}”</button></div><button class="hintbackbtn" id="hintBack">Keep writing</button></div>`;return`<div class="inlinehint" id="inlineHint"><div class="hintlead">✨ Fix the purple box</div><div class="hintprompt">Letter ${h.fullIndex+1} of ${w.word.length} · Which letter belongs here?</div><div class="hchoices">${h.options.map(x=>`<button data-h="${x}">${x}</button>`).join('')}</div><button class="hintbackbtn" id="hintBack">Keep writing</button></div>`}
+function answer(w,q){let r=q.r;if(q.stage===1)return`<div class="choices">${q.choices.map(c=>`<button class="choice ${q.wrong.includes(c)?'wrong':''}" data-c="${c}">${c}</button>`).join('')}</div>`;if(q.stage===2)return`<div class="gap"><span>${w.word.slice(0,r.start)}</span><span class="blank">${'_'.repeat(r.end-r.start)}</span><span>${w.word.slice(r.end)}</span></div><div class="choices">${q.choices.map(c=>`<button class="choice ${q.wrong.includes(c)?'wrong':''}" data-c="${c}">${c}</button>`).join('')}</div>`;return`<div class="spellwrap"><span class="boxmode">LETTER BOX MODE</span><div class="spellinput"><div class="tileword" id="tileword" style="--letters:${w.word.length}">${writingTiles(w,q)}</div><input id="write" class="scribbleCapture" value="${esc(q.answer)}" inputmode="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Write the spelling here"></div><div class="handtip">✎ <b>Write across the boxes</b> with Apple Pencil — one letter lands in each box.</div>${inlineHint(w,q)}</div><button class="check" id="check">Check</button>`}
+function feedback(w,q){if(!q.feedback)return'';if(!q.feedback.bad)return'<div class="feedback good"><div><b>Yes! 🌱</b><small>That spelling is growing strong.</small></div></div>';return`<div class="feedback"><div><b>Almost — check the colored boxes.</b><small>Green is right. Red needs another try. Hint will point to one purple box.</small></div><button id="again">Try again</button></div>`}
+function refreshTiles(w,q){let t=$('#tileword');if(t)t.innerHTML=writingTiles(w,q)}
+function bindPlay(w,q){$('#listen')?.addEventListener('click',()=>speak(w,false));$$('[data-c]').forEach(b=>b.onclick=()=>pick(b.dataset.c));let i=$('#write');if(i){i.oninput=e=>{let p=practiceTarget(w,q);q.answer=norm(e.target.value).slice(0,p.text.length);e.target.value=q.answer;q.feedback=null;q.hint=null;$$('.feedback,.letters').forEach(x=>x.remove());let ih=$('#inlineHint');if(ih)ih.innerHTML='';refreshTiles(w,q)};i.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();check()}}}$('#check')?.addEventListener('click',check);$('#again')?.addEventListener('click',()=>{q.feedback=null;q.hint=null;playView()});$('#hintBack')?.addEventListener('click',()=>{q.hint=null;playView()});$$('[data-h]').forEach(b=>b.onclick=()=>chooseHint(b.dataset.h,b));$('[data-removehint]')?.addEventListener('click',removeHintExtra);$$('[data-s]').forEach(b=>b.onclick=()=>help(b.dataset.s,w,q))}
+function pick(c){let q=P.q,w=S.lib[q.id],correct=q.stage===1?w.word:w.word.slice(q.r.start,q.r.end);if(norm(c)===norm(correct))right(w,q);else{if(!q.wrong.includes(c))q.wrong.push(c);wrong(w,q,c,correct,q.stage===2?q.r.start:0);q.feedback={bad:true,typed:c};playView();tone('wrong')}}
+function check(){let q=P.q,w=S.lib[q.id];q.answer=norm($('#write')?.value||q.answer);let correct=q.stage===3?w.word.slice(q.r.start,q.r.end):w.word;if(norm(q.answer)===norm(correct))right(w,q);else{wrong(w,q,q.answer,correct,q.stage===3?q.r.start:0);q.feedback={bad:true,typed:q.answer};q.hint=null;playView();tone('wrong')}}
+function wrong(w,q,a,c,off)'''
+s, n = re.subn(r"function answer\(w,q\)\{.*?\}\nfunction wrong\(w,q,a,c,off\)", writing, s, count=1, flags=re.S)
+if n != 1:
+    raise SystemExit(f'writing block replacement count {n}')
+
+hints = r'''function makeHint(w,q){let p=practiceTarget(w,q),a=alignChars(p.text,q.answer),idx=a.slots.findIndex(x=>x&&x.state!=='ok');if(idx<0&&a.extras.length){let ex=a.extras[0],full=p.start+Math.min(ex.before,p.text.length-1);return{kind:'remove',typedIndex:ex.typedIndex,extraChar:ex.char,fullIndex:Math.max(p.start,full)}}if(idx<0)idx=Math.min(norm(q.answer).length,p.text.length-1);idx=Math.max(0,idx);let slot=a.slots[idx]||{expected:p.text[idx],typedIndex:null,insertAt:idx,state:'missing'},correct=p.text[idx],fullIndex=p.start+idx,last=norm(w.learn.lastWrong||''),old=q.stage===3?last[idx]||'':last[fullIndex]||'',typed=slot.typed||'',map={b:['p','d'],p:['b','d'],d:['b','t'],e:['i','a'],i:['e','y'],y:['i','e'],c:['k','s'],k:['c','g'],s:['c','z'],t:['d','f'],a:['e','o'],o:['a','u'],u:['o','a'],l:['r','i'],r:['l','n'],g:['j','c'],h:['w','n']},alts=[];if(typed&&typed!==correct)alts.push(typed);if(old&&old!==correct)alts.push(old);for(let x of (map[correct]||['a','e','i']))if(x&&x!==correct)alts.push(x);alts=[...new Set(alts)];while(alts.length<2){let x='abcdefghijklmnopqrstuvwxyz'[(fullIndex+alts.length*7)%26];if(x!==correct&&!alts.includes(x))alts.push(x)}return{kind:'letter',relIndex:idx,fullIndex,correct,options:shuffle([correct,...alts.slice(0,2)])}}
+function openInlineHint(w,q){w.learn.hints++;save();speak(w,true);q.hint=makeHint(w,q);playView();setTimeout(()=>$('#write')?.blur(),140)}
+function chooseHint(c,btn){let q=P.q,w=S.lib[q.id],h=q.hint;if(!h||h.kind!=='letter')return;if(c!==h.correct){tone('wrong');btn?.classList.remove('nope');if(btn){void btn.offsetWidth;btn.classList.add('nope')}return}let p=practiceTarget(w,q),a=alignChars(p.text,q.answer),slot=a.slots[h.relIndex]||{},chars=[...norm(q.answer)];if(slot.typedIndex==null)chars.splice(slot.insertAt??h.relIndex,0,c);else chars[slot.typedIndex]=c;q.answer=chars.join('').slice(0,p.text.length);q.hint=null;q.feedback=norm(q.answer)===p.text?null:{bad:true,typed:q.answer};tone('right');playView()}
+function removeHintExtra(){let q=P.q,w=S.lib[q.id],h=q.hint;if(!h||h.kind!=='remove')return;let p=practiceTarget(w,q),chars=[...norm(q.answer)];chars.splice(h.typedIndex,1);q.answer=chars.join('').slice(0,p.text.length);q.hint=null;q.feedback=norm(q.answer)===p.text?null:{bad:true,typed:q.answer};tone('right');playView()}
+function help(t,w,q){if(t==='peek'){w.learn.peeks++;save();speak(w,true);let e=document.createElement('div');e.className='peek';e.innerHTML=`<b>${w.word}</b>`;document.body.appendChild(e);setTimeout(()=>e.remove(),2050);return}if(t==='hint'){openInlineHint(w,q);return}support=support===t?'':t;playView()}
+function speak(w,slow)'''
+s, n = re.subn(r"function closeHint\(refocus=false\).*?\nfunction speak\(w,slow\)", hints, s, count=1, flags=re.S)
+if n != 1:
+    raise SystemExit(f'hint block replacement count {n}')
+
+p.write_text(s)
+
+Path('sw.js').write_text("""const CACHE='mwg-v2-letterboxes-v4-20260913';
+const CORE=['./','./index.html'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>{if(e.request.mode==='navigate'){e.respondWith(fetch(e.request,{cache:'no-store'}).then(r=>{let copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))));return}e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))});
+""")
+
+Path('netlify.toml').write_text('''[build]\n  publish = "."\n\n[[headers]]\n  for = "/*"\n  [headers.values]\n    X-Content-Type-Options = "nosniff"\n    Referrer-Policy = "strict-origin-when-cross-origin"\n    Permissions-Policy = "microphone=(), camera=(), geolocation=()"\n    Cache-Control = "no-cache, no-store, must-revalidate"\n''')
