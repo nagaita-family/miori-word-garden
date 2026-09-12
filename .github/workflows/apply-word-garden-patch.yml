@@ -48,5 +48,5 @@ jobs:
             echo 'No changes to commit.'
             exit 0
           fi
-          git commit -m 'Update Word Garden to v0.15.0 human voice pack'
+          git commit -m 'Update Word Garden to v0.15.1 one-screen garden'
           git push
