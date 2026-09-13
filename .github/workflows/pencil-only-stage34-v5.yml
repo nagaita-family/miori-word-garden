@@ -15,118 +15,25 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Patch Pencil-only interaction
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          p=Path('index.html')
-          s=p.read_text()
-          marker='PENCIL_ONLY_STAGE34_V5_20260913'
-          if marker in s:
-              print('already patched')
-              raise SystemExit(0)
-
-          css=r'''
-/* PENCIL_ONLY_STAGE34_V5_20260913 */
-.play.pencilonly,.play.pencilonly .card,.play.pencilonly .spellwrap,.play.pencilonly .spellinput,.play.pencilonly .tileword,.play.pencilonly .lettertile{
-  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
-}
-.play.pencilonly .spellinput{touch-action:none;overscroll-behavior:none;isolation:isolate;padding:8px 0}
-.play.pencilonly .scribbleCapture{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-.play.pencilonly .scribbleCapture::selection{background:transparent;color:transparent}
-.play.pencilonly.stage4 .spellwrap{width:min(900px,100%)}
-.play.pencilonly.stage4 .lettertile{height:76px;border-radius:17px;font-size:clamp(22px,4.2vw,34px)}
-.play.pencilonly.stage4 .tileword{gap:8px}
-.play.pencilonly.stage4 .scribbleCapture{height:76px}
-.pencilguide{display:flex;justify-content:center;align-items:center;gap:18px;margin:9px auto 0;color:#6e6570;font-size:12px;font-weight:850;pointer-events:none}
-.pencilguide span{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;background:#f5f0ea}
-.pencilguide .writeicon{background:#eef4e9;color:#58705a}
-.pencilguide .eraseicon{background:#f4eef9;color:#705c78}
-.play.pencilonly .boxmode{display:none}
-.play.pencilonly .handtip,.play.pencilonly .erasetip{display:none}
-.play.pencilonly.stage4 .q p{margin-bottom:5px}
-@media(max-width:700px){.play.pencilonly.stage4 .lettertile{height:62px;border-radius:13px}.play.pencilonly.stage4 .scribbleCapture{height:62px}.play.pencilonly.stage4 .tileword{gap:4px}.pencilguide{gap:8px}}
-'''
-          s=s.replace('</style>',css+'\n</style>',1)
-
-          old='<section class="play"><div class="card"><div class="pips">${[1,2,3,4].map(n=>`<i class="pip ${n<q.stage?\'done\':n===q.stage?\'now\':\'\'}"></i>`).join(\'\')}</div>'
-          new='<section class="play ${q.stage>=3?`pencilonly stage${q.stage}`:``}"><div class="card"><div class="pips">${[1,2,3,4].map(n=>`<i class="pip ${n<q.stage?\'done\':n===q.stage?\'now\':\'\'}"></i>`).join(\'\')}</div>'
-          if old not in s:
-              raise SystemExit('play section anchor not found')
-          s=s.replace(old,new,1)
-
-          s=s.replace("${q.stage>=3?'Write directly with Apple Pencil using iPad Scribble.':'Listen carefully, then choose.'}","${q.stage>=3?'Apple Pencil only. Write directly in the boxes.':'Listen carefully, then choose.'}",1)
-          s=s.replace("setTimeout(()=>$('#write')?.focus(),120)","setTimeout(()=>{let i=$('#write');try{i?.focus({preventScroll:true})}catch{i?.focus()}},120)",1)
-
-          old_input='<input id="write" class="scribbleCapture" value="${esc(q.answer)}" inputmode="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Write the spelling here">'
-          new_input='<input id="write" class="scribbleCapture" value="${esc(q.answer)}" inputmode="none" virtualkeyboardpolicy="manual" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Apple Pencil spelling area">'
-          if old_input not in s:
-              raise SystemExit('write input anchor not found')
-          s=s.replace(old_input,new_input,1)
-
-          old_guide='<div class="handtip">✎ <b>Write across the boxes</b> with Apple Pencil — one letter lands in each box.</div><div class="erasetip" aria-label="Scratch a letter with Apple Pencil to erase">✎ Scratch the letter box to erase</div>${inlineHint(w,q)}'
-          new_guide='<div class="pencilguide" aria-hidden="true"><span class="writeicon">✎ → □</span><span class="eraseicon">〰︎〰︎ → ⌫</span></div>${inlineHint(w,q)}'
-          if old_guide not in s:
-              raise SystemExit('pencil guide anchor not found')
-          s=s.replace(old_guide,new_guide,1)
-
-          anchor='function bindPencilErase(w,q,i){'
-          if anchor not in s:
-              raise SystemExit('bindPencilErase anchor not found')
-          helper=r'''function bindPencilOnly(w,q,i){let zone=i?.closest('.spellinput');if(!zone||!i)return;const collapse=()=>{if(document.activeElement!==i)return;try{let a=i.selectionStart??0,b=i.selectionEnd??a;if(a!==b){let pos=Number.isInteger(q.eraseAt)?a:b;i.setSelectionRange(pos,pos)}}catch{}};i.onselect=()=>requestAnimationFrame(collapse);document.onselectionchange=()=>requestAnimationFrame(collapse);zone.oncontextmenu=e=>e.preventDefault();zone.ondragstart=e=>e.preventDefault();zone.addEventListener('selectstart',e=>{if(e.target!==i)e.preventDefault()},true);zone.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'){e.preventDefault();try{i.blur()}catch{};return}if(e.pointerType==='pen'){try{i.focus({preventScroll:true})}catch{i.focus()}}},true);zone.addEventListener('pointermove',e=>{if(e.pointerType==='touch')e.preventDefault()}, {capture:true,passive:false});i.addEventListener('focus',()=>{requestAnimationFrame(()=>{try{let pos=Number.isInteger(q.eraseAt)?Math.min(q.eraseAt,i.value.length):i.value.length;i.setSelectionRange(pos,pos)}catch{}})});}
-'''
-          s=s.replace(anchor,helper+anchor,1)
-
-          old='bindPencilErase(w,q,i);syncScribbleGeometry(w,q,i);requestAnimationFrame(()=>syncScribbleGeometry(w,q,i))'
-          new='bindPencilOnly(w,q,i);bindPencilErase(w,q,i);syncScribbleGeometry(w,q,i);requestAnimationFrame(()=>syncScribbleGeometry(w,q,i))'
-          if old not in s:
-              raise SystemExit('bindPlay call anchor not found')
-          s=s.replace(old,new,1)
-
-          # Make stage-4 native text geometry roomier and deterministic.
-          old_geom="let font=Math.max(22,Math.min(36,fr.width*.68)),glyph=font*.61,pad=Math.max(0,(fr.width-glyph)/2),spacing=Math.max(0,step-glyph);"
-          new_geom="let font=Math.max(22,Math.min(q.stage===4?40:36,fr.width*(q.stage===4?.72:.68))),glyph=font*.61,pad=Math.max(0,(fr.width-glyph)/2),spacing=Math.max(0,step-glyph);"
-          if old_geom not in s:
-              raise SystemExit('geometry anchor not found')
-          s=s.replace(old_geom,new_geom,1)
-
-          p.write_text(s)
-
-          sw=Path('sw.js')
-          sws=sw.read_text()
-          sws=re.sub(r"const CACHE='[^']+';","const CACHE='mwg-v2-pencil-only-v5-20260913';",sws,count=1)
-          sw.write_text(sws)
-          PY
-
+      - name: Apply Pencil-only patch
+        run: python _pencil_v5/patch.py
       - name: Validate JavaScript and behavior markers
-        shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
           s=Path('index.html').read_text()
           m=re.search(r'<script>(.*)</script>',s,re.S)
-          if not m: raise SystemExit('script missing')
+          if not m:
+              raise SystemExit('script missing')
           Path('/tmp/app.js').write_text(m.group(1))
-          required=[
-            'PENCIL_ONLY_STAGE34_V5_20260913',
-            'function bindPencilOnly',
-            'inputmode="none"',
-            'virtualkeyboardpolicy="manual"',
-            'touch-action:none',
-            'pencilonly stage${q.stage}',
-            'bindPencilOnly(w,q,i);bindPencilErase(w,q,i)'
-          ]
+          required=['PENCIL_ONLY_STAGE34_V5_20260913','function bindPencilOnly','inputmode="none"','virtualkeyboardpolicy="manual"','touch-action:none','pencilonly stage${q.stage}','bindPencilOnly(w,q,i);bindPencilErase(w,q,i)']
           for x in required:
-              if x not in s: raise SystemExit('missing '+x)
+              if x not in s:
+                  raise SystemExit('missing '+x)
           PY
           node --check /tmp/app.js
-
       - name: Commit and push
-        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
