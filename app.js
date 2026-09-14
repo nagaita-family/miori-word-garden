@@ -31,11 +31,11 @@ const WORD_CHUNKS={
   thicket:['thick','et']
 };
 const rewards=[
-{id:'bunny',xp:0,type:'rabbit',x:51,y:64},
-{id:'bench',xp:70,type:'treasure',emoji:'🪑',x:25,y:72},
-{id:'lamp',xp:140,type:'treasure',emoji:'🏮',x:78,y:70},
-{id:'mail',xp:220,type:'treasure',emoji:'📮',x:17,y:55},
-{id:'cat',xp:310,type:'treasure',emoji:'🐱',x:69,y:62}
+{id:'bunny',xp:0,type:'rabbit',label:'Bunny',icon:'🐰',x:51,y:64},
+{id:'bench',xp:70,type:'treasure',label:'Cozy heart bench',icon:'🩷',x:25,y:72},
+{id:'picnic',xp:140,type:'treasure',label:'Strawberry picnic',icon:'🍓',x:78,y:70},
+{id:'mail',xp:220,type:'treasure',label:'Heart mailbox',icon:'💌',x:17,y:55},
+{id:'cat',xp:310,type:'friend',label:'Garden cat',icon:'🐱',x:69,y:62}
 ];
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -55,9 +55,10 @@ let musicGain=null;
 let bgmTimer=null;
 let audioUnlocked=false;
 let gardenCelebration=null;
+let gardenInteraction=null;
 
 function learning(word){return{attempts:0,correct:0,first:0,mistakes:0,stageMist:{1:0,2:0,3:0,4:0},weak:Array(word.length).fill(0),lastWrong:'',last:'',hints:0,peeks:0,loops:0}}
-function defaultState(){return{version:3,xp:0,week:{id:'2026-09-17-unit-5a',title:'Sept 17 · Unit 5A',ids:[]},lib:{},garden:{growth:0,pos:{},bunnySeated:false},settings:{sound:true,music:true,voice:''},stats:{answers:0,sessions:0}}}
+function defaultState(){return{version:3,xp:0,week:{id:'2026-09-17-unit-5a',title:'Sept 17 · Unit 5A',ids:[]},lib:{},garden:{growth:0,pos:{},bunnySeated:false},settings:{sound:true,music:false,musicV2:true,voice:''},stats:{answers:0,sessions:0}}}
 function emojiFor(word){return({beetle:'🪲',butterfly:'🦋',cricket:'🦗',grasshopper:'🦗',honeybee:'🐝',insect:'🔎',ladybug:'🐞',raisin:'🍇',riding:'🚲',thicket:'🌿'})[word]||'✦'}
 function normalizeWord(raw={},old=null){
   const word=norm(raw.word||old?.word||'');
@@ -82,7 +83,7 @@ function loadState(){
   if(!s)s=defaultState();
   if(s.version===2){s.version=3;s.stats=s.stats||{answers:0,sessions:0};s.settings=s.settings||{sound:true,voice:''};s.garden=s.garden||{growth:0,pos:{}};s.week=s.week||{id:'',title:'This Week',ids:[]};const next={};for(const [id,w] of Object.entries(s.lib||{})){const n=normalizeWord(w,w);next[n.id||id]=n}s.lib=next}
   if(s.version!==3)s={...defaultState(),...s,version:3};
-  s.lib=s.lib||{};s.stats=s.stats||{answers:0,sessions:0};s.garden=s.garden||{growth:0,pos:{},bunnySeated:false};s.garden.pos=s.garden.pos||{};if(typeof s.garden.bunnySeated!=='boolean')s.garden.bunnySeated=false;s.settings=s.settings||{sound:true,music:true,voice:''};if(typeof s.settings.music!=='boolean')s.settings.music=true;
+  s.lib=s.lib||{};s.stats=s.stats||{answers:0,sessions:0};s.garden=s.garden||{growth:0,pos:{},bunnySeated:false};s.garden.pos=s.garden.pos||{};if(typeof s.garden.bunnySeated!=='boolean')s.garden.bunnySeated=false;s.settings=s.settings||{sound:true,music:false,musicV2:true,voice:''};if(typeof s.settings.music!=='boolean')s.settings.music=false;if(!s.settings.musicV2){s.settings.musicV2=true;s.settings.music=false;}
   seedSchoolWords(s);localStorage.setItem(STORAGE_KEY,JSON.stringify(s));return s;
 }
 let state=loadState();
@@ -90,37 +91,78 @@ function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));renderTo
 function renderTopbar(){
   const level=Math.floor(state.xp/LEVEL_XP)+1,p=state.xp%LEVEL_XP;
   $('#levelLabel').textContent=`Level ${level}`;$('#xpLabel').textContent=`${p} / ${LEVEL_XP} XP`;$('#xpFill').style.width=`${p}%`;
-  const music=$('#musicToggle');if(music){music.textContent=state.settings.music?'♫':'♪';music.classList.toggle('off',!state.settings.music);music.setAttribute('aria-label',state.settings.music?'Turn garden music off':'Turn garden music on');music.title=state.settings.music?'Garden music on':'Garden music off'}
+  const music=$('#musicToggle');if(music){music.textContent=state.settings.music?'♫':'♪';music.classList.toggle('off',!state.settings.music);music.setAttribute('aria-label',state.settings.music?'Turn garden music off':'Turn garden music on');music.title=state.settings.music?'Soft garden ambience on':'Soft garden ambience off'}
 }
 function setView(name){currentView=name;$$('.view').forEach(v=>v.classList.remove('active-view'));$(`#${name}View`).classList.add('active-view');$$('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===name));if(name==='garden')renderGarden();if(name==='play'){if(session){if(session.count>=session.goal)finishSession();else renderTask()}else renderPlayHome()}if(name==='parent')renderParent();renderTopbar();syncBgm()}
 
 function rabbitSvg(){return`<svg viewBox="0 0 130 150"><ellipse cx="43" cy="38" rx="18" ry="42" fill="#f8eee9" transform="rotate(-16 43 38)"/><ellipse cx="87" cy="38" rx="18" ry="42" fill="#f8eee9" transform="rotate(16 87 38)"/><ellipse cx="43" cy="38" rx="7" ry="28" fill="#efc1cb" transform="rotate(-16 43 38)"/><ellipse cx="87" cy="38" rx="7" ry="28" fill="#efc1cb" transform="rotate(16 87 38)"/><ellipse cx="65" cy="84" rx="48" ry="43" fill="#fffaf5"/><ellipse cx="65" cy="124" rx="35" ry="23" fill="#fffaf5"/><circle cx="48" cy="80" r="5" fill="#493f3e"/><circle cx="82" cy="80" r="5" fill="#493f3e"/><ellipse cx="65" cy="94" rx="6" ry="4" fill="#db9299"/><path d="M65 98q-8 10-15 1M65 98q8 10 15 1" fill="none" stroke="#6d5750" stroke-width="3" stroke-linecap="round"/><circle cx="36" cy="96" r="8" fill="#f5d8da"/><circle cx="94" cy="96" r="8" fill="#f5d8da"/></svg>`}
-function plant(stage){return`<div class="plant p${stage}"><i class="stem"></i><i class="leaf"></i><i class="leaf r"></i><i class="flower"></i></div>`}
+function plant(stage){return`<div class="plant p${stage}"><i class="stem"></i><i class="leaf"></i><i class="leaf r"></i><i class="bud"></i><i class="flower"></i><i class="flower mini"></i></div>`}
+function benchSvg(){return`<svg viewBox="0 0 130 100" aria-hidden="true"><rect x="18" y="48" width="94" height="16" rx="8" fill="#c88f72"/><rect x="24" y="23" width="82" height="30" rx="14" fill="#f2c1d1" stroke="#fff7" stroke-width="4"/><rect x="28" y="60" width="10" height="30" rx="5" fill="#8e6b58"/><rect x="93" y="60" width="10" height="30" rx="5" fill="#8e6b58"/><path d="M65 31c-7-9-18-1-13 7 4 6 13 11 13 11s9-5 13-11c5-8-6-16-13-7z" fill="#fff1f5"/></svg>`}
+function picnicSvg(){return`<svg viewBox="0 0 130 105" aria-hidden="true"><path d="M12 62h106l-13 34H25z" fill="#f7d6df"/><path d="M26 62l15 34M51 62l10 34M78 62l-8 34M102 62L88 96" stroke="#fff" stroke-width="5" opacity=".75"/><rect x="41" y="34" width="52" height="42" rx="12" fill="#c89467"/><path d="M50 39q15-30 34 0" fill="none" stroke="#9d6f4e" stroke-width="6" stroke-linecap="round"/><circle cx="48" cy="32" r="9" fill="#e96b78"/><circle cx="66" cy="28" r="9" fill="#ef7d86"/><circle cx="83" cy="34" r="9" fill="#e96776"/><path d="M45 23l4 8 5-8M63 19l4 8 5-8M80 25l4 8 5-8" stroke="#5f9567" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`}
+function mailboxSvg(){return`<svg viewBox="0 0 120 125" aria-hidden="true"><rect x="53" y="69" width="13" height="48" rx="6" fill="#8c6b63"/><path d="M28 32q0-22 24-22h25q24 0 24 22v44H28z" fill="#e6a7bd" stroke="#fff8" stroke-width="4"/><path d="M28 38h73" stroke="#c7859d" stroke-width="4"/><rect x="39" y="43" width="51" height="26" rx="7" fill="#fff8ef"/><path d="M40 44l25 16 25-16" fill="none" stroke="#d39ab0" stroke-width="4"/><path d="M94 18v28" stroke="#9b6578" stroke-width="5" stroke-linecap="round"/><path d="M94 18h15l-5 10 5 10H94" fill="#f6d66f"/><path d="M64 19c-6-7-14-1-10 5 3 5 10 9 10 9s7-4 10-9c4-6-4-12-10-5z" fill="#fff2f6"/></svg>`}
+function catSvg(){return`<svg viewBox="0 0 125 145" aria-hidden="true"><path d="M92 107q29-5 18-35" fill="none" stroke="#d9a273" stroke-width="12" stroke-linecap="round"/><ellipse cx="64" cy="105" rx="38" ry="31" fill="#f0bb8c"/><path d="M34 48l5-28 22 17M91 48l-5-28-22 17" fill="#e8ad7d"/><circle cx="63" cy="61" r="40" fill="#f2bd8e"/><path d="M41 58h10M76 58h10" stroke="#493f3e" stroke-width="5" stroke-linecap="round"/><path d="M58 70l5 4 5-4" fill="none" stroke="#9b6970" stroke-width="4" stroke-linecap="round"/><circle cx="39" cy="72" r="6" fill="#ef9fa7" opacity=".55"/><circle cx="87" cy="72" r="6" fill="#ef9fa7" opacity=".55"/><path d="M45 87q18 13 37 0" fill="none" stroke="#d99f74" stroke-width="5" stroke-linecap="round"/></svg>`}
+function gardenObjectArt(r){if(r.id==='bunny')return rabbitSvg();if(r.id==='bench')return benchSvg();if(r.id==='picnic')return picnicSvg();if(r.id==='mail')return mailboxSvg();if(r.id==='cat')return catSvg();return r.icon||'✦'}
 function gardenDefaultPos(id){const r=rewards.find(x=>x.id===id);return{x:r?.x??50,y:r?.y??60}}
 function gardenPos(id){return state.garden.pos[id]||gardenDefaultPos(id)}
 function bunnyDisplayPos(){const bench=gardenPos('bench');return state.garden.bunnySeated&&state.xp>=70?{x:bench.x,y:bench.y-8}:gardenPos('bunny')}
+function gardenUnlocked(id){const r=rewards.find(x=>x.id===id);return!!r&&state.xp>=r.xp}
+function gardenDistance(a,b){return Math.hypot((a?.x??0)-(b?.x??0),(a?.y??0)-(b?.y??0))}
+function triggerGardenInteraction(type,actor='bunny'){
+  const token=Date.now();gardenInteraction={type,actor,token};playSfx(type==='friends'?'correct':'sparkle');
+  setTimeout(()=>{if(gardenInteraction?.token===token){gardenInteraction=null;if(currentView==='garden'&&!gardenCelebration)renderGarden()}},2200)
+}
+function gardenReactionHtml(){
+  if(!gardenInteraction)return'';const type=gardenInteraction.type;
+  const data={seat:['bench','♡','Cozy!'],picnic:['picnic','🍓','Snack time!'],mail:['mail','💌','A letter!'],friends:['cat','♡','New friend!']}[type];if(!data)return'';
+  const p=gardenPos(data[0]);return`<div class="garden-reaction ${type}" style="left:${p.x}%;top:${Math.max(12,p.y-14)}%"><span>${data[1]}</span><b>${data[2]}</b></div>`
+}
+function growthJourneyHtml(target){if(!target)return'';return`<div class="growth-journey ${target}"><i class="journey-stem"></i><i class="journey-leaf l"></i><i class="journey-leaf r"></i><i class="journey-bud"></i><i class="journey-bloom"></i></div>`}
 function renderGarden(){
-  const a=Math.min(4,Math.floor(state.garden.growth/2));const b=Math.min(4,Math.floor(Math.max(0,state.garden.growth-4)/2));
-  const next=rewards.find(r=>state.xp<r.xp);const nextText=next?`${next.emoji||'🐰'} next surprise at ${next.xp} XP`:'✨ All current garden friends unlocked!';
-  const seatText=state.xp<70?'Keep growing — a chair surprise is coming!':state.garden.bunnySeated?'🐰 Bunny loves her chair! ♡':'🐰 Try putting Bunny on the chair!';
-  const celebration=gardenCelebration;const target=celebration?(celebration.growth<=4?'left':'right'):'';
-  const rewardCard=celebration?`<div class="reward-garden-card"><div class="reward-emoji">${esc(celebration.emoji||'🌱')}</div><div class="copy"><b>${esc(celebration.word)} made the garden grow! ✦</b><span>+${celebration.gain} XP · Watch it bloom, then keep going.</span></div><button id="gardenNextWordBtn">${celebration.finished?'Finish ✦':'Next word →'}</button></div>`:'';
+  const a=Math.min(5,Math.max(0,state.garden.growth));const b=Math.min(5,Math.max(0,state.garden.growth-5));
+  const next=rewards.find(r=>state.xp<r.xp);const nextText=next?`${next.icon||'✦'} ${next.label} at ${next.xp} XP`:'✨ All current garden surprises unlocked!';
+  const seatText=state.xp<70?'Keep growing — Bunny’s cozy bench is coming!':state.garden.bunnySeated?'🐰 Bunny is cozy on the bench ♡':'Drag Bunny to the bench, picnic, mailbox, or cat — each one reacts differently.';
+  const celebration=gardenCelebration;const target=celebration?(celebration.growth<=5?'left':'right'):'';
+  const rewardCard=celebration?`<div class="reward-garden-card"><div class="reward-emoji">${esc(celebration.emoji||'🌱')}</div><div class="copy"><b>${esc(celebration.word)} made the garden grow! ✦</b><span>+${celebration.gain} XP · Watch the shoot grow, then bloom.</span></div><button id="gardenNextWordBtn">${celebration.finished?'Finish ✦':'Next word →'}</button></div>`:'';
   const burst=celebration?`<div class="growth-burst ${target}"><span>✦</span><span>✧</span><span>🌱</span><span>✦</span></div>`:'';
-  $('#gardenView').innerHTML=`<div class="garden-view"><div class="garden-head"><div><p class="eyebrow">YOUR GARDEN</p><h1>Miori’s little spell world ✦</h1><p class="sub">${esc(state.week.title)} · ${state.garden.growth} growth moments</p></div><button class="primary-btn garden-play" id="gardenPlayBtn">${celebration?'Keep going ✦':'Play! ✦'}</button></div><div class="garden-scene ${celebration?'reward-moment':''}" id="gardenScene">${rewardCard}<div class="garden-update"><b>NEW ✦</b><span>Smoother Pencil Play · happy sounds · more garden magic</span></div><div class="next-surprise">${esc(nextText)}</div><div class="garden-spark s1">✦</div><div class="garden-spark s2">✧</div><div class="garden-spark s3">✦</div><div class="garden-butterfly b1">🦋</div><div class="garden-butterfly b2">🦋</div><div class="sun"></div><div class="cloud a"></div><div class="cloud b"></div><div class="hill back"></div><div class="hill front"></div><div class="path"></div><div class="pond"></div><div class="plot left ${target==='left'?'growth-now':''}">${plant(a)}</div><div class="plot right ${target==='right'?'growth-now':''}">${plant(b)}</div>${burst}<div id="gardenObjects"></div><div class="garden-tip">${celebration?'✨ A word became garden growth!':seatText+' &nbsp;·&nbsp; Drag friends and treasures anywhere.'}</div></div></div>`;
+  $('#gardenView').innerHTML=`<div class="garden-view"><div class="garden-head"><div><p class="eyebrow">YOUR GARDEN</p><h1>Miori’s little spell world ✦</h1><p class="sub">${esc(state.week.title)} · ${state.garden.growth} growth moments</p></div><button class="primary-btn garden-play" id="gardenPlayBtn">${celebration?'Keep going ✦':'Play! ✦'}</button></div><div class="garden-scene ${celebration?'reward-moment':''}" id="gardenScene">${rewardCard}<div class="garden-update"><b>NEW ✦</b><span>Interactive treasures · visible plant growth · softer sound</span></div><div class="next-surprise">${esc(nextText)}</div><div class="garden-spark s1">✦</div><div class="garden-spark s2">✧</div><div class="garden-spark s3">✦</div><div class="garden-butterfly b1">🦋</div><div class="garden-butterfly b2">🦋</div><div class="sun"></div><div class="cloud a"></div><div class="cloud b"></div><div class="hill back"></div><div class="hill front"></div><div class="path"></div><div class="pond"></div><div class="plot left ${target==='left'?'growth-now':''}">${plant(a)}</div><div class="plot right ${target==='right'?'growth-now':''}">${plant(b)}</div>${growthJourneyHtml(target)}${burst}${gardenReactionHtml()}<div id="gardenObjects"></div><div class="garden-tip">${celebration?'🌱 Look — stem, leaves, bud, bloom!':seatText}</div></div></div>`;
   const continuePlay=()=>{playSfx('tap');gardenCelebration=null;setView('play')};
   $('#gardenPlayBtn').onclick=()=>celebration?continuePlay():(playSfx('tap'),setView('play'));
   $('#gardenNextWordBtn')?.addEventListener('click',continuePlay);
-  const root=$('#gardenObjects');rewards.filter(r=>state.xp>=r.xp).forEach(r=>{const p=r.id==='bunny'?bunnyDisplayPos():gardenPos(r.id);const el=document.createElement('div');el.className=`garden-object ${r.type}${r.id==='bunny'&&state.garden.bunnySeated?' seated':''}`;el.dataset.id=r.id;el.style.left=`${p.x}%`;el.style.top=`${p.y}%`;el.style.zIndex=r.id==='bunny'?'18':'8';el.innerHTML=r.type==='rabbit'?rabbitSvg():r.emoji;root.appendChild(el);makeDraggable(el)});
-  if(celebration){setTimeout(()=>playSfx('sparkle'),90)}
+  const root=$('#gardenObjects');rewards.filter(r=>state.xp>=r.xp).forEach(r=>{const p=r.id==='bunny'?bunnyDisplayPos():gardenPos(r.id);const el=document.createElement('div');el.className=`garden-object ${r.type} ${r.id}${r.id==='bunny'&&state.garden.bunnySeated?' seated':''}`;el.dataset.id=r.id;el.style.left=`${p.x}%`;el.style.top=`${p.y}%`;el.style.zIndex=r.id==='bunny'||r.id==='cat'?'18':'8';el.innerHTML=gardenObjectArt(r);root.appendChild(el);makeDraggable(el)});
+  if(celebration){setTimeout(()=>playSfx('sparkle'),180)}
+}
+function releaseBunnyHere(pos){if(state.garden.bunnySeated){state.garden.pos.bunny={x:pos.x,y:pos.y};state.garden.bunnySeated=false}}
+function reactToGardenDrop(id,p){
+  const bp=id==='bunny'?p:bunnyDisplayPos();
+  if(id==='bunny'){
+    state.garden.bunnySeated=false;
+    const options=[['bench','seat',16],['picnic','picnic',17],['mail','mail',17],['cat','friends',16]].filter(([key])=>gardenUnlocked(key));
+    const hit=options.map(x=>({x,d:gardenDistance(p,gardenPos(x[0]))})).filter(o=>o.d<o.x[2]).sort((a,b)=>a.d-b.d)[0];
+    if(!hit)return false;const [key,type]=hit.x;
+    if(type==='seat'){state.garden.bunnySeated=true;delete state.garden.pos.bunny}else state.garden.pos.bunny={x:p.x,y:p.y};
+    triggerGardenInteraction(type,'bunny');return true
+  }
+  if(id==='bench'&&gardenUnlocked('bench')&&gardenDistance(p,bp)<16){releaseBunnyHere(bp);state.garden.bunnySeated=true;delete state.garden.pos.bunny;triggerGardenInteraction('seat','bunny');return true}
+  if(id==='picnic'&&gardenUnlocked('picnic')&&gardenDistance(p,bp)<17){releaseBunnyHere(bp);triggerGardenInteraction('picnic','bunny');return true}
+  if(id==='mail'&&gardenUnlocked('mail')&&gardenDistance(p,bp)<17){releaseBunnyHere(bp);triggerGardenInteraction('mail','bunny');return true}
+  if(id==='cat'&&gardenUnlocked('cat')&&gardenDistance(p,bp)<16){triggerGardenInteraction('friends','bunny');return true}
+  return false
+}
+function tapGardenObject(id){
+  if(id==='picnic'){triggerGardenInteraction('picnic',id);renderGarden();return}
+  if(id==='mail'){triggerGardenInteraction('mail',id);renderGarden();return}
+  if(id==='cat'){triggerGardenInteraction('friends',id);renderGarden();return}
+  if(id==='bench'&&state.garden.bunnySeated){triggerGardenInteraction('seat','bunny');renderGarden()}
 }
 function makeDraggable(el){
   let pid=null;const scene=$('#gardenScene');
-  el.onpointerdown=e=>{pid=e.pointerId;el._p=null;el.setPointerCapture?.(pid);el.classList.add('dragging')};
+  el.onpointerdown=e=>{pid=e.pointerId;el._p=null;el._start={x:e.clientX,y:e.clientY};el.setPointerCapture?.(pid);el.classList.add('dragging')};
   el.onpointermove=e=>{if(e.pointerId!==pid)return;const r=scene.getBoundingClientRect();const x=Math.max(4,Math.min(96,(e.clientX-r.left)/r.width*100));const y=Math.max(10,Math.min(91,(e.clientY-r.top)/r.height*100));el.style.left=`${x}%`;el.style.top=`${y}%`;el._p={x,y}};
-  el.onpointerup=e=>{if(e.pointerId!==pid)return;el.classList.remove('dragging');const id=el.dataset.id,p=el._p;pid=null;if(!p)return;
-    if(id==='bunny'&&state.xp>=70){const bench=gardenPos('bench'),d=Math.hypot(p.x-bench.x,p.y-bench.y);if(d<17){state.garden.bunnySeated=true;delete state.garden.pos.bunny;save();playSfx('sparkle');toast('Bunny found her chair! ♡');renderGarden();return}state.garden.bunnySeated=false}
-    state.garden.pos[id]=p;save();
-    if(id==='bench'&&state.garden.bunnySeated)renderGarden();
+  el.onpointerup=e=>{if(e.pointerId!==pid)return;el.classList.remove('dragging');const id=el.dataset.id,p=el._p,start=el._start;pid=null;
+    if(!p||Math.hypot(e.clientX-(start?.x||e.clientX),e.clientY-(start?.y||e.clientY))<5){tapGardenObject(id);return}
+    if(id==='bunny')state.garden.bunnySeated=false;
+    state.garden.pos[id]=p;const reacted=reactToGardenDrop(id,p);save();
+    if(reacted||id==='bench'||id==='picnic'||id==='mail'||id==='cat'||id==='bunny')renderGarden();
   }
 }
 
@@ -289,8 +331,8 @@ function wrong(w,q,attempt,correct){const l=w.learn;l.attempts++;l.mistakes++;l.
 function right(w,q){
   const l=w.learn;l.attempts++;l.correct++;if(q.first)l.first++;l.last=today();state.stats.answers=(state.stats.answers||0)+1;for(let i=q.range.start;i<q.range.end;i++)l.weak[i]=Math.max(0,(l.weak[i]||0)-1);playSfx('correct');q.feedback={good:true};
   if(q.stage<4){save();renderTask();const stage=q.stage;setTimeout(()=>{if(!session?.q||session.q.id!==w.id||session.q.stage!==stage)return;session.q=newQuestion(w,stage+1,q.range);helpKind='';renderTask()},520);return}
-  const gain=30;state.xp+=gain;state.garden.growth++;l.loops=(l.loops||0)+1;session.xp+=gain;session.count++;if(!session.doneIds.includes(w.id))session.doneIds.push(w.id);
-  const finished=session.count>=session.goal;gardenCelebration={word:w.word,emoji:w.pictureEmoji||'🌱',gain,growth:state.garden.growth,finished};session.q=null;save();
+  const gain=30,beforeGrowth=state.garden.growth;state.xp+=gain;state.garden.growth++;l.loops=(l.loops||0)+1;session.xp+=gain;session.count++;if(!session.doneIds.includes(w.id))session.doneIds.push(w.id);
+  const finished=session.count>=session.goal;gardenCelebration={word:w.word,emoji:w.pictureEmoji||'🌱',gain,beforeGrowth,growth:state.garden.growth,finished};session.q=null;save();
   setTimeout(()=>setView('garden'),360)
 }
 function renderReward(w,gain){const finished=session.count>=session.goal;$('#playView').innerHTML=`<div class="play-view"><div class="reward-screen"><div class="reward-card"><div class="big">${esc(w.pictureEmoji||'🌱')}</div><p class="eyebrow">WORD COMPLETE ✦</p><h1>${esc(w.word)}</h1><p class="muted">You finished Stage 1 → 2 → 3 → 4.</p><div class="reward-chips"><span>＋${gain} XP</span><span>🌱 Garden grew</span><span>✎ Pencil practice saved</span></div><button id="nextWordBtn" class="primary-btn">${finished?'Finish & see Garden':'Next word →'}</button></div></div></div>`;$('#nextWordBtn').onclick=()=>{if(finished)finishSession();else{session.q=null;helpKind='';renderTask()}}}
@@ -335,18 +377,18 @@ function playSfx(type){
   }catch{}
 }
 function scheduleBgmBar(){
-  if(!audioUnlocked||!state.settings.music||bgmTimer===null)return;const ctx=ensureAudioCtx();if(!ctx||!musicGain)return;const now=ctx.currentTime+.04;
-  const bars=[[659,784,880,784,659,587,659,523],[587,659,784,659,587,523,587,659],[659,784,988,880,784,659,587,659]];const melody=bars[(Math.floor(Date.now()/2400))%bars.length];
-  melody.forEach((f,i)=>tone(ctx,f,now+i*.28,.20,.016,i%2?'sine':'triangle',musicGain));
-  [261.6,293.7,329.6,293.7].forEach((f,i)=>tone(ctx,f,now+i*.56,.36,.006,'sine',musicGain));
+  if(!audioUnlocked||!state.settings.music||bgmTimer===null)return;const ctx=ensureAudioCtx();if(!ctx||!musicGain)return;const now=ctx.currentTime+.05;
+  const phrases=[[[659,0],[784,.82],[880,1.78],[784,3.15]],[[587,0],[659,.9],[784,1.95],[659,3.25]],[[659,0],[880,1.05],[988,2.2],[784,3.45]]];
+  const phrase=phrases[Math.floor(Date.now()/5600)%phrases.length];phrase.forEach(([f,t],i)=>tone(ctx,f,now+t,.58,i===0?.008:.0065,'sine',musicGain));
+  tone(ctx,329.6,now+.18,1.05,.0028,'sine',musicGain)
 }
 function startBgm(){
-  if(!audioUnlocked||!state.settings.music||bgmTimer!==null)return;const ctx=ensureAudioCtx();if(!ctx)return;musicGain=ctx.createGain();musicGain.gain.setValueAtTime(.0001,ctx.currentTime);musicGain.gain.exponentialRampToValueAtTime(.42,ctx.currentTime+.35);musicGain.connect(ctx.destination);bgmTimer=setInterval(scheduleBgmBar,2240);scheduleBgmBar();renderTopbar()
+  if(!audioUnlocked||!state.settings.music||bgmTimer!==null||currentView!=='garden')return;const ctx=ensureAudioCtx();if(!ctx)return;musicGain=ctx.createGain();musicGain.gain.setValueAtTime(.0001,ctx.currentTime);musicGain.gain.exponentialRampToValueAtTime(.22,ctx.currentTime+.5);musicGain.connect(ctx.destination);bgmTimer=setInterval(scheduleBgmBar,5600);scheduleBgmBar();renderTopbar()
 }
 function stopBgm(){
   if(bgmTimer!==null){clearInterval(bgmTimer);bgmTimer=null}if(musicGain&&audioCtx){try{musicGain.gain.cancelScheduledValues(audioCtx.currentTime);musicGain.gain.setValueAtTime(Math.max(.0001,musicGain.gain.value),audioCtx.currentTime);musicGain.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.18)}catch{};const old=musicGain;setTimeout(()=>{try{old.disconnect()}catch{}},260)}musicGain=null;renderTopbar()
 }
-function syncBgm(){const should=state.settings.music&&(currentView==='garden'||(currentView==='play'&&!session));if(should)startBgm();else stopBgm()}
+function syncBgm(){const should=state.settings.music&&currentView==='garden';if(should)startBgm();else stopBgm()}
 
 
 function alignChars(target,typed){target=norm(target);typed=norm(typed);const n=target.length,m=typed.length,d=Array.from({length:n+1},()=>Array(m+1).fill(0));for(let i=0;i<=n;i++)d[i][0]=i;for(let j=0;j<=m;j++)d[0][j]=j;for(let i=1;i<=n;i++)for(let j=1;j<=m;j++)d[i][j]=Math.min(d[i-1][j-1]+(target[i-1]===typed[j-1]?0:1),d[i-1][j]+1,d[i][j-1]+1);const slots=Array(n);let i=n,j=m;while(i||j){const diag=i&&j?d[i-1][j-1]+(target[i-1]===typed[j-1]?0:1):1e9;if(i&&j&&d[i][j]===diag){slots[i-1]={expected:target[i-1],typed:typed[j-1],state:target[i-1]===typed[j-1]?'ok':'bad'};i--;j--;continue}if(i&&d[i][j]===d[i-1][j]+1){slots[i-1]={expected:target[i-1],typed:'',state:'missing'};i--;continue}j--}return{slots}}
