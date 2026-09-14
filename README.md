@@ -22,9 +22,15 @@ The Spell Garden look is applied as a separate theme layer (`spellgarden-theme-v
 
 ## Apple Pencil writing
 
-Stage 3 and 4 keep the Word Garden handwriting architecture: one real native text field per visible letter box. A letter box therefore owns only its own character; writing or erasing one box does not directly rewrite neighboring boxes.
+Stage 3 and 4 use one real native text field per visible letter box. A letter box owns only its own character, so writing or erasing one box does not directly rewrite neighboring boxes.
 
-Palm/finger suppression is scoped to the handwriting surface instead of the whole screen. Normal controls such as Check, Hint, Eraser, Exit, and the top navigation remain tappable, while the letter area still tries to prevent iPadOS text-selection/callout interference. Native Apple Pencil Scribble stays enabled on the real input fields, and explicit Eraser mode remains available as a reliable one-box fallback.
+Filled boxes are now treated as locked display-like Pencil targets rather than editable text. That removes the native text caret from letters that have already been written and reduces the chance that an Apple Pencil scratch becomes iPadOS text selection before erase recognition. Scratching a filled box is handled as a one-box erase gesture; after it clears, that box becomes the next editable Scribble field. Explicit Eraser mode remains as a reliable one-box fallback.
+
+Palm/finger suppression is scoped to the handwriting surface instead of the whole screen. Normal controls such as Check, Hint, Eraser, Exit, and the top navigation remain tappable.
+
+## Learning chunks
+
+Stage 2 and Stage 3 choose gaps inside meaningful spelling chunks instead of blindly taking adjacent letters. For example, `ladybug` is treated as `lady | bug`, so a gap will not cross the boundary and produce an unnatural target such as `yb`. The same idea is used for the current school words (for example `honey | bee`, `grass | hopper`, and `butter | fly`) while still prioritizing Miori's real mistakes and weak letters.
 
 ## Pronunciation
 
