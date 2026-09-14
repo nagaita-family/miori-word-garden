@@ -1,9 +1,0 @@
-{
-  "name": "Miori's Word Garden v0.15.2",
-  "short_name": "Word Garden",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#fffaf4",
-  "theme_color": "#9bd58a",
-  "icons": []
-}
