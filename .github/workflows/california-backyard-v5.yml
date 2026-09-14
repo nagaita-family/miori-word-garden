@@ -17,20 +17,17 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Apply sunny California backyard redesign
-        run: |
-          echo 'CmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAoKcD1QYXRoKCdhcHAuanMnKQpzPXAucmVhZF90ZXh0KCkKCm9sZF9yZXdhcmRzPSIiImNvbnN0IHJld2FyZHM9Wwp7aWQ6J2J1bm55Jyx4cDowLHR5cGU6J3JhYmJpdCcsbGFiZWw6J0J1bm55JyxpY29uOidwn5CxJyx4OjUxLHk6NjR9LAp7aWQ6J2JlbmNoJyx4cDo3MCx0eXBlOid0cmVhc3VyZScsbGFiZWw6J0NvenkgaGVhcnQgYmVuY2gnLGljb246J/Cfn6QnLHg6MjUseTo3Mn0sCntpZDoncGljbmljJyx4cDoxNDAsdHlwZTon dHJlYXN1cmUnLGxhYmVsOidTdHJhd2JlcnJ5IHBpY25pYycs aWNvbjon8J+NjScseDo3OCx5Ojcw fSwKe2lkOidtYWlsJyx4cDoyMjAsdHlwZTon dHJlYXN1cmUnLGxhYmVsOidIZWFydCBtYWlsYm94JyxpY29uOifwn5KMIix4OjE3LHk6NTV9LAp7aWQ6J2NhdCcseHA6MzEwLHR5cGU6J2ZyaWVuZCcsbGFiZWw6J0dhcmRlbiBjYXQnLGljb246J/CfkLEnLHg6NjkseTo2Mn0KXTsiIiIKbmV3X3Jld2FyZHM9IiIiY29uc3QgcmV3YXJkcz1bCntpZDonYnVubnknLHhwOjAsdHlwZToncmFiYml0JyxsYWJlbDonQnVubnknLGljb246J/CfkLEnLHg6NTAseTo2Nn0sCntpZDonYmVuY2gnLHhwOjcwLHR5cGU6J3RyZWFzdXJlJyxsYWJlbDonV2hpdGUgZ2FyZGVuIGJlbmNoJyxpY29uOifwn6SkJyx4OjI1LHk6NzN9LAp7aWQ6J3BpY25pYycseHA6MTQwLHR5cGU6J3RyZWFzdXJlJyxsYWJlbDonU3RyYXdiZXJyeSBwaWNuaWMnLGljb246J/CfjY0nLHg6NzgseTo3Mn0sCntpZDonbWFpbCcseHA6MjIwLHR5cGU6J3RyZWFzdXJlJyxsYWJlbDonSGVhcnQgbWFpbGJveCcsaWNvbjon8J+SjCcseDoxNyx5OjU3fSx7aWQ6J2NhdCcseHA6MzEwLHR5cGU6J2ZyaWVuZCcsbGFiZWw6J0dhcmRlbiBjYXQnLGljb246J/CfkLEnLHg6NjkseTo2NH0sCntpZDonYmlyZGJhdGgnLHhwOjQwMCx0eXBlOid0cmVhc3VyZScsbGFiZWw6J0JpcmQgYmF0aCcsaWNvbjon8J+QplwnLHg6ODUseTo1MX0sCntpZDonc2VlZGNyYXRlJyx4cDo1MDAsdHlwZTon dHJlYXN1cmUnLGxhYmVsOidTZWVkIGNyYXRlJyxpY29uOifwn4y8Jyx4OjM0LHk6NjF9LAp7aWQ6J2FyY2gnLHhwOjYyMCx0eXBlOid0cmVhc3VyZScsbGFiZWw6J0Zsb3dlciBhcmNoJyxpY29uOifwn4y4Jyx4OjU3LHk6NTF9LAp7aWQ6J3NoZWQnLHhwOjc2MCx0eXBlOid0cmVhc3VyZScsbGFiZWw6J0xpdHRsZSBnYXJkZW4gc2hlZCcs aWNvbjon8J+PoScseDo5MCx5OjM0fQpdOyIiIgppZiBvbGRfcmV3YXJkcyBub3QgaW4gczogcmFpc2UgU3lzdGVtRXhpdCgncmV3YXJkcyBibG9jayBub3QgZm91bmQnKQpzPXMucmVwbGFjZShvbGRfcmV3YXJkcyxuZXdfcmV3YXJkcywxKQoKbWFya2VyPSJmdW5jdGlvbiBnYXJkZW5PYmplY3RBcnQocil7IgphcnQ9cicnJ2Z1bmN0aW9uIGNhQmVuY2hTdmc...TRUNCATED_FOR_BREVITY...'
-          echo "$PATCH_B64" | base64 -d > /tmp/patch.py
-          python3 /tmp/patch.py
+      - name: Apply California backyard app patch
+        run: python3 tools/california_patch.py
 
       - name: Validate JavaScript
         run: node --check app.js
 
-      - name: Commit production build
+      - name: Commit production app update
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app.js index.html california-backyard-v5.css
+          git add app.js
           git diff --cached --quiet && exit 0
-          git commit -m "Redesign garden as sunny California backyard"
+          git commit -m "Add California backyard rewards and interactions"
           git push
