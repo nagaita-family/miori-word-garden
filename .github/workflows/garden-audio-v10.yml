@@ -1,0 +1,35 @@
+name: Garden growth and audio v10
+
+on:
+  push:
+    paths:
+      - '.github/workflows/garden-audio-v10.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Apply garden growth and strict audio patch
+        run: python3 tools/garden_audio_v10_patch.py
+      - name: Validate JavaScript
+        run: node --check app.js
+      - name: Check markers
+        run: |
+          grep -q "LOOK! THIS ONE" app.js
+          grep -q "function isWordOnlyHumanAudio" app.js
+          grep -q "Finding a word-only recording" app.js
+      - name: Commit app update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Clarify garden growth and tighten human audio"
+          git push
