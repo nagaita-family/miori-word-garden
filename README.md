@@ -1,39 +1,29 @@
 # Miori's Word Garden
 
-A small iPad-first spelling practice game for Miori.
+A small spelling practice game designed around Miori's weekly school words, Apple Pencil handwriting, adaptive review, and a growing reward garden.
 
-## Current app
+## Live site
 
-The production app is the single self-contained `index.html` in this repository. It includes:
+GitHub Pages: https://nagaitashouten-star.github.io/miori-word-garden/
 
-- Garden reward/collection screen
-- 4-stage spelling practice loop
-- Stage 3/4 Apple Pencil + iPad Scribble writing flow
-- adaptive weak-letter practice data
-- Parent screen for weekly words, Word Pack JSON import/export, and learning history
-- browser `localStorage` persistence
+`main` is the working branch and `gh-pages` is the published mirror.
 
-No server, API key, build step, or external runtime dependency is required.
+## Current product shape
 
-## Production URL
+- **Garden** — one-screen reward garden with XP, growth, friends, and draggable items.
+- **Play** — four stages: Listen & Choose, Fill the Gap, Write the Gap, Full Spelling.
+- **Parent** — weekly words, Word Library, learning data, pronunciation, and Word Pack import/export.
 
-GitHub Pages is the primary host:
+## Apple Pencil writing
 
-`https://nagaitashouten-star.github.io/miori-word-garden/`
+Stage 3 and 4 use one real native text field per visible letter box. A letter box therefore owns only its own character; writing or erasing one box does not directly rewrite neighboring boxes.
 
-See `DEPLOYMENT.md` for publishing and migration notes.
+During handwriting stages, finger/palm touches are ignored at the document level so iPadOS is less likely to open text-selection, Cut/Copy/Paste, scroll, or gesture UI while Apple Pencil Scribble has a letter box focused. Native Apple Pencil Scribble remains enabled on the real input fields. An explicit Eraser mode remains available as a reliable Pencil-only fallback.
 
-## Repository layout
+## Pronunciation
 
-- `index.html` — current production app
-- `.nojekyll` — serve the static app as-is on GitHub Pages
-- `README.md` — project overview
-- `DEPLOYMENT.md` — hosting notes
+When a clear human pronunciation recording is available from Wikimedia Commons, it is used first. Otherwise the selected English device voice is used.
 
-The previous Netlify-era repository, including old patch scripts, workflows, legacy assets, and earlier standalone builds, is preserved on:
+## Data
 
-`archive/netlify-era-2026-09-14`
-
-## Data note
-
-Progress is stored in browser `localStorage`. GitHub Pages and Netlify have different origins, so existing Netlify progress does not automatically appear on GitHub Pages. Use **Parent → Export backup** on the old site and **Parent → Import JSON** on the new site when migration is needed.
+Progress is stored locally in the browser under `mwg-v2-rebuild`. Existing v2 data is migrated into the current format on the same origin. Export a backup before clearing browser data or moving between hosting origins.
