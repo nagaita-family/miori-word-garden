@@ -1,0 +1,12 @@
+{
+  "name": "Miori's Word Garden",
+  "short_name": "Word Garden",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f8f2ff",
+  "theme_color": "#9EBFF0",
+  "icons": [
+    {"src":"icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"icon-512.png","sizes":"512x512","type":"image/png"}
+  ]
+}
