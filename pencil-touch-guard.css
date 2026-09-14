@@ -30,3 +30,21 @@
 .letter-box[readonly]:focus{
   caret-color:transparent!important;
 }
+
+
+/* Pencil flow v4: every Stage 3/4 position stays visibly boxed. */
+.written-box{
+  display:grid!important;
+  place-items:center!important;
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+  caret-color:transparent!important;
+  cursor:default;
+}
+.empty-box[readonly]{
+  caret-color:transparent!important;
+}
+.empty-box:not([readonly]){
+  caret-color:transparent!important;
+}

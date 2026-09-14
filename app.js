@@ -149,22 +149,27 @@ function handwritingHtml(w,q){
   const expected=expectedText(w,q);const r=q.stage===3?q.range:{start:0,end:w.word.length};let boxes=[];
   for(let full=0;full<w.word.length;full++){
     if(q.stage===3&&(full<r.start||full>=r.end)){boxes.push(`<div class="fixed-box">${esc(w.word[full])}</div>`);continue}
-    const local=full-r.start;const value=q.letters[local]||'';const locked=value?' readonly':'';let cls=value?'filled':'';
+    const local=full-r.start;const value=q.letters[local]||'';let cls=value?'filled':'';
     if(q.feedback?.bad){if(!value)cls='missing';else cls=value===expected[local]?'ok':'bad'}
     if(q.hint?.local===local)cls+=' hint-target';
-    boxes.push(`<input class="letter-box ${cls.trim()}" data-local="${local}" data-full="${full}" value="${esc(value)}"${locked} maxlength="1" inputmode="none" virtualkeyboardpolicy="manual" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder=" " aria-label="Letter ${full+1}">`);
+    if(value){
+      // Written letters are plain display boxes, not text inputs. That removes native caret/selection behavior completely.
+      boxes.push(`<div class="letter-box written-box ${cls.trim()}" data-local="${local}" data-full="${full}" role="button" aria-label="Letter ${full+1}: ${esc(value)}. Scratch to erase.">${esc(value)}</div>`);
+    }else{
+      // Empty boxes start read-only. A Pencil-down event arms only the box being written, so taps/focus cannot summon the keyboard.
+      boxes.push(`<input class="letter-box empty-box ${cls.trim()}" data-local="${local}" data-full="${full}" value="" readonly maxlength="1" inputmode="none" virtualkeyboardpolicy="manual" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder=" " aria-label="Letter ${full+1}">`);
+    }
   }
-  return`<div class="spell-wrap"><div class="pencil-modebar"><button id="writeModeBtn" class="mode-btn write ${q.mode==='write'?'on':''}">✎ Write</button><button id="eraseModeBtn" class="mode-btn erase ${q.mode==='erase'?'on':''}">⌫ Eraser</button></div><div class="box-note">Write in an empty box. To fix a letter, scratch that box — the other boxes stay safe. Eraser is the backup.</div><div id="letterRow" class="letter-row ${q.mode==='erase'?'erase-mode':''}" style="--letters:${w.word.length}">${boxes.join('')}</div>${hintHtml(q)}<button id="checkAnswerBtn" class="check-answer">Check</button></div>`;
+  return`<div class="spell-wrap"><div class="pencil-modebar"><button id="writeModeBtn" class="mode-btn write ${q.mode==='write'?'on':''}">✎ Write</button><button id="eraseModeBtn" class="mode-btn erase ${q.mode==='erase'?'on':''}">⌫ Eraser</button></div><div class="box-note">Each letter has its own box. Write directly in an empty box. Scratch one written box to erase only that letter; Eraser is the backup.</div><div id="letterRow" class="letter-row ${q.mode==='erase'?'erase-mode':''}" style="--letters:${w.word.length}">${boxes.join('')}</div>${hintHtml(q)}<button id="checkAnswerBtn" class="check-answer">Check</button></div>`;
 }
 function hintHtml(q){if(!q.hint)return'';return`<div class="hint-strip"><button id="hintAudioBtn" class="tiny-audio">🔊</button><span>Fix the purple box:</span>${q.hint.options.map(c=>`<button class="hint-choice" data-hint="${c}">${c}</button>`).join('')}<button id="hintCloseBtn" class="tiny-audio">×</button></div>`}
 function feedbackText(q){if(q.feedback?.good)return q.first?'Perfect — you remembered it! ✦':'Yes! You fixed it. That counts. ♡';if(q.feedback?.bad)return'Almost. Green is right. Red or dotted boxes need a fix — stay on this stage.';return''}
 function bindQuestion(w,q){
   if(q.stage<3){$$('[data-choice]').forEach(b=>b.onclick=()=>pickChoice(b,w,q));return}
   $('#writeModeBtn').onclick=()=>{q.mode='write';renderTask()};$('#eraseModeBtn').onclick=()=>{q.mode='erase';renderTask()};$('#checkAnswerBtn').onclick=()=>checkHandwriting(w,q);$('#hintAudioBtn')?.addEventListener('click',()=>playWordAudio(w,true));$('#hintCloseBtn')?.addEventListener('click',()=>{q.hint=null;renderTask()});$$('[data-hint]').forEach(b=>b.onclick=()=>chooseHint(b,w,q));
-  const inputs=$$('.letter-box');inputs.forEach((input,index)=>bindLetterBox(input,index,inputs,w,q));
-  // Only an empty box may own the native text caret. Filled boxes are Pencil scratch targets, not editable text.
-  const empty=inputs.find(input=>!q.letters[Number(input.dataset.local)]);
-  if(empty)setTimeout(()=>focusLetter(empty),80);else document.activeElement?.blur?.();
+  const boxes=$$('.letter-box[data-local]');boxes.forEach((box,index)=>bindLetterBox(box,index,w,q));
+  // Never pre-focus a writing field. On iPad that can open the software keyboard and it also races with fast Pencil movement.
+  document.activeElement?.blur?.();
 }
 function startFilledBoxScratch(e,index,w,q,input){
   const pointerId=e.pointerId,rect=input.getBoundingClientRect(),points=[];let finished=false;
@@ -182,35 +187,72 @@ function startFilledBoxScratch(e,index,w,q,input){
   input.blur();e.preventDefault();e.stopPropagation();add(e);
   window.addEventListener('pointermove',move,{capture:true,passive:false});window.addEventListener('pointerup',finish,true);window.addEventListener('pointercancel',finish,true);
 }
-function bindLetterBox(input,index,inputs,w,q){
-  let advanceTimer=null;let lastPointer='';
-  input.addEventListener('pointerdown',e=>{
-    lastPointer=e.pointerType||'';
-    if(lastPointer==='touch'){e.preventDefault();input.blur();return}
-    if(q.mode==='erase'&&(lastPointer==='pen'||lastPointer==='mouse')){e.preventDefault();clearOneBox(index,w,q,true);return}
-    // A filled box never enters native text editing. Pencil movement here is interpreted only as scratch-to-erase.
-    if(q.mode==='write'&&lastPointer==='pen'&&q.letters[index]){startFilledBoxScratch(e,index,w,q,input);return}
+function bindLetterBox(box,index,w,q){
+  const isInput=box.tagName==='INPUT';
+  let penArmedUntil=0;
+
+  box.addEventListener('pointerdown',e=>{
+    const pointer=e.pointerType||'';
+    if(pointer==='touch'){
+      e.preventDefault();
+      if(isInput){box.readOnly=true;box.blur()}
+      return;
+    }
+    if(q.mode==='erase'&&(pointer==='pen'||pointer==='mouse')){
+      e.preventDefault();e.stopPropagation();clearOneBox(index,w,q,true);return;
+    }
+    if(q.mode==='write'&&pointer==='pen'&&q.letters[index]){
+      // Filled boxes are not text fields. Scratch only this visual box to erase just this letter.
+      startFilledBoxScratch(e,index,w,q,box);return;
+    }
+    if(q.mode==='write'&&pointer==='pen'&&isInput&&!q.letters[index]){
+      // Arm and focus exactly where the Pencil landed. No automatic focus hopping.
+      penArmedUntil=performance.now()+1800;
+      box.readOnly=false;
+      box.setAttribute('inputmode','none');
+      try{box.focus({preventScroll:true});box.setSelectionRange(0,0)}catch{}
+      try{navigator.virtualKeyboard?.hide?.()}catch{}
+    }
   },true);
-  input.addEventListener('contextmenu',e=>e.preventDefault());input.addEventListener('dragstart',e=>e.preventDefault());
-  input.addEventListener('beforeinput',e=>{
+
+  box.addEventListener('contextmenu',e=>e.preventDefault());
+  box.addEventListener('dragstart',e=>e.preventDefault());
+  if(!isInput)return;
+
+  box.addEventListener('beforeinput',e=>{
     const t=String(e.inputType||'');
-    if(t.startsWith('delete')){e.preventDefault();clearOneBox(index,w,q,false);return}
+    // Keyboard-style deletion is not part of the Pencil flow; explicit scratch/Eraser owns deletion.
+    if(t.startsWith('delete')){e.preventDefault();return}
   });
-  input.addEventListener('input',e=>{
-    if(q.mode==='erase'){e.target.value=q.letters[index]||'';return}
+  box.addEventListener('input',e=>{
+    if(q.mode==='erase'){e.target.value='';return}
     const cleaned=norm(e.target.value).slice(-1);
-    q.letters[index]=cleaned;e.target.value=cleaned;q.feedback=null;q.hint=null;e.target.classList.toggle('filled',!!cleaned);e.target.classList.remove('ok','bad','missing','hint-target');
-    clearTimeout(advanceTimer);
-    if(cleaned){
-      // Lock immediately after Scribble commits the letter, then move to the next empty box. No visible text caret remains on a written letter.
-      input.readOnly=true;input.blur();
-      advanceTimer=setTimeout(()=>{if(q.letters[index]!==cleaned)return;const next=inputs.slice(index+1).find((x,j)=>!q.letters[index+1+j]);focusLetter(next)},110)
-    }else{input.readOnly=false;focusLetter(input)}
+    if(!cleaned){e.target.value='';return}
+    q.letters[index]=cleaned;
+    q.feedback=null;q.hint=null;
+    e.target.value=cleaned;
+    e.target.readOnly=true;
+    e.target.blur();
+    // Do not focus the next box. If Miori writes quickly, the next Pencil-down activates that exact box immediately.
   });
-  input.addEventListener('focus',()=>{if(input.readOnly){input.blur();return}try{input.setSelectionRange(0,0)}catch{}});
+  box.addEventListener('focus',()=>{
+    // Only a very recent Pencil-down is allowed to keep an empty input focused. This blocks stray keyboard focus.
+    if(performance.now()>penArmedUntil){box.readOnly=true;box.blur();return}
+    try{box.setSelectionRange(0,0)}catch{}
+    try{navigator.virtualKeyboard?.hide?.()}catch{}
+  });
+  box.addEventListener('blur',()=>{if(!q.letters[index])box.readOnly=true});
 }
-function focusLetter(input){if(!input||input.readOnly)return;clearTimeout(focusTimer);focusTimer=setTimeout(()=>{if(input.readOnly)return;try{input.focus({preventScroll:true});input.setSelectionRange(0,0)}catch{try{input.focus()}catch{}}},20)}
-function clearOneBox(index,w,q,fromEraser){q.letters[index]='';q.feedback=null;q.hint=null;q.mode='write';renderTask();setTimeout(()=>{const input=$(`.letter-box[data-local="${index}"]`);input?.classList.add('erase-flash');focusLetter(input)},35);if(fromEraser)navigator.vibrate?.(7)}
+function focusLetter(input){
+  // Kept only for backwards compatibility with older code paths; no automatic focus is used in Pencil mode.
+  if(!input)return;
+  input.blur?.();
+}
+function clearOneBox(index,w,q,fromEraser){
+  q.letters[index]='';q.feedback=null;q.hint=null;q.mode='write';renderTask();
+  setTimeout(()=>{$(`.letter-box[data-local="${index}"]`)?.classList.add('erase-flash')},35);
+  if(fromEraser)navigator.vibrate?.(7)
+}
 function firstEmptyIndex(q){const i=q.letters.findIndex(x=>!x);return i<0?q.letters.length-1:i}
 function firstWrongIndex(w,q){const exp=expectedText(w,q);let i=q.letters.findIndex((x,n)=>x!==exp[n]);return i<0?0:i}
 function pickChoice(button,w,q){const val=button.dataset.choice;const correct=q.stage===1?w.word:w.word.slice(q.range.start,q.range.end);if(norm(val)===norm(correct)){button.classList.add('correct');right(w,q)}else{if(!q.wrong.includes(val))q.wrong.push(val);button.classList.add('wrong');wrong(w,q,val,correct);q.feedback={bad:true};renderTask();playSfx('wrong')}}
