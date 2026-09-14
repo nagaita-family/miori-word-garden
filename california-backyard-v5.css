@@ -1,0 +1,33 @@
+/* CALIFORNIA_BACKYARD_V5_20260914 */
+.garden-scene{background:linear-gradient(180deg,#74c9f4 0%,#a9ddf5 31%,#dceee3 44%,#8fbd78 44.2%,#72a866 100%);box-shadow:0 22px 54px #39586a24,inset 0 0 0 1px #ffffffc4}
+.garden-scene:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 84% 9%,#fff8c7a8 0 5%,#fff3b34a 10%,transparent 25%),linear-gradient(180deg,#ffffff10,transparent 54%);z-index:1}
+.sun{right:7%;top:5%;width:104px;height:104px;background:radial-gradient(circle,#fffce2 0 27%,#ffe995 44%,#ffd66c55 61%,transparent 72%);filter:blur(.1px)}
+.cloud{background:#fffdf2d9;box-shadow:0 5px 18px #4a849817}.cloud.a{left:10%;top:10%;transform:scale(1.08)}.cloud.b{right:31%;top:18%;transform:scale(.64)}
+.hill.back{top:34%;height:24%;background:#9ac38f}.hill.front{top:41%;height:26%;background:#7fb474}
+.ca-house{position:absolute;z-index:3;right:5%;top:24%;width:185px;height:116px;border-radius:8px 8px 2px 2px;background:#fff5df;box-shadow:0 12px 25px #42623f24;border:3px solid #ead9bd}
+.ca-house:before{content:"";position:absolute;left:-16px;right:-16px;top:-46px;height:58px;background:#c77555;clip-path:polygon(50% 0,100% 78%,91% 100%,9% 100%,0 78%);filter:drop-shadow(0 5px 3px #72472f24)}
+.ca-house:after{content:"";position:absolute;left:24px;top:31px;width:37px;height:38px;border:5px solid #fff;background:linear-gradient(90deg,transparent 45%,#fff 46% 54%,transparent 55%),linear-gradient(0deg,transparent 45%,#fff 46% 54%,transparent 55%),#a9d7ea;box-shadow:84px 3px 0 -1px #a9d7ea,84px 3px 0 4px #fff}
+.white-fence{position:absolute;z-index:5;left:-2%;right:-2%;top:42%;height:116px;background:linear-gradient(#fff9ea 0 8px,transparent 8px 43px,#fff9ea 43px 53px,transparent 53px),repeating-linear-gradient(90deg,#fffdf2 0 13px,transparent 13px 20px);filter:drop-shadow(0 6px 5px #47634622);opacity:.98}
+.white-fence:after{content:"";position:absolute;inset:-11px 0 auto 0;height:22px;background:repeating-linear-gradient(90deg,#fffdf2 0 13px,transparent 13px 20px);clip-path:polygon(0 100%,50% 0,100% 100%)}
+.citrus-tree{position:absolute;z-index:6;left:4%;top:21%;width:154px;height:215px;filter:drop-shadow(0 13px 9px #324d2b21)}
+.citrus-tree:before{content:"";position:absolute;left:68px;bottom:0;width:18px;height:105px;border-radius:14px;background:#9b6b46;transform:rotate(-4deg)}
+.citrus-tree:after{content:"";position:absolute;left:4px;top:0;width:144px;height:128px;border-radius:48% 52% 49% 51%;background:radial-gradient(circle at 24% 34%,#ffd15a 0 6px,transparent 7px),radial-gradient(circle at 72% 28%,#f3c247 0 6px,transparent 7px),radial-gradient(circle at 59% 72%,#ffd45d 0 7px,transparent 8px),radial-gradient(circle at 34% 67%,#f5c64e 0 6px,transparent 7px),radial-gradient(circle at 52% 45%,#78ad65 0 18%,transparent 19%),radial-gradient(circle at 31% 39%,#6fa65e 0 25%,transparent 26%),radial-gradient(circle at 70% 43%,#79ae67 0 29%,transparent 30%),#7cae67}
+.patio-lights{position:absolute;z-index:7;left:16%;right:18%;top:15%;height:48px;border-top:2px solid #8d74586e;border-radius:50%;pointer-events:none}
+.patio-lights:after{content:"•  •  •  •  •  •  •";position:absolute;left:4%;right:4%;top:-11px;color:#ffd66d;font-size:28px;letter-spacing:3.2vw;text-shadow:0 0 8px #fff1a8}
+.lavender-edge{position:absolute;z-index:6;bottom:7%;width:18%;height:19%;opacity:.95;background:radial-gradient(ellipse at 15% 70%,#8d6db1 0 4px,transparent 5px),radial-gradient(ellipse at 30% 45%,#9471b6 0 5px,transparent 6px),radial-gradient(ellipse at 47% 66%,#8363a6 0 4px,transparent 5px),radial-gradient(ellipse at 63% 40%,#9877bd 0 5px,transparent 6px),radial-gradient(ellipse at 80% 69%,#8665aa 0 5px,transparent 6px);filter:drop-shadow(0 7px 7px #4b5a3b1e)}
+.lavender-edge.left{left:1%}.lavender-edge.right{right:1%;transform:scaleX(-1)}
+.path{z-index:4;left:47%;top:49%;width:16%;height:55%;background:linear-gradient(90deg,#e8cfab,#f2dfbd 48%,#e6c89f);clip-path:polygon(38% 0,62% 0,88% 100%,7% 100%);opacity:.98;filter:drop-shadow(0 7px 8px #65513c20)}
+.pond{display:none}
+.plot{z-index:8;bottom:10%;height:17%;border-radius:16px 16px 24px 24px/13px 13px 24px 24px;background:linear-gradient(#724b32,#59351f);border:9px solid #c9915f;box-shadow:0 10px 0 #9f6b43,0 18px 22px #3d4f302b,inset 0 5px 10px #2e211b55}
+.plot.left{left:11%}.plot.right{left:39%}
+.plot:before{content:"";position:absolute;left:7px;right:7px;top:-9px;height:8px;border-radius:99px;background:#e1ae79;opacity:.9}
+.garden-object{filter:drop-shadow(0 10px 8px #34492d24)}
+.garden-object.bench{width:118px;height:92px}.garden-object.picnic{width:119px;height:96px}.garden-object.mail{width:94px;height:111px}.garden-object.cat{width:96px;height:114px}.garden-object.birdbath{width:92px;height:108px}.garden-object.seedcrate{width:110px;height:90px}.garden-object.arch{width:124px;height:130px}.garden-object.shed{width:132px;height:118px}
+.garden-object.arch,.garden-object.shed{z-index:7!important}.garden-object.bunny,.garden-object.cat{z-index:18!important}
+.next-surprise{background:#fffaf0dd!important;border:1px solid #ffffffcc;color:#5f654f!important;box-shadow:0 8px 18px #4255381c!important}
+.garden-update{background:#315c447d!important;color:#fff!important;backdrop-filter:blur(8px);border:1px solid #ffffff4d!important}.garden-update b{color:#ffe77f!important}
+.garden-tip{background:#fffaf1ed;color:#656451;box-shadow:0 8px 20px #3e51321e;border:1px solid #ffffffc9}
+.garden-reaction.birds span{animation:reactionFloat 1.8s ease both}.garden-reaction.seeds span{animation:snackPop .75s ease both}.garden-reaction.arch span{animation:heartBeat .65s ease 2}.garden-reaction.shed span{animation:reactionFloat 1.8s ease both}
+.treasure-art .garden-object{position:static;transform:none}
+@media(max-width:900px){.ca-house{right:3%;width:155px;height:100px}.citrus-tree{left:1%;transform:scale(.86);transform-origin:bottom left}.white-fence{top:43%}.garden-object.arch{width:108px;height:115px}.garden-object.shed{width:116px;height:104px}}
+@media(max-width:700px){.ca-house{opacity:.8;right:-1%;transform:scale(.78);transform-origin:top right}.citrus-tree{transform:scale(.68);top:27%}.patio-lights{display:none}.lavender-edge{opacity:.7}.garden-object.birdbath{width:72px;height:86px}.garden-object.seedcrate{width:88px;height:72px}.garden-object.arch{width:92px;height:102px}.garden-object.shed{width:96px;height:86px}}
