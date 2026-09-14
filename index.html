@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
   <meta name="theme-color" content="#fbf7ff">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Word Garden">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=20260914-v4">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20260914-v4">
+  <link rel="manifest" href="manifest.webmanifest?v=20260914-v4">
   <title>Miori's Word Garden</title>
   <link rel="stylesheet" href="styles.css?v=20260914-pencil-box-v2">
   <link rel="stylesheet" href="spellgarden-theme-v4.css?v=20260914-spellgarden-v4">
@@ -12,12 +16,13 @@
   <link rel="stylesheet" href="final-polish-v1.css?v=20260914-final-v1a">
   <link rel="stylesheet" href="lesson-flow-v2.css?v=20260914-lesson-v2a">
   <link rel="stylesheet" href="garden-delight-v3.css?v=20260914-garden-v3a">
+  <link rel="stylesheet" href="garden-admin-v4.css?v=20260914-v4">
 </head>
 <body>
   <div id="app" class="app-shell">
     <header class="topbar">
       <button class="brand" data-nav="garden" aria-label="Go to garden">
-        <span class="brand-mark">✿</span>
+        <span class="brand-mark app-icon-mark"><img src="app-icon.svg?v=20260914-v4" alt=""></span>
         <span><strong>Miori's Word Garden</strong><small>spell · grow · collect ✦</small></span>
       </button>
       <div class="level-wrap" aria-label="Level progress">
@@ -42,7 +47,7 @@
   <input id="importInput" type="file" accept="application/json,.json" hidden>
   <div id="modalRoot"></div>
   <div id="toast" class="toast hidden" role="status"></div>
-  <script src="app.js?v=20260914-garden-v3a"></script>
+  <script src="app.js?v=20260914-garden-v4a"></script>
   <script src="pencil-touch-guard.js?v=20260914-palm-v4a"></script>
 </body>
 </html>
