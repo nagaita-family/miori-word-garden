@@ -1,0 +1,47 @@
+name: Final launch polish v1
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "tools/final-polish-v1.py"
+      - ".github/workflows/final-polish-v1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  polish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply final polish
+        run: python tools/final-polish-v1.py
+
+      - name: Validate JavaScript
+        run: node --check app.js
+
+      - name: Validate launch markers
+        run: |
+          grep -q "SAFE_STAGE1_WORDS" app.js
+          grep -q "musicToggle" index.html
+          grep -q "no tap first" app.js
+          grep -q "Bunny found her chair" app.js
+          grep -q "final-polish-v1.css" index.html
+
+      - name: Commit production changes
+        run: |
+          if git diff --quiet -- app.js index.html final-polish-v1.css; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js index.html final-polish-v1.css
+          git commit -m "Polish launch experience, Stage 1 choices, Pencil flow, and garden"
+          git push origin HEAD:main
