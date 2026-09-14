@@ -249,7 +249,7 @@ function renderTask(){
   if(!session)return renderPlayHome();stopBgm();if(session.count>=session.goal)return finishSession();if(!session.q){const w=chooseWord();if(!w)return finishSession();session.last=w.id;session.q=newQuestion(w,1)}
   const q=session.q,w=state.lib[q.id];
   $('#playView').innerHTML=`<div class="play-view"><div class="game-topline"><button id="exitPlayBtn" class="icon-btn">×</button><div><div class="stage-labels"><span>Stage ${q.stage} · ${STAGE_NAMES[q.stage]}</span><span>${session.count+1} / ${session.goal}</span></div><div class="stage-track"><div class="stage-fill" style="width:${((q.stage-1)/4)*100}%"></div></div></div><div class="session-xp">+${session.xp} XP</div></div><div class="game-card"><div class="word-audio-row"><button id="audioBtn" class="audio-orb word-sound-button" aria-label="Hear the spelling word"><span class="speaker-glyph">🔊</span><small>WORD</small></button><div><p class="task-prompt">${STAGE_PROMPTS[q.stage]}</p><p class="task-subprompt">${q.stage>=3?'One box = one real writing field. Scratch only inside the letter you want to erase.':'You can play the sound again.'}</p><span id="voicePill" class="voice-pill">${w.pronunciationUrl?'● Human recording':'○ Device voice while human audio loads'}</span></div></div>${clueHtml(w)}<div id="questionArea" class="question-area">${questionHtml(w,q)}</div><div id="feedback" class="feedback ${q.feedback?.bad?'bad':q.feedback?.good?'good':''}">${feedbackText(q)}</div><div class="help-row assist-dock"><button id="hintBtn" class="help-btn hint assist-btn"><span class="assist-icon">✦</span><span><b>Hint</b><small>Give me a clue</small></span></button><button id="peekBtn" class="help-btn peek assist-btn"><span class="assist-icon">◉</span><span><b>Peek</b><small>Show the word</small></span></button></div></div></div>`;
-  $('#exitPlayBtn').onclick=renderPlayHome;$('#audioBtn').onclick=()=>playWordAudio(w);$('#pictureWordAudioBtn')?.addEventListener('click',()=>playWordAudio(w));$('#meaningEnAudioBtn')?.addEventListener('click',e=>speakLearningText(w.meaningEn||w.pictureCue||'',{lang:'en-US',button:e.currentTarget}));$('#meaningJaAudioBtn')?.addEventListener('click',e=>speakLearningText(w.meaningJa||'',{lang:'ja-JP',button:e.currentTarget}));$('#exampleAudioBtn')?.addEventListener('click',e=>speakLearningText(w.example||'',{lang:'en-US',button:e.currentTarget}));$('#hintBtn').onclick=()=>showHint(w,q);$('#peekBtn').onclick=()=>showPeek(w);bindQuestion(w,q);setTimeout(()=>playWordAudio(w),120);if(!w.pronunciationUrl&&!w.audioTried)resolveHumanAudioForWord(w).then(found=>{if(found&&session?.q?.id===w.id){const pill=$('#voicePill');if(pill)pill.textContent='● Human recording'}});
+  $('#exitPlayBtn').onclick=renderPlayHome;$('#audioBtn').onclick=()=>playWordAudio(w,false,{userInitiated:true});$('#pictureWordAudioBtn')?.addEventListener('click',()=>playWordAudio(w,false,{userInitiated:true}));$('#meaningEnAudioBtn')?.addEventListener('click',e=>speakLearningText(w.meaningEn||w.pictureCue||'',{lang:'en-US',button:e.currentTarget}));$('#meaningJaAudioBtn')?.addEventListener('click',e=>speakLearningText(w.meaningJa||'',{lang:'ja-JP',button:e.currentTarget}));$('#exampleAudioBtn')?.addEventListener('click',e=>speakLearningText(w.example||'',{lang:'en-US',button:e.currentTarget}));$('#hintBtn').onclick=()=>showHint(w,q);$('#peekBtn').onclick=()=>showPeek(w);bindQuestion(w,q);setTimeout(()=>playWordAudio(w,false,{auto:true}),120);if(!w.pronunciationUrl&&!w.audioTried)resolveHumanAudioForWord(w).then(found=>{if(found&&session?.q?.id===w.id){const pill=$('#voicePill');if(pill)pill.textContent='● Human recording'}});
 }
 function questionHtml(w,q){
   const r=q.range;if(q.stage===1)return`<div class="choice-grid">${q.choices.map(c=>`<button class="choice-btn ${q.wrong.includes(c)?'wrong':''}" data-choice="${esc(c)}">${esc(c)}</button>`).join('')}</div>`;
@@ -268,7 +268,7 @@ function handwritingHtml(w,q){
       boxes.push(`<div class="letter-box written-box ${cls.trim()}" data-local="${local}" data-full="${full}" role="button" aria-label="Letter ${full+1}: ${esc(value)}. Scratch to erase.">${esc(value)}</div>`);
     }else{
       // Empty boxes stay genuine editable Scribble targets. Apple Pencil can begin writing immediately — no first tap is required.
-      boxes.push(`<input class="letter-box empty-box ${cls.trim()}" data-local="${local}" data-full="${full}" value="" maxlength="1" inputmode="none" virtualkeyboardpolicy="manual" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder=" " aria-label="Letter ${full+1}">`);
+      boxes.push(`<input class="letter-box empty-box ${cls.trim()}" data-local="${local}" data-full="${full}" value="" inputmode="none" virtualkeyboardpolicy="manual" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder=" " aria-label="Letter ${full+1}">`);
     }
   }
   return`<div class="spell-wrap"><div class="pencil-modebar"><button id="writeModeBtn" class="mode-btn write ${q.mode==='write'?'on':''}">✎ Write</button><button id="eraseModeBtn" class="mode-btn erase ${q.mode==='erase'?'on':''}">⌫ Eraser</button></div><div class="box-note">Just write in the next empty box — no tap first. Scratch one written box to erase only that letter.</div><div id="letterRow" class="letter-row ${q.mode==='erase'?'erase-mode':''}" style="--letters:${w.word.length}">${boxes.join('')}</div>${hintHtml(q)}<button id="checkAnswerBtn" class="check-answer">Check</button></div>`;
@@ -277,7 +277,7 @@ function hintHtml(q){if(!q.hint)return'';return`<div class="hint-strip"><button 
 function feedbackText(q){if(q.feedback?.good)return q.first?'Perfect — you remembered it! ✦':'Yes! You fixed it. That counts. ♡';if(q.feedback?.bad)return'Almost. Green is right. Red or dotted boxes need a fix — stay on this stage.';return''}
 function bindQuestion(w,q){
   if(q.stage<3){$$('[data-choice]').forEach(b=>b.onclick=()=>pickChoice(b,w,q));return}
-  $('#writeModeBtn').onclick=()=>{q.mode='write';renderTask()};$('#eraseModeBtn').onclick=()=>{q.mode='erase';renderTask()};$('#checkAnswerBtn').onclick=()=>checkHandwriting(w,q);$('#hintAudioBtn')?.addEventListener('click',()=>playWordAudio(w,true));$('#hintCloseBtn')?.addEventListener('click',()=>{q.hint=null;renderTask()});$$('[data-hint]').forEach(b=>b.onclick=()=>chooseHint(b,w,q));
+  $('#writeModeBtn').onclick=()=>{q.mode='write';renderTask()};$('#eraseModeBtn').onclick=()=>{q.mode='erase';renderTask()};$('#checkAnswerBtn').onclick=()=>checkHandwriting(w,q);$('#hintAudioBtn')?.addEventListener('click',()=>playWordAudio(w,true,{userInitiated:true}));$('#hintCloseBtn')?.addEventListener('click',()=>{q.hint=null;renderTask()});$$('[data-hint]').forEach(b=>b.onclick=()=>chooseHint(b,w,q));
   const boxes=$$('.letter-box[data-local]');boxes.forEach((box,index)=>bindLetterBox(box,index,w,q));
   // Never pre-focus a writing field. On iPad that can open the software keyboard and it also races with fast Pencil movement.
   document.activeElement?.blur?.();
@@ -297,6 +297,21 @@ function startFilledBoxScratch(e,index,w,q,input){
   };
   input.blur();e.preventDefault();e.stopPropagation();add(e);
   window.addEventListener('pointermove',move,{capture:true,passive:false});window.addEventListener('pointerup',finish,true);window.addEventListener('pointercancel',finish,true);
+}
+function normalizeScribbleLetter(raw,expected=''){
+  const original=String(raw??'').trim();
+  let cleaned=norm(original);
+  if(!cleaned){
+    if(expected==='l'&&['1','|','｜'].includes(original))return'l';
+    if(expected==='t'&&['+','†'].includes(original))return't';
+    return''
+  }
+  // Scribble occasionally commits a short candidate string before settling. If it already contains
+  // the letter this box expects, keep that expected letter rather than throwing the whole attempt away.
+  if(cleaned.length>1&&expected&&cleaned.includes(expected))return expected;
+  // A handwritten lowercase l is sometimes interpreted as capital I on iPad. Preserve spelling intent here.
+  if(expected==='l'&&original==='I')return'l';
+  return cleaned.slice(-1)
 }
 function bindLetterBox(box,index,w,q){
   const isInput=box.tagName==='INPUT';
@@ -328,7 +343,8 @@ function bindLetterBox(box,index,w,q){
   box.addEventListener('beforeinput',e=>{const t=String(e.inputType||'');if(t.startsWith('delete')){e.preventDefault();return}});
   box.addEventListener('input',e=>{
     if(q.mode==='erase'){e.target.value='';return}
-    const cleaned=norm(e.target.value).slice(-1);if(!cleaned){e.target.value='';return}
+    const expected=expectedText(w,q)[index]||'';
+    const cleaned=normalizeScribbleLetter(e.target.value,expected);if(!cleaned){e.target.value='';return}
     q.letters[index]=cleaned;q.feedback=null;q.hint=null;
     // Convert only this field into a non-text display box immediately. Other empty inputs stay ready for the next fast Pencil stroke.
     const written=document.createElement('div');written.className='letter-box written-box filled';written.dataset.local=String(index);written.dataset.full=e.target.dataset.full||String(index);written.setAttribute('role','button');written.setAttribute('aria-label',`Letter ${Number(written.dataset.full)+1}: ${cleaned}. Scratch to erase.`);written.textContent=cleaned;
@@ -386,21 +402,47 @@ function speakLearningText(text,{lang='en-US',button=null}={}){
   button?.classList.add('speaking');const done=()=>button?.classList.remove('speaking');u.onend=done;u.onerror=done;speechSynthesis.speak(u)
 }
 function speak(text,{slow=false}={}){if(!text||!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text),v=chosenVoice();if(v)u.voice=v;u.lang=v?.lang||'en-US';u.rate=slow?.62:.88;u.pitch=1.03;const btn=$('#audioBtn');btn?.classList.add('playing');u.onend=u.onerror=()=>btn?.classList.remove('playing');speechSynthesis.speak(u)}
-async function playWordAudio(word,slow=false){
+async function playWordAudio(word,slow=false,{auto=false,userInitiated=false}={}){
   if('speechSynthesis'in window)speechSynthesis.cancel();$$('.listen-card.speaking').forEach(b=>b.classList.remove('speaking'));
   if(currentAudio){try{currentAudio.pause()}catch{}currentAudio=null}
+  const pill=$('#voicePill');
+  const setPill=(text,cls='')=>{if(!pill)return;pill.textContent=text;pill.classList.remove('human-ready','human-wait','device-fallback');if(cls)pill.classList.add(cls)};
   if(word.pronunciationUrl){
-    let failed=false,timer=null;const btn=$('#audioBtn');
-    const fallback=()=>{if(failed)return;failed=true;if(timer)clearTimeout(timer);btn?.classList.remove('playing');if(currentAudio){try{currentAudio.pause()}catch{}currentAudio=null}word.pronunciationUrl='';word.audioTried=true;save();const pill=$('#voicePill');if(pill)pill.textContent='○ Device voice fallback';speak(word.word,{slow})};
+    let finished=false,timer=null;const btn=$('#audioBtn');
+    const cleanup=(audio)=>{if(timer)clearTimeout(timer);btn?.classList.remove('playing');if(currentAudio===audio)currentAudio=null};
+    const fallback=(audio,reason='')=>{
+      if(finished)return;finished=true;cleanup(audio);word.audioTried=true;save();
+      // Never erase a stored human URL because of a transient iPad/network/autoplay failure.
+      setPill('○ Human audio unavailable now · device voice','device-fallback');
+      speak(word.word,{slow})
+    };
     try{
-      const audio=new Audio();currentAudio=audio;audio.preload='auto';audio.playbackRate=slow?.82:1;btn?.classList.add('playing');audio.onended=()=>{if(timer)clearTimeout(timer);btn?.classList.remove('playing');if(currentAudio===audio)currentAudio=null};audio.onerror=fallback;audio.onabort=fallback;audio.src=word.pronunciationUrl;
-      timer=setTimeout(()=>{if(audio.readyState<2)fallback()},2200);
+      const audio=new Audio();currentAudio=audio;audio.preload='auto';audio.playbackRate=slow?.82:1;btn?.classList.add('playing');
+      setPill('● Human recording','human-ready');
+      audio.onplaying=()=>{if(timer)clearTimeout(timer);setPill('● Human recording','human-ready')};
+      audio.onended=()=>{finished=true;cleanup(audio)};
+      // abort is normally caused by us switching to another sound; it is not evidence that the human file is bad.
+      audio.onabort=()=>{finished=true;cleanup(audio)};
+      audio.onerror=()=>fallback(audio,'media');
+      audio.src=word.pronunciationUrl;
+      timer=setTimeout(()=>{
+        if(audio.readyState>=2||finished)return;
+        if(auto){finished=true;cleanup(audio);setPill('● Human recording · tap WORD','human-wait');return}
+        fallback(audio,'timeout')
+      },5000);
       await audio.play();return
-    }catch(e){console.warn('Human audio failed, using device voice',e);fallback();return}
+    }catch(e){
+      const blocked=e?.name==='NotAllowedError'||e?.name==='AbortError';
+      const audio=currentAudio;
+      if(blocked){
+        finished=true;cleanup(audio);setPill('● Human recording · tap WORD','human-wait');return
+      }
+      console.warn('Human audio failed for this attempt, using device voice',e);fallback(audio,'play');return
+    }
   }
-  speak(word.word,{slow})
+  setPill('○ Device voice','');speak(word.word,{slow})
 }
-async function findHumanAudio(wordText){const word=norm(wordText);if(!word)return'';try{const q=encodeURIComponent(`${word} pronunciation`);const url=`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url|mime&format=json&origin=*`;const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),4500);const res=await fetch(url,{signal:controller.signal});clearTimeout(timer);if(!res.ok)return'';const data=await res.json();const pages=Object.values(data.query?.pages||{}).filter(p=>p.imageinfo?.[0]?.url);const scored=pages.map(p=>{const title=(p.title||'').toLowerCase(),info=p.imageinfo[0];let score=0;if(title.includes(word))score+=8;if(/en[-_ ]?(us|uk|gb)|english/.test(title))score+=5;if(/pronunciation|pronounce/.test(title))score+=3;if(/\.(ogg|oga|mp3|wav)$/i.test(info.url||''))score+=3;if(/song|music|sentence|phrase/.test(title))score-=6;return{url:info.url,score}}).sort((a,b)=>b.score-a.score);return scored[0]?.score>=8?scored[0].url:''}catch{return''}}
+async function findHumanAudio(wordText){const word=norm(wordText);if(!word)return'';try{const q=encodeURIComponent(`${word} pronunciation`);const url=`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url|mime&format=json&origin=*`;const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),4500);const res=await fetch(url,{signal:controller.signal});clearTimeout(timer);if(!res.ok)return'';const data=await res.json();const pages=Object.values(data.query?.pages||{}).filter(p=>p.imageinfo?.[0]?.url);const scored=pages.map(p=>{const title=(p.title||'').toLowerCase(),info=p.imageinfo[0];let score=0;if(title.includes(word))score+=8;if(/en[-_ ]?(us|uk|gb)|english/.test(title))score+=5;if(/pronunciation|pronounce/.test(title))score+=3;if(/\.mp3(?:$|\?)/i.test(info.url||''))score+=7;else if(/\.(m4a|wav)(?:$|\?)/i.test(info.url||''))score+=5;else if(/\.(ogg|oga)(?:$|\?)/i.test(info.url||''))score+=3;if(/song|music|sentence|phrase/.test(title))score-=6;return{url:info.url,score}}).sort((a,b)=>b.score-a.score);return scored[0]?.score>=8?scored[0].url:''}catch{return''}}
 async function resolveHumanAudioForWord(w,{announce=false}={}){if(!w||w.pronunciationUrl)return false;w.audioTried=true;const found=await findHumanAudio(w.word);if(!found){save();if(announce)toast('No clear human recording found. Device voice will be used.');return false}w.pronunciationUrl=found;w.pronunciationSource='Wikimedia Commons';save();if(announce)toast('Human pronunciation found.');return true}
 function ensureAudioCtx(){
   if(!audioCtx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;audioCtx=new C()}
