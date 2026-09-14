@@ -1,0 +1,39 @@
+name: Apply Pencil and learning chunk improvements
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "tools/apply-pencil-chunks-v1.py"
+      - ".github/workflows/apply-pencil-chunks-v1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply patch
+        run: python tools/apply-pencil-chunks-v1.py
+
+      - name: Validate JavaScript
+        run: node --check app.js
+
+      - name: Commit patched production files
+        run: |
+          if git diff --quiet -- app.js pencil-touch-guard.css index.html; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js pencil-touch-guard.css index.html
+          git commit -m "Stabilize Pencil scratch and keep gaps inside learning chunks"
+          git push origin HEAD:main
