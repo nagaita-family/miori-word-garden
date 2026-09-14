@@ -4,7 +4,7 @@ const STORAGE_KEY='mwg-v2-rebuild';
 const LEVEL_XP=100;
 const GOAL=10;
 const STAGE_NAMES=['','Listen & Choose','Fill the Gap','Write the Gap','Full Spelling'];
-const STAGE_PROMPTS=['','Listen. Which spelling is right?','Which letters fit here?','Write the missing part.','Write the whole word.'];
+const STAGE_PROMPTS=['','Listen. Which spelling is right?','Which letters fit here?','Trace the word. Fill the blank.','Write the whole word.'];
 const CONF={b:['p','d'],p:['b','d'],d:['b','t'],e:['i','a'],i:['e','y'],y:['i','e'],c:['k','s'],k:['c','g'],s:['c','z'],t:['d','f'],a:['e','o'],o:['a','u'],u:['o','a'],l:['r','i'],r:['l','n'],g:['j','c'],h:['w','n']};
 const SCHOOL_WORDS=[
 {word:'beetle',meaningEn:'an insect with hard wings and a shiny body',meaningJa:'甲虫（硬い羽と光沢のある体をもつ昆虫）',example:'A shiny beetle crawled across the leaf.',phonicsFocus:'ee',pictureCue:'a tiny shiny bug on a green leaf',pictureEmoji:'🪲'},
@@ -224,7 +224,7 @@ function focusRange(w){
   const chunks=chunkRanges(w);const c=chunks[Math.min(chunks.length-1,Math.floor(chunks.length/2))]||{start:0,end:w.word.length};
   const anchor=Math.floor((c.start+c.end-1)/2);return rangeInsideChunk(w,anchor,Math.min(2,c.end-c.start));
 }
-function newQuestion(w,stage=1,range=null){range=range||focusRange(w);const n=stage===3?range.end-range.start:w.word.length;const q={id:w.id,stage,range,first:true,wrong:[],letters:stage>=3?Array(n).fill(''):[],feedback:null,hint:null,mode:'write'};if(stage===1)q.choices=wholeChoices(w,range);if(stage===2)q.choices=gapChoices(w,range);return q}
+function newQuestion(w,stage=1,range=null){range=range||focusRange(w);const n=stage===3?range.end-range.start:w.word.length;const q={id:w.id,stage,range,first:true,wrong:[],letters:stage>=3?Array(n).fill(''):[],traceLetters:stage===3?Array(w.word.length).fill(''):[],feedback:null,hint:null,mode:'write'};if(stage===1)q.choices=wholeChoices(w,range);if(stage===2)q.choices=gapChoices(w,range);return q}
 function confusions(text){if(text.length===1)return CONF[text]||['e','a'];const swap=text.replace(/ee/g,'ea').replace(/ie/g,'ei');return[swap!==text?swap:[...text].reverse().join(''),text.slice(0,-1)+(text.at(-1)==='e'?'a':'e')]}
 const SAFE_STAGE1_WORDS=['window','rocket','pencil','banana','tiger','garden','music','school','purple','cookie','ocean','rabbit'];
 function stage1DistanceScore(target,candidate){
@@ -248,7 +248,7 @@ function clueHtml(w){return`<div class="word-visual-cue audio-clue-panel"><butto
 function renderTask(){
   if(!session)return renderPlayHome();stopBgm();if(session.count>=session.goal)return finishSession();if(!session.q){const w=chooseWord();if(!w)return finishSession();session.last=w.id;session.q=newQuestion(w,1)}
   const q=session.q,w=state.lib[q.id];
-  $('#playView').innerHTML=`<div class="play-view"><div class="game-topline"><button id="exitPlayBtn" class="icon-btn">×</button><div><div class="stage-labels"><span>Stage ${q.stage} · ${STAGE_NAMES[q.stage]}</span><span>${session.count+1} / ${session.goal}</span></div><div class="stage-track"><div class="stage-fill" style="width:${((q.stage-1)/4)*100}%"></div></div></div><div class="session-xp">+${session.xp} XP</div></div><div class="game-card"><div class="word-audio-row"><button id="audioBtn" class="audio-orb word-sound-button" aria-label="Hear the spelling word"><span class="speaker-glyph">🔊</span><small>WORD</small></button><div><p class="task-prompt">${STAGE_PROMPTS[q.stage]}</p><p class="task-subprompt">${q.stage>=3?'One box = one real writing field. Scratch only inside the letter you want to erase.':'You can play the sound again.'}</p><span id="voicePill" class="voice-pill">${w.pronunciationUrl?'● Human recording':'○ Device voice while human audio loads'}</span></div></div>${clueHtml(w)}<div id="questionArea" class="question-area">${questionHtml(w,q)}</div><div id="feedback" class="feedback ${q.feedback?.bad?'bad':q.feedback?.good?'good':''}">${feedbackText(q)}</div><div class="help-row assist-dock"><button id="hintBtn" class="help-btn hint assist-btn"><span class="assist-icon">✦</span><span><b>Hint</b><small>Give me a clue</small></span></button><button id="peekBtn" class="help-btn peek assist-btn"><span class="assist-icon">◉</span><span><b>Peek</b><small>Show the word</small></span></button></div></div></div>`;
+  $('#playView').innerHTML=`<div class="play-view"><div class="game-topline"><button id="exitPlayBtn" class="icon-btn">×</button><div><div class="stage-labels"><span>Stage ${q.stage} · ${STAGE_NAMES[q.stage]}</span><span>${session.count+1} / ${session.goal}</span></div><div class="stage-track"><div class="stage-fill" style="width:${((q.stage-1)/4)*100}%"></div></div></div><div class="session-xp">+${session.xp} XP</div></div><div class="game-card"><div class="word-audio-row"><button id="audioBtn" class="audio-orb word-sound-button" aria-label="Hear the spelling word"><span class="speaker-glyph">🔊</span><small>WORD</small></button><div><p class="task-prompt">${STAGE_PROMPTS[q.stage]}</p><p class="task-subprompt">${q.stage===3?'Trace the dotted letters, then write the empty boxes.':q.stage===4?'Write one letter in each box. Scratch a written box to erase.':'You can play the sound again.'}</p><span id="voicePill" class="voice-pill">${w.pronunciationUrl?'● Human recording':'○ Device voice while human audio loads'}</span></div></div>${clueHtml(w)}<div id="questionArea" class="question-area">${questionHtml(w,q)}</div><div id="feedback" class="feedback ${q.feedback?.bad?'bad':q.feedback?.good?'good':''}">${feedbackText(q)}</div><div class="help-row assist-dock"><button id="hintBtn" class="help-btn hint assist-btn"><span class="assist-icon">✦</span><span><b>Hint</b><small>Give me a clue</small></span></button><button id="peekBtn" class="help-btn peek assist-btn"><span class="assist-icon">◉</span><span><b>Peek</b><small>Show the word</small></span></button></div></div></div>`;
   $('#exitPlayBtn').onclick=renderPlayHome;$('#audioBtn').onclick=()=>playWordAudio(w,false,{userInitiated:true});$('#pictureWordAudioBtn')?.addEventListener('click',()=>playWordAudio(w,false,{userInitiated:true}));$('#meaningEnAudioBtn')?.addEventListener('click',e=>speakLearningText(w.meaningEn||w.pictureCue||'',{lang:'en-US',button:e.currentTarget}));$('#meaningJaAudioBtn')?.addEventListener('click',e=>speakLearningText(w.meaningJa||'',{lang:'ja-JP',button:e.currentTarget}));$('#exampleAudioBtn')?.addEventListener('click',e=>speakLearningText(w.example||'',{lang:'en-US',button:e.currentTarget}));$('#hintBtn').onclick=()=>showHint(w,q);$('#peekBtn').onclick=()=>showPeek(w);bindQuestion(w,q);setTimeout(()=>playWordAudio(w,false,{auto:true}),120);if(!w.pronunciationUrl&&!w.audioTried)resolveHumanAudioForWord(w).then(found=>{if(found&&session?.q?.id===w.id){const pill=$('#voicePill');if(pill)pill.textContent='● Human recording'}});
 }
 function questionHtml(w,q){
@@ -258,29 +258,60 @@ function questionHtml(w,q){
 }
 function handwritingHtml(w,q){
   const expected=expectedText(w,q);const r=q.stage===3?q.range:{start:0,end:w.word.length};let boxes=[];
+  if(q.stage===3&&!Array.isArray(q.traceLetters))q.traceLetters=Array(w.word.length).fill('');
   for(let full=0;full<w.word.length;full++){
-    if(q.stage===3&&(full<r.start||full>=r.end)){boxes.push(`<div class="fixed-box">${esc(w.word[full])}</div>`);continue}
+    if(q.stage===3&&(full<r.start||full>=r.end)){
+      const guide=esc(w.word[full]),traced=q.traceLetters[full]||'';
+      boxes.push(`<div class="trace-cell ${traced?'traced':''}" data-guide-full="${full}"><svg class="trace-guide" viewBox="0 0 72 72" aria-hidden="true"><text x="36" y="53" text-anchor="middle">${guide}</text></svg>${traced?`<div class="trace-written" data-trace-full="${full}" aria-label="Traced letter ${guide}">${esc(traced)}</div>`:`<input class="trace-input" data-trace-full="${full}" value="" inputmode="none" virtualkeyboardpolicy="manual" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Trace letter ${guide}">`}</div>`);continue
+    }
     const local=full-r.start;const value=q.letters[local]||'';let cls=value?'filled':'';
     if(q.feedback?.bad){if(!value)cls='missing';else cls=value===expected[local]?'ok':'bad'}
     if(q.hint?.local===local)cls+=' hint-target';
     if(value){
-      // Written letters are plain display boxes, not text inputs. That removes native caret/selection behavior completely.
       boxes.push(`<div class="letter-box written-box ${cls.trim()}" data-local="${local}" data-full="${full}" role="button" aria-label="Letter ${full+1}: ${esc(value)}. Scratch to erase.">${esc(value)}</div>`);
     }else{
-      // Empty boxes stay genuine editable Scribble targets. Apple Pencil can begin writing immediately — no first tap is required.
       boxes.push(`<input class="letter-box empty-box ${cls.trim()}" data-local="${local}" data-full="${full}" value="" inputmode="none" virtualkeyboardpolicy="manual" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder=" " aria-label="Letter ${full+1}">`);
     }
   }
-  return`<div class="spell-wrap"><div class="pencil-modebar"><button id="writeModeBtn" class="mode-btn write ${q.mode==='write'?'on':''}">✎ Write</button><button id="eraseModeBtn" class="mode-btn erase ${q.mode==='erase'?'on':''}">⌫ Eraser</button></div><div class="box-note">Just write in the next empty box — no tap first. Scratch one written box to erase only that letter.</div><div id="letterRow" class="letter-row ${q.mode==='erase'?'erase-mode':''}" style="--letters:${w.word.length}">${boxes.join('')}</div>${hintHtml(q)}<button id="checkAnswerBtn" class="check-answer">Check</button></div>`;
+  const stage3=q.stage===3;
+  const note=stage3?`<div class="stage3-bridge-note"><b>Trace → remember.</b> Follow the dotted letters from left to right, and write the empty purple boxes yourself.</div>`:`<div class="box-note">Write the whole word from memory. Scratch one written box to erase only that letter.</div>`;
+  return`<div class="spell-wrap"><div class="pencil-modebar"><button id="writeModeBtn" class="mode-btn write ${q.mode==='write'?'on':''}">✎ Write</button><button id="eraseModeBtn" class="mode-btn erase ${q.mode==='erase'?'on':''}">⌫ Eraser</button></div>${note}<div id="letterRow" class="letter-row ${stage3?'stage3-trace-row':''} ${q.mode==='erase'?'erase-mode':''}" style="--letters:${w.word.length}">${boxes.join('')}</div>${hintHtml(q)}<button id="checkAnswerBtn" class="check-answer">Check</button></div>`;
 }
 function hintHtml(q){if(!q.hint)return'';return`<div class="hint-strip"><button id="hintAudioBtn" class="tiny-audio">🔊</button><span>Fix the purple box:</span>${q.hint.options.map(c=>`<button class="hint-choice" data-hint="${c}">${c}</button>`).join('')}<button id="hintCloseBtn" class="tiny-audio">×</button></div>`}
 function feedbackText(q){if(q.feedback?.good)return q.first?'Perfect — you remembered it! ✦':'Yes! You fixed it. That counts. ♡';if(q.feedback?.bad)return'Almost. Green is right. Red or dotted boxes need a fix — stay on this stage.';return''}
 function bindQuestion(w,q){
   if(q.stage<3){$$('[data-choice]').forEach(b=>b.onclick=()=>pickChoice(b,w,q));return}
   $('#writeModeBtn').onclick=()=>{q.mode='write';renderTask()};$('#eraseModeBtn').onclick=()=>{q.mode='erase';renderTask()};$('#checkAnswerBtn').onclick=()=>checkHandwriting(w,q);$('#hintAudioBtn')?.addEventListener('click',()=>playWordAudio(w,true,{userInitiated:true}));$('#hintCloseBtn')?.addEventListener('click',()=>{q.hint=null;renderTask()});$$('[data-hint]').forEach(b=>b.onclick=()=>chooseHint(b,w,q));
-  const boxes=$$('.letter-box[data-local]');boxes.forEach((box,index)=>bindLetterBox(box,index,w,q));
+  const boxes=$$('.letter-box[data-local]');boxes.forEach((box,index)=>bindLetterBox(box,index,w,q));$$('.trace-input[data-trace-full]').forEach(input=>bindTraceBox(input,Number(input.dataset.traceFull),w,q));
   // Never pre-focus a writing field. On iPad that can open the software keyboard and it also races with fast Pencil movement.
   document.activeElement?.blur?.();
+}
+function bindTraceBox(input,full,w,q){
+  const expected=w.word[full]||'';
+  input.addEventListener('pointerdown',e=>{
+    const pointer=e.pointerType||'';
+    if(pointer==='touch'){e.preventDefault();input.blur();return}
+    if(q.mode==='erase'){e.preventDefault();e.stopPropagation();input.value='';return}
+    if(q.mode==='write'&&pointer==='pen'){
+      input.setAttribute('inputmode','none');
+      try{if(document.activeElement!==input)input.focus({preventScroll:true})}catch{}
+      setTimeout(()=>{try{navigator.virtualKeyboard?.hide?.()}catch{}},0)
+    }
+  },true);
+  input.addEventListener('touchstart',e=>{e.preventDefault();input.blur()},{passive:false});
+  input.addEventListener('contextmenu',e=>e.preventDefault());input.addEventListener('dragstart',e=>e.preventDefault());
+  input.addEventListener('keydown',e=>e.preventDefault());
+  input.addEventListener('beforeinput',e=>{const t=String(e.inputType||'');if(t.startsWith('delete'))e.preventDefault()});
+  input.addEventListener('input',e=>{
+    if(q.mode==='erase'){e.target.value='';return}
+    const cleaned=normalizeScribbleLetter(e.target.value,expected);if(!cleaned){e.target.value='';return}
+    const cell=e.target.closest('.trace-cell');
+    if(cleaned!==expected){e.target.value='';cell?.classList.add('trace-retry');setTimeout(()=>cell?.classList.remove('trace-retry'),320);return}
+    if(!Array.isArray(q.traceLetters))q.traceLetters=Array(w.word.length).fill('');q.traceLetters[full]=cleaned;
+    if(cell){cell.classList.add('traced');const done=document.createElement('div');done.className='trace-written';done.dataset.traceFull=String(full);done.setAttribute('aria-label',`Traced letter ${expected}`);done.textContent=cleaned;e.target.replaceWith(done)}
+    try{navigator.virtualKeyboard?.hide?.()}catch{}
+  });
+  input.addEventListener('focus',()=>{try{input.setSelectionRange(0,0)}catch{};try{navigator.virtualKeyboard?.hide?.()}catch{}})
 }
 function startFilledBoxScratch(e,index,w,q,input){
   const pointerId=e.pointerId,rect=input.getBoundingClientRect(),points=[];let finished=false;
