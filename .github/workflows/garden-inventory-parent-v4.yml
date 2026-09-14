@@ -1,0 +1,166 @@
+name: Garden inventory and parent v4
+
+on:
+  push:
+    paths:
+      - '.github/workflows/garden-inventory-parent-v4.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create app icon and installable metadata
+        run: |
+          cat > app-icon.svg <<'SVG'
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+            <rect width="1024" height="1024" rx="220" fill="#9EBFF0"/>
+            <circle cx="846" cy="155" r="88" fill="#B8A7EA" opacity=".55"/>
+            <circle cx="142" cy="170" r="105" fill="#B6D7F5" opacity=".7"/>
+            <path d="M0 704C130 616 240 670 330 630c103-46 188-27 272 28 91 60 185 20 272-3 62-16 108 2 150 31v338H0z" fill="#7CCB7B"/>
+            <path d="M0 790c148-85 266-45 369-9 111 39 214 16 327-24 129-45 224 2 328 65v202H0z" fill="#58B66E"/>
+            <g fill="#3E9257">
+              <ellipse cx="120" cy="610" rx="42" ry="90" transform="rotate(-22 120 610)"/><ellipse cx="191" cy="594" rx="39" ry="87" transform="rotate(28 191 594)"/>
+              <ellipse cx="836" cy="604" rx="43" ry="92" transform="rotate(20 836 604)"/><ellipse cx="905" cy="629" rx="38" ry="84" transform="rotate(-28 905 629)"/>
+            </g>
+            <g stroke="#FFFFFF" stroke-width="14" stroke-linejoin="round">
+              <ellipse cx="411" cy="300" rx="103" ry="219" transform="rotate(-19 411 300)" fill="#FFF9F1"/>
+              <ellipse cx="636" cy="294" rx="101" ry="220" transform="rotate(18 636 294)" fill="#FFF9F1"/>
+            </g>
+            <ellipse cx="418" cy="305" rx="44" ry="137" transform="rotate(-18 418 305)" fill="#F5AAB8"/>
+            <ellipse cx="630" cy="301" rx="43" ry="138" transform="rotate(18 630 301)" fill="#F5AAB8"/>
+            <ellipse cx="518" cy="558" rx="259" ry="235" fill="#FFF9F1" stroke="#FFFFFF" stroke-width="15"/>
+            <ellipse cx="461" cy="554" rx="19" ry="25" fill="#493E42"/><ellipse cx="596" cy="554" rx="19" ry="25" fill="#493E42"/>
+            <circle cx="413" cy="615" r="30" fill="#F5B7C0" opacity=".75"/><circle cx="649" cy="615" r="30" fill="#F5B7C0" opacity=".75"/>
+            <path d="M517 585c14 0 28 8 28 20 0 11-14 20-28 20s-28-9-28-20c0-12 14-20 28-20z" fill="#DE808D"/>
+            <path d="M516 624c-1 26-21 40-43 34M518 624c2 27 22 40 45 33" fill="none" stroke="#58474C" stroke-width="11" stroke-linecap="round"/>
+            <g stroke="#fff" stroke-width="12">
+              <rect x="586" y="645" width="178" height="178" rx="31" fill="#EF5E67"/><rect x="470" y="762" width="178" height="178" rx="31" fill="#4F8DE5"/><rect x="650" y="777" width="178" height="178" rx="31" fill="#F4B83F"/>
+            </g>
+            <g fill="#fff" font-family="Arial Rounded MT Bold,Arial,sans-serif" font-weight="700" font-size="118" text-anchor="middle">
+              <text x="675" y="775">A</text><text x="559" y="893">B</text><text x="739" y="908">C</text>
+            </g>
+            <g>
+              <g transform="translate(115 735)"><circle r="62" fill="#fff"/><circle r="22" fill="#F4C94E"/><circle cx="0" cy="-52" r="27" fill="#fff"/><circle cx="49" cy="-16" r="27" fill="#fff"/><circle cx="30" cy="42" r="27" fill="#fff"/><circle cx="-30" cy="42" r="27" fill="#fff"/><circle cx="-49" cy="-16" r="27" fill="#fff"/></g>
+              <g transform="translate(878 390)"><circle r="47" fill="#fff"/><circle r="17" fill="#F4C94E"/><circle cx="0" cy="-39" r="21" fill="#fff"/><circle cx="37" cy="-12" r="21" fill="#fff"/><circle cx="23" cy="32" r="21" fill="#fff"/><circle cx="-23" cy="32" r="21" fill="#fff"/><circle cx="-37" cy="-12" r="21" fill="#fff"/></g>
+            </g>
+          </svg>
+          SVG
+
+          cat > manifest.webmanifest <<'JSON'
+          {
+            "name": "Miori's Word Garden",
+            "short_name": "Word Garden",
+            "start_url": "./",
+            "display": "standalone",
+            "background_color": "#f8f2ff",
+            "theme_color": "#9EBFF0",
+            "icons": [
+              {"src":"icon-192.png","sizes":"192x192","type":"image/png"},
+              {"src":"icon-512.png","sizes":"512x512","type":"image/png"}
+            ]
+          }
+          JSON
+
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq librsvg2-bin >/dev/null
+          rsvg-convert -w 180 -h 180 app-icon.svg > apple-touch-icon.png
+          rsvg-convert -w 192 -h 192 app-icon.svg > icon-192.png
+          rsvg-convert -w 512 -h 512 app-icon.svg > icon-512.png
+
+      - name: Patch Garden inventory and Parent maintenance
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p=Path('app.js')
+          s=p.read_text()
+
+          s=s.replace("garden:{growth:0,pos:{},bunnySeated:false}","garden:{growth:0,pos:{},bunnySeated:false,stored:[]}")
+          s=s.replace("s.garden=s.garden||{growth:0,pos:{},bunnySeated:false};s.garden.pos=s.garden.pos||{};if(typeof s.garden.bunnySeated!=='boolean')s.garden.bunnySeated=false;",
+                      "s.garden=s.garden||{growth:0,pos:{},bunnySeated:false,stored:[]};s.garden.pos=s.garden.pos||{};if(typeof s.garden.bunnySeated!=='boolean')s.garden.bunnySeated=false;if(!Array.isArray(s.garden.stored))s.garden.stored=[];")
+
+          s=s.replace("const celebration=gardenCelebration;const target=celebration?(celebration.growth<=5?'left':'right'):'';",
+                      "const celebration=gardenCelebration;const target=celebration?(celebration.growth<=5?'left':'right'):'';const storedCount=(state.garden.stored||[]).length;const unlockedTreasureCount=rewards.filter(r=>r.id!=='bunny'&&state.xp>=r.xp).length;")
+
+          old="<button class=\"primary-btn garden-play\" id=\"gardenPlayBtn\">${celebration?'Keep going ✦':'Play! ✦'}</button>"
+          new="<div class=\"garden-head-actions\"><button class=\"secondary-btn treasure-open\" id=\"treasureChestBtn\">🧺 Treasure Box <span>${storedCount}/${unlockedTreasureCount}</span></button><button class=\"primary-btn garden-play\" id=\"gardenPlayBtn\">${celebration?'Keep going ✦':'Play! ✦'}</button></div>"
+          if old not in s: raise SystemExit('garden head target not found')
+          s=s.replace(old,new,1)
+
+          s=s.replace("$('#gardenPlayBtn').onclick=()=>celebration?continuePlay():(playSfx('tap'),setView('play'));",
+                      "$('#gardenPlayBtn').onclick=()=>celebration?continuePlay():(playSfx('tap'),setView('play'));$('#treasureChestBtn')?.addEventListener('click',()=>{playSfx('tap');openTreasureChest()});")
+
+          s=s.replace("rewards.filter(r=>state.xp>=r.xp).forEach(r=>{",
+                      "rewards.filter(r=>state.xp>=r.xp&&!(state.garden.stored||[]).includes(r.id)).forEach(r=>{")
+
+          marker="function releaseBunnyHere(pos){"
+          chest=r'''function openTreasureChest(){
+  const unlocked=rewards.filter(r=>r.id!=='bunny'&&state.xp>=r.xp);const stored=state.garden.stored||[];
+  const cards=unlocked.length?unlocked.map(r=>{const away=stored.includes(r.id);return`<div class="treasure-card ${away?'stored':''}" data-treasure="${r.id}"><div class="treasure-art">${gardenObjectArt(r)}</div><div class="treasure-copy"><b>${esc(r.label)}</b><span>${away?'In Treasure Box':'In the garden'}</span></div><button class="${away?'place-item':'store-item'}" data-id="${r.id}">${away?'Place in garden':'Put away'}</button></div>`}).join(''):`<div class="treasure-empty">Keep spelling — your first garden treasure will unlock soon ✦</div>`;
+  $('#modalRoot').innerHTML=`<div class="modal treasure-modal"><div class="modal-card treasure-panel"><div class="modal-head"><div><p class="eyebrow">MY COLLECTION</p><h2>🧺 Treasure Box</h2><p>Keep special items here, then bring them back whenever you want.</p></div><button id="closeTreasure" class="icon-btn">×</button></div><div class="treasure-grid">${cards}</div></div></div>`;
+  $('#closeTreasure').onclick=()=>$('#modalRoot').innerHTML='';
+  $$('.store-item').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.id;if(id==='bench'&&state.garden.bunnySeated){state.garden.bunnySeated=false;state.garden.pos.bunny=gardenDefaultPos('bunny')}if(!state.garden.stored.includes(id))state.garden.stored.push(id);save();renderGarden();openTreasureChest();playSfx('tap')});
+  $$('.place-item').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.id;state.garden.stored=state.garden.stored.filter(x=>x!==id);if(!state.garden.pos[id])state.garden.pos[id]=gardenDefaultPos(id);save();renderGarden();openTreasureChest();playSfx('sparkle')});
+}
+
+'''
+          if marker not in s: raise SystemExit('release marker missing')
+          s=s.replace(marker,chest+marker,1)
+
+          start=s.index('function renderParent(){')
+          end=s.index('function openWordModal',start)
+          replacement=r'''function resetOneLearning(id){const w=state.lib[id];if(!w)return;if(confirm(`Reset learning data for “${w.word}” only?`)){w.learn=learning(w.word);save();renderParent();toast(`${w.word}: learning data reset.`)}}
+function resetAllLearning(){if(!confirm('Reset learning data for ALL words? Garden items and XP will stay.'))return;Object.values(state.lib).forEach(w=>w.learn=learning(w.word));save();renderParent();toast('All learning data reset.')}
+function resetGardenLayout(){if(!confirm('Reset garden positions? Items in the Treasure Box will stay there.'))return;state.garden.pos={};state.garden.bunnySeated=false;save();renderParent();toast('Garden layout reset.')}
+function resetGardenProgress(){if(!confirm('Reset the whole garden? This resets XP, plant growth, item positions, and the Treasure Box. Word learning data will NOT be deleted.'))return;state.xp=0;state.garden={growth:0,pos:{},bunnySeated:false,stored:[]};save();renderParent();toast('Garden reset. Learning data kept.')}
+function learningSummary(w){const l=w.learn||learning(w.word),weak=Math.max(0,...(l.weak||[])),wi=weak?(l.weak||[]).indexOf(weak):-1;return{loops:l.loops||0,correct:l.correct||0,mistakes:l.mistakes||0,weak:wi>=0?w.word.slice(wi,Math.min(w.word.length,wi+2)):'—',last:l.last||'Not practiced yet'}}
+function renderParent(){
+  const week=state.week.ids.map(id=>state.lib[id]).filter(Boolean),all=Object.values(state.lib).sort((a,b)=>a.word.localeCompare(b.word));
+  $('#parentView').innerHTML=`<div class="parent-view parent-v4"><div class="parent-head"><div><p class="eyebrow">DAD SPACE</p><h1>Parent</h1><p>Everything Dad needs to maintain words, pronunciation, learning data, and the garden.</p></div><div class="parent-actions"><label class="secondary-btn file-btn">Import Word Pack<input id="parentImport" type="file" accept="application/json,.json"></label><button id="exportBtn" class="secondary-btn">Export Backup</button><button id="addWordBtn" class="primary-btn">+ Add Word</button></div></div><div class="parent-stats-row"><div><b>${week.length}</b><span>This week</span></div><div><b>${state.xp}</b><span>Total XP</span></div><div><b>${state.garden.growth||0}</b><span>Garden growth</span></div><div><b>${rewards.filter(r=>state.xp>=r.xp).length}</b><span>Unlocked friends & items</span></div></div><div class="parent-grid parent-main-grid"><section class="panel"><div class="panel-head"><div><p class="eyebrow">THIS WEEK</p><h2>${esc(state.week.title)}</h2></div><span>${week.length} words</span></div><div class="week-list word-card-list">${week.map(wordRowHtml).join('')}</div></section><aside class="panel settings parent-audio-panel"><p class="eyebrow">PRONUNCIATION</p><h2>English voice & audio</h2><select id="voiceSelect"><option value="">Best available</option>${voices.filter(v=>/^en/i.test(v.lang)).map(v=>`<option value="${esc(v.voiceURI)}" ${v.voiceURI===state.settings.voice?'selected':''}>${esc(v.name)} · ${esc(v.lang)}</option>`).join('')}</select><p>Human recordings are used first when available. Device voice is the fallback.</p><button id="testVoiceBtn" class="parent-big-button">🔊 Test voice</button></aside></div><section class="panel library-panel"><div class="panel-head"><div><p class="eyebrow">WORD LIBRARY</p><h2>All saved words</h2></div><input id="librarySearch" class="search-input" placeholder="Search words…"></div><div id="libraryList" class="library-list word-card-list">${all.map(wordRowHtml).join('')}</div></section><section class="panel maintenance-panel"><div><p class="eyebrow">MAINTENANCE</p><h2>Reset & maintenance</h2><p>These controls are intentionally down here because you probably will not need them often.</p></div><div class="maintenance-actions"><button id="resetAllLearningBtn" class="maintenance-btn learning">↻ Reset all learning data<span>Keeps XP and the garden</span></button><button id="resetGardenLayoutBtn" class="maintenance-btn layout">▦ Reset garden layout<span>Keeps growth and unlocked items</span></button><button id="resetGardenProgressBtn" class="maintenance-btn danger-soft">Reset whole garden<span>Keeps word learning data</span></button></div></section></div>`;
+  $('#parentImport').onchange=e=>importWordPack(e.target.files?.[0]);$('#exportBtn').onclick=exportBackup;$('#addWordBtn').onclick=()=>openWordModal();$('#voiceSelect').onchange=e=>{state.settings.voice=e.target.value;save()};$('#testVoiceBtn').onclick=()=>speak('Hello Miori. Let’s practice spelling together.');$('#librarySearch').oninput=e=>{const q=e.target.value.toLowerCase();$('#libraryList').innerHTML=all.filter(w=>!q||w.word.includes(q)||(w.meaningEn||'').toLowerCase().includes(q)).map(wordRowHtml).join('');bindParentRows()};$('#resetAllLearningBtn').onclick=resetAllLearning;$('#resetGardenLayoutBtn').onclick=resetGardenLayout;$('#resetGardenProgressBtn').onclick=resetGardenProgress;bindParentRows()
+}
+function wordRowHtml(w){const m=learningSummary(w);return`<div class="word-row parent-word-card" data-id="${w.id}"><div class="word-main"><strong>${esc(w.word)}</strong><span class="audio-status">${w.pronunciationUrl?'● Human audio':'○ Device voice'}</span><p>${esc(w.meaningEn||'No meaning saved')}</p></div><div class="learning-mini"><span><b>${m.loops}</b> full loops</span><span><b>${m.correct}</b> correct</span><span><b>${m.mistakes}</b> mistakes</span><span>weak: <b>${esc(m.weak)}</b></span><small>${esc(m.last)}</small></div><div class="word-actions"><button class="parent-row-btn audio-preview">🔊 Audio</button><button class="parent-row-btn edit-word">✎ Edit</button><button class="parent-row-btn reset-word">↻ Reset learning</button></div></div>`}
+function bindParentRows(){$$('.word-row').forEach(row=>{const w=state.lib[row.dataset.id];$('.audio-preview',row).onclick=()=>playWordAudio(w);$('.edit-word',row).onclick=()=>openWordModal(w.id);$('.reset-word',row).onclick=()=>resetOneLearning(w.id)})}
+'''
+          s=s[:start]+replacement+s[end:]
+          p.write_text(s)
+
+          idx=Path('index.html');h=idx.read_text()
+          h=h.replace('<meta name="apple-mobile-web-app-capable" content="yes">','<meta name="apple-mobile-web-app-capable" content="yes">\n  <meta name="apple-mobile-web-app-title" content="Word Garden">\n  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=20260914-v4">\n  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=20260914-v4">\n  <link rel="manifest" href="manifest.webmanifest?v=20260914-v4">')
+          h=h.replace('<span class="brand-mark">✿</span>','<span class="brand-mark app-icon-mark"><img src="app-icon.svg?v=20260914-v4" alt=""></span>')
+          if 'garden-admin-v4.css' not in h:
+              h=h.replace('</head>','  <link rel="stylesheet" href="garden-admin-v4.css?v=20260914-v4">\n</head>')
+          h=h.replace('app.js?v=20260914-garden-v3','app.js?v=20260914-garden-v4')
+          idx.write_text(h)
+          PY
+
+      - name: Add v4 styles
+        run: |
+          cat > garden-admin-v4.css <<'CSS'
+          /* GARDEN_ADMIN_V4_20260914 */
+          .app-icon-mark{overflow:hidden;padding:0}.app-icon-mark img{display:block;width:100%;height:100%;object-fit:cover;border-radius:13px}
+          .garden-head-actions{display:flex;align-items:center;gap:9px}.treasure-open{background:#fff8ef;color:#765c53;box-shadow:0 8px 22px #5f4a4015;display:flex;gap:7px;align-items:center}.treasure-open span{font-size:9px;background:#f3dfcf;padding:3px 6px;border-radius:99px}
+          .treasure-modal .modal-card{width:min(900px,calc(100% - 32px))}.treasure-panel .modal-head p{margin:5px 0 0;color:var(--muted);font-size:12px}.treasure-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}.treasure-card{display:grid;grid-template-columns:100px 1fr auto;align-items:center;gap:14px;border:2px solid #efe7e1;border-radius:22px;padding:12px;background:#fffdfa}.treasure-card.stored{background:#f7f3fb;border-color:#e5d8f1}.treasure-art{width:96px;height:82px;display:grid;place-items:center}.treasure-art svg{max-width:92px;max-height:78px}.treasure-copy b{display:block;font-size:15px}.treasure-copy span{display:block;margin-top:4px;font-size:10px;color:var(--muted);font-weight:800}.treasure-card button{border:0;border-radius:14px;padding:10px 12px;font-weight:900;font-size:11px}.store-item{background:#f0e9e4;color:#6e615d}.place-item{background:#e5f1e1;color:#55715b}.treasure-empty{grid-column:1/-1;text-align:center;padding:36px;border-radius:20px;background:#f7f3f0;color:var(--muted);font-weight:850}
+          .parent-v4{overflow:auto;padding-bottom:34px}.parent-v4 .parent-head{position:sticky;top:0;z-index:4;background:linear-gradient(var(--bg) 82%,transparent);padding-top:8px;padding-bottom:13px}.parent-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 12px}.parent-stats-row>div{background:#fff;border-radius:18px;padding:12px 14px;box-shadow:0 8px 20px #493a5310}.parent-stats-row b{display:block;font-size:20px}.parent-stats-row span{font-size:10px;color:var(--muted);font-weight:800}.parent-main-grid{align-items:start}.word-card-list{display:grid;gap:9px}.parent-word-card{display:grid!important;grid-template-columns:minmax(230px,1.3fr) minmax(220px,1fr) auto!important;gap:14px!important;align-items:center!important;padding:13px 14px!important;border-radius:18px!important;background:#fffdfa!important;border:1px solid #eee5df!important}.word-main strong{font-size:18px}.word-main p{margin:5px 0 0;font-size:11px;line-height:1.35;color:#6f686d}.audio-status{display:inline-block;margin-left:8px;font-size:9px;font-weight:850;color:#6d7d71}.learning-mini{display:flex;flex-wrap:wrap;gap:5px 8px}.learning-mini span{font-size:9.5px;background:#f3eee9;border-radius:99px;padding:5px 7px;color:#6d646b}.learning-mini small{width:100%;font-size:9px;color:var(--muted);margin-top:2px}.word-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;min-width:180px}.parent-row-btn,.parent-big-button{border:0;border-radius:12px;padding:9px 10px;background:#eee8e4;font-size:10px;font-weight:900}.parent-row-btn.edit-word{background:#e8f1e5;color:#55715b}.parent-row-btn.reset-word{grid-column:1/-1;background:#f6e9e8;color:#9a5c5f}.parent-big-button{font-size:12px;padding:11px 14px}.maintenance-panel{margin-top:13px!important;display:grid;grid-template-columns:minmax(220px,.75fr) 1.5fr;gap:20px;align-items:center}.maintenance-panel h2{margin:0}.maintenance-panel p{font-size:11px;color:var(--muted);line-height:1.45}.maintenance-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.maintenance-btn{border:0;border-radius:16px;padding:13px;text-align:left;font-weight:900;background:#f1ece8}.maintenance-btn span{display:block;margin-top:5px;font-size:9px;color:var(--muted);font-weight:700}.maintenance-btn.learning{background:#eee8f5;color:#6c587b}.maintenance-btn.layout{background:#e9f1e6;color:#56705c}.maintenance-btn.danger-soft{background:#f8e7e6;color:#9a5659}
+          @media(max-width:900px){.treasure-grid{grid-template-columns:1fr}.parent-stats-row{grid-template-columns:repeat(2,1fr)}.parent-word-card{grid-template-columns:1fr!important}.word-actions{display:flex;min-width:0}.parent-row-btn.reset-word{grid-column:auto}.maintenance-panel{grid-template-columns:1fr}.maintenance-actions{grid-template-columns:1fr}.garden-head-actions{flex-wrap:wrap;justify-content:flex-end}}
+          CSS
+
+      - name: Validate JavaScript
+        run: node --check app.js
+
+      - name: Commit v4 build
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js index.html app-icon.svg apple-touch-icon.png icon-192.png icon-512.png manifest.webmanifest garden-admin-v4.css
+          git commit -m "Add app icon, treasure box, and parent maintenance UI"
+          git push
