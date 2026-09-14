@@ -1,0 +1,19 @@
+/* Apple Pencil writing guard — keep iPad finger/palm touches from turning a letter box into a text selection. */
+.letter-box{
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+  -webkit-user-drag:none!important;
+  caret-color:transparent!important;
+}
+.letter-box::selection{
+  background:transparent!important;
+  color:inherit!important;
+}
+.letter-row,
+.spell-wrap{
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
+/* Do not set touch-action:none here: native Apple Scribble still needs the real input surface. */
