@@ -17,3 +17,16 @@
   -webkit-touch-callout:none!important;
 }
 /* Do not set touch-action:none here: native Apple Scribble still needs the real input surface. */
+
+
+/* Pencil scratch v3: written letters are display-like scratch targets, not editable text. */
+.letter-box[readonly]{
+  caret-color:transparent!important;
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+  cursor:default;
+}
+.letter-box[readonly]:focus{
+  caret-color:transparent!important;
+}
