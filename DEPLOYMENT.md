@@ -1,48 +1,26 @@
-# Deployment notes
+# Deployment
 
-## Primary hosting
+Production is GitHub Pages:
 
-Miori's Word Garden now uses **GitHub Pages** as the primary public host.
+https://nagaitashouten-star.github.io/miori-word-garden/
 
-Production URL:
+## Branches
 
-`https://nagaitashouten-star.github.io/miori-word-garden/`
+- `main` — working source of truth.
+- `gh-pages` — published mirror of the finished `main` commit.
+- `archive/netlify-era-2026-09-14` — older Netlify-era history.
+- `archive/pre-spellgarden-rebuild-2026-09-14` — snapshot immediately before the current Spell Garden-inspired rebuild.
 
-The app is a static, self-contained `index.html`, so no build step is required.
+The repository has a Pages workflow. After a finished change is committed to `main`, mirror that commit to `gh-pages` and confirm the GitHub Pages deployment succeeds.
 
-## Publishing branch
+## App files
 
-GitHub Pages publishes the root of the `gh-pages` branch.
+- `index.html` — shell and asset versions.
+- `styles.css` — main UI.
+- `app.js` — Garden, Play, Parent, adaptive learning, audio, and per-letter Apple Pencil fields.
+- `pencil-touch-guard.css` / `pencil-touch-guard.js` — iPad-specific finger/palm rejection and native text-selection suppression during Stage 3/4 while preserving Pencil Scribble.
+- `.nojekyll` — direct static publishing.
 
-Current production source is kept identical to the clean app files on `main`.
+## Browser data
 
-Files required for production:
-
-- `index.html`
-- `.nojekyll`
-
-When ChatGPT updates the app in this project, keep `main` and `gh-pages` in sync so the public Pages URL receives the same version.
-
-## Netlify migration
-
-Netlify is no longer the primary production host.
-
-The complete repository state from the end of the Netlify-centered workflow is preserved at:
-
-`archive/netlify-era-2026-09-14`
-
-That archive contains the old one-off patch workflows, patch scripts, legacy standalone builds, historical assets, and Netlify configuration that were intentionally removed from the clean `main` branch.
-
-## Browser data migration
-
-Learning progress lives in browser `localStorage` and is scoped to the website origin.
-
-Therefore data from:
-
-`https://miori-word-garden.netlify.app`
-
-does not automatically transfer to:
-
-`https://nagaitashouten-star.github.io/miori-word-garden/`
-
-To move existing progress, use **Parent → Export backup** on the old origin, then **Parent → Import JSON** on the GitHub Pages origin.
+Learning progress and Garden state are local browser data. The app uses the storage key `mwg-v2-rebuild` and migrates older v2 state to the current format when possible on the same site origin.
