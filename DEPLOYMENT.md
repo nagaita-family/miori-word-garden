@@ -6,21 +6,17 @@ https://nagaitashouten-star.github.io/miori-word-garden/
 
 ## Branches
 
-- `main` — working source of truth.
-- `gh-pages` — published mirror of the finished `main` commit.
-- `archive/netlify-era-2026-09-14` — older Netlify-era history.
-- `archive/pre-spellgarden-rebuild-2026-09-14` — snapshot immediately before the current Spell Garden-inspired rebuild.
+- `main` — source of truth for active development.
+- `gh-pages` — mirror of the currently published source state.
+- `archive/netlify-era-2026-09-14` — snapshot of the old Netlify-era repository.
+- `archive/pre-spellgarden-rebuild-2026-09-14` — snapshot before the Spell Garden inspired rebuild work.
 
-The repository has a Pages workflow. After a finished change is committed to `main`, mirror that commit to `gh-pages` and confirm the GitHub Pages deployment succeeds.
+## Publishing
 
-## App files
+A push to `main` runs `.github/workflows/pages.yml`, which uploads the repository as the GitHub Pages artifact and deploys it. Keep `gh-pages` mirrored to the latest verified `main` commit after significant releases.
 
-- `index.html` — shell and asset versions.
-- `styles.css` — main UI.
-- `app.js` — Garden, Play, Parent, adaptive learning, audio, and per-letter Apple Pencil fields.
-- `pencil-touch-guard.css` / `pencil-touch-guard.js` — iPad-specific finger/palm rejection and native text-selection suppression during Stage 3/4 while preserving Pencil Scribble.
-- `.nojekyll` — direct static publishing.
+## Current release direction
 
-## Browser data
+The visual UI follows Miori Spell Garden while Word Garden keeps its current adaptive learning data and independent Apple Pencil letter-box input architecture.
 
-Learning progress and Garden state are local browser data. The app uses the storage key `mwg-v2-rebuild` and migrates older v2 state to the current format when possible on the same site origin.
+Progress is browser-local (`mwg-v2-rebuild`), so exporting a backup is recommended before changing devices or origins.
