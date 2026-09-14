@@ -31,11 +31,15 @@ const WORD_CHUNKS={
   thicket:['thick','et']
 };
 const rewards=[
-{id:'bunny',xp:0,type:'rabbit',label:'Bunny',icon:'🐰',x:51,y:64},
-{id:'bench',xp:70,type:'treasure',label:'Cozy heart bench',icon:'🩷',x:25,y:72},
-{id:'picnic',xp:140,type:'treasure',label:'Strawberry picnic',icon:'🍓',x:78,y:70},
-{id:'mail',xp:220,type:'treasure',label:'Heart mailbox',icon:'💌',x:17,y:55},
-{id:'cat',xp:310,type:'friend',label:'Garden cat',icon:'🐱',x:69,y:62}
+{id:'bunny',xp:0,type:'rabbit',label:'Bunny',icon:'🐰',x:50,y:66},
+{id:'bench',xp:70,type:'treasure',label:'Cozy garden bench',icon:'🩷',x:25,y:73},
+{id:'picnic',xp:140,type:'treasure',label:'Strawberry picnic',icon:'🍓',x:78,y:72},
+{id:'mail',xp:220,type:'treasure',label:'Heart mailbox',icon:'💌',x:17,y:57},
+{id:'cat',xp:310,type:'friend',label:'Garden cat',icon:'🐱',x:69,y:64},
+{id:'birdbath',xp:400,type:'treasure',label:'Bird bath',icon:'🐦',x:85,y:51},
+{id:'seedcrate',xp:500,type:'treasure',label:'Seed crate',icon:'🌼',x:34,y:61},
+{id:'arch',xp:620,type:'treasure',label:'Flower arch',icon:'🌸',x:57,y:51},
+{id:'shed',xp:760,type:'treasure',label:'Little garden shed',icon:'🏡',x:90,y:34}
 ];
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -101,7 +105,11 @@ function benchSvg(){return`<svg viewBox="0 0 130 100" aria-hidden="true"><rect x
 function picnicSvg(){return`<svg viewBox="0 0 130 105" aria-hidden="true"><path d="M12 62h106l-13 34H25z" fill="#f7d6df"/><path d="M26 62l15 34M51 62l10 34M78 62l-8 34M102 62L88 96" stroke="#fff" stroke-width="5" opacity=".75"/><rect x="41" y="34" width="52" height="42" rx="12" fill="#c89467"/><path d="M50 39q15-30 34 0" fill="none" stroke="#9d6f4e" stroke-width="6" stroke-linecap="round"/><circle cx="48" cy="32" r="9" fill="#e96b78"/><circle cx="66" cy="28" r="9" fill="#ef7d86"/><circle cx="83" cy="34" r="9" fill="#e96776"/><path d="M45 23l4 8 5-8M63 19l4 8 5-8M80 25l4 8 5-8" stroke="#5f9567" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`}
 function mailboxSvg(){return`<svg viewBox="0 0 120 125" aria-hidden="true"><rect x="53" y="69" width="13" height="48" rx="6" fill="#8c6b63"/><path d="M28 32q0-22 24-22h25q24 0 24 22v44H28z" fill="#e6a7bd" stroke="#fff8" stroke-width="4"/><path d="M28 38h73" stroke="#c7859d" stroke-width="4"/><rect x="39" y="43" width="51" height="26" rx="7" fill="#fff8ef"/><path d="M40 44l25 16 25-16" fill="none" stroke="#d39ab0" stroke-width="4"/><path d="M94 18v28" stroke="#9b6578" stroke-width="5" stroke-linecap="round"/><path d="M94 18h15l-5 10 5 10H94" fill="#f6d66f"/><path d="M64 19c-6-7-14-1-10 5 3 5 10 9 10 9s7-4 10-9c4-6-4-12-10-5z" fill="#fff2f6"/></svg>`}
 function catSvg(){return`<svg viewBox="0 0 125 145" aria-hidden="true"><path d="M92 107q29-5 18-35" fill="none" stroke="#d9a273" stroke-width="12" stroke-linecap="round"/><ellipse cx="64" cy="105" rx="38" ry="31" fill="#f0bb8c"/><path d="M34 48l5-28 22 17M91 48l-5-28-22 17" fill="#e8ad7d"/><circle cx="63" cy="61" r="40" fill="#f2bd8e"/><path d="M41 58h10M76 58h10" stroke="#493f3e" stroke-width="5" stroke-linecap="round"/><path d="M58 70l5 4 5-4" fill="none" stroke="#9b6970" stroke-width="4" stroke-linecap="round"/><circle cx="39" cy="72" r="6" fill="#ef9fa7" opacity=".55"/><circle cx="87" cy="72" r="6" fill="#ef9fa7" opacity=".55"/><path d="M45 87q18 13 37 0" fill="none" stroke="#d99f74" stroke-width="5" stroke-linecap="round"/></svg>`}
-function gardenObjectArt(r){if(r.id==='bunny')return rabbitSvg();if(r.id==='bench')return benchSvg();if(r.id==='picnic')return picnicSvg();if(r.id==='mail')return mailboxSvg();if(r.id==='cat')return catSvg();return r.icon||'✦'}
+function birdBathSvg(){return`<svg viewBox="0 0 130 135" aria-hidden="true"><ellipse cx="65" cy="40" rx="48" ry="14" fill="#d7e3e5" stroke="#aabfc4" stroke-width="4"/><path d="M22 39q43 28 86 0" fill="#b9d7dc"/><rect x="58" y="48" width="14" height="58" rx="7" fill="#d8ddcf"/><ellipse cx="65" cy="112" rx="34" ry="10" fill="#c9cfbf"/><path d="M78 27q11-12 25-2-8 3-12 11-5-1-13-9z" fill="#5f8fb5"/><circle cx="98" cy="25" r="2.5" fill="#34363b"/><path d="M105 25l10 3-10 3z" fill="#e8a73d"/></svg>`}
+function seedCrateSvg(){return`<svg viewBox="0 0 140 112" aria-hidden="true"><rect x="20" y="48" width="100" height="49" rx="8" fill="#c48b58" stroke="#9d6f47" stroke-width="4"/><path d="M27 61h86M27 79h86" stroke="#e5bb8f" stroke-width="5"/><rect x="35" y="29" width="26" height="36" rx="4" fill="#f7e7b7" transform="rotate(-8 48 47)"/><rect x="72" y="24" width="28" height="39" rx="4" fill="#dfe9c9" transform="rotate(8 86 44)"/><circle cx="48" cy="44" r="7" fill="#ef8a7e"/><path d="M86 35v17M78 44h16" stroke="#6e9b62" stroke-width="4" stroke-linecap="round"/><path d="M112 34l7-13M110 37l15-4" stroke="#8a6b54" stroke-width="5" stroke-linecap="round"/></svg>`}
+function flowerArchSvg(){return`<svg viewBox="0 0 145 150" aria-hidden="true"><path d="M28 137V68q0-50 45-50t45 50v69" fill="none" stroke="#eef0e7" stroke-width="12" stroke-linecap="round"/><path d="M38 137V70q0-38 35-38t35 38v67" fill="none" stroke="#8daf7c" stroke-width="8" stroke-linecap="round"/><g fill="#ef8e91"><circle cx="39" cy="54" r="10"/><circle cx="57" cy="31" r="10"/><circle cx="84" cy="28" r="10"/><circle cx="106" cy="48" r="10"/></g><g fill="#f7c95f"><circle cx="33" cy="78" r="7"/><circle cx="73" cy="20" r="7"/><circle cx="113" cy="72" r="7"/></g></svg>`}
+function gardenShedSvg(){return`<svg viewBox="0 0 150 135" aria-hidden="true"><path d="M20 57h110v68H20z" fill="#fff8ea" stroke="#d8c8b4" stroke-width="4"/><path d="M10 59L75 18l65 41z" fill="#c87855" stroke="#aa6448" stroke-width="4"/><rect x="62" y="75" width="30" height="50" rx="4" fill="#7f9f87"/><rect x="31" y="72" width="22" height="22" rx="4" fill="#b9d8e7" stroke="#fff" stroke-width="4"/><path d="M42 72v22M31 83h22" stroke="#fff" stroke-width="3"/><circle cx="85" cy="99" r="3" fill="#f2cc5b"/></svg>`}
+function gardenObjectArt(r){if(r.id==='bunny')return rabbitSvg();if(r.id==='bench')return benchSvg();if(r.id==='picnic')return picnicSvg();if(r.id==='mail')return mailboxSvg();if(r.id==='cat')return catSvg();if(r.id==='birdbath')return birdBathSvg();if(r.id==='seedcrate')return seedCrateSvg();if(r.id==='arch')return flowerArchSvg();if(r.id==='shed')return gardenShedSvg();return r.icon||'✦'}
 function gardenDefaultPos(id){const r=rewards.find(x=>x.id===id);return{x:r?.x??50,y:r?.y??60}}
 function gardenPos(id){return state.garden.pos[id]||gardenDefaultPos(id)}
 function bunnyDisplayPos(){const bench=gardenPos('bench');return state.garden.bunnySeated&&state.xp>=70?{x:bench.x,y:bench.y-8}:gardenPos('bunny')}
@@ -113,18 +121,18 @@ function triggerGardenInteraction(type,actor='bunny'){
 }
 function gardenReactionHtml(){
   if(!gardenInteraction)return'';const type=gardenInteraction.type;
-  const data={seat:['bench','♡','Cozy!'],picnic:['picnic','🍓','Snack time!'],mail:['mail','💌','A letter!'],friends:['cat','♡','New friend!']}[type];if(!data)return'';
+  const data={seat:['bench','♡','Cozy!'],picnic:['picnic','🍓','Snack time!'],mail:['mail','💌','A letter!'],friends:['cat','♡','New friend!'],birds:['birdbath','🐦','Bird visitors!'],seeds:['seedcrate','🌼','Planting time!'],arch:['arch','✦','Pretty!'],shed:['shed','🧤','Garden tools!']}[type];if(!data)return'';
   const p=gardenPos(data[0]);return`<div class="garden-reaction ${type}" style="left:${p.x}%;top:${Math.max(12,p.y-14)}%"><span>${data[1]}</span><b>${data[2]}</b></div>`
 }
 function growthJourneyHtml(target){if(!target)return'';return`<div class="growth-journey ${target}"><i class="journey-stem"></i><i class="journey-leaf l"></i><i class="journey-leaf r"></i><i class="journey-bud"></i><i class="journey-bloom"></i></div>`}
 function renderGarden(){
   const a=Math.min(5,Math.max(0,state.garden.growth));const b=Math.min(5,Math.max(0,state.garden.growth-5));
   const next=rewards.find(r=>state.xp<r.xp);const nextText=next?`${next.icon||'✦'} ${next.label} at ${next.xp} XP`:'✨ All current garden surprises unlocked!';
-  const seatText=state.xp<70?'Keep growing — Bunny’s cozy bench is coming!':state.garden.bunnySeated?'🐰 Bunny is cozy on the bench ♡':'Drag Bunny to the bench, picnic, mailbox, or cat — each one reacts differently.';
+  const seatText=state.xp<70?'Keep growing — Bunny’s cozy bench is coming!':state.garden.bunnySeated?'🐰 Bunny is cozy on the bench ♡':'Drag Bunny around the backyard — every special spot has its own little reaction.';
   const celebration=gardenCelebration;const target=celebration?(celebration.growth<=5?'left':'right'):'';const storedCount=(state.garden.stored||[]).length;const unlockedTreasureCount=rewards.filter(r=>r.id!=='bunny'&&state.xp>=r.xp).length;
   const rewardCard=celebration?`<div class="reward-garden-card"><div class="reward-emoji">${esc(celebration.emoji||'🌱')}</div><div class="copy"><b>${esc(celebration.word)} made the garden grow! ✦</b><span>+${celebration.gain} XP · Watch the shoot grow, then bloom.</span></div><button id="gardenNextWordBtn">${celebration.finished?'Finish ✦':'Next word →'}</button></div>`:'';
   const burst=celebration?`<div class="growth-burst ${target}"><span>✦</span><span>✧</span><span>🌱</span><span>✦</span></div>`:'';
-  $('#gardenView').innerHTML=`<div class="garden-view"><div class="garden-head"><div><p class="eyebrow">YOUR GARDEN</p><h1>Miori’s little spell world ✦</h1><p class="sub">${esc(state.week.title)} · ${state.garden.growth} growth moments</p></div><div class="garden-head-actions"><button class="secondary-btn treasure-open" id="treasureChestBtn">🧺 Treasure Box <span>${storedCount}/${unlockedTreasureCount}</span></button><button class="primary-btn garden-play" id="gardenPlayBtn">${celebration?'Keep going ✦':'Play! ✦'}</button></div></div><div class="garden-scene ${celebration?'reward-moment':''}" id="gardenScene">${rewardCard}<div class="garden-update"><b>NEW ✦</b><span>Interactive treasures · visible plant growth · softer sound</span></div><div class="next-surprise">${esc(nextText)}</div><div class="garden-spark s1">✦</div><div class="garden-spark s2">✧</div><div class="garden-spark s3">✦</div><div class="garden-butterfly b1">🦋</div><div class="garden-butterfly b2">🦋</div><div class="sun"></div><div class="cloud a"></div><div class="cloud b"></div><div class="hill back"></div><div class="hill front"></div><div class="path"></div><div class="pond"></div><div class="plot left ${target==='left'?'growth-now':''}">${plant(a)}</div><div class="plot right ${target==='right'?'growth-now':''}">${plant(b)}</div>${growthJourneyHtml(target)}${burst}${gardenReactionHtml()}<div id="gardenObjects"></div><div class="garden-tip">${celebration?'🌱 Look — stem, leaves, bud, bloom!':seatText}</div></div></div>`;
+  $('#gardenView').innerHTML=`<div class="garden-view"><div class="garden-head"><div><p class="eyebrow">YOUR GARDEN</p><h1>Miori’s little spell world ✦</h1><p class="sub">${esc(state.week.title)} · ${state.garden.growth} growth moments</p></div><div class="garden-head-actions"><button class="secondary-btn treasure-open" id="treasureChestBtn">🧺 Treasure Box <span>${storedCount}/${unlockedTreasureCount}</span></button><button class="primary-btn garden-play" id="gardenPlayBtn">${celebration?'Keep going ✦':'Play! ✦'}</button></div></div><div class="garden-scene ${celebration?'reward-moment':''}" id="gardenScene">${rewardCard}<div class="garden-update"><b>NEW ✦</b><span>Sunny backyard edition · collect, decorate, and grow</span></div><div class="next-surprise">${esc(nextText)}</div><div class="garden-spark s1">✦</div><div class="garden-spark s2">✧</div><div class="garden-spark s3">✦</div><div class="garden-butterfly b1">🦋</div><div class="garden-butterfly b2">🦋</div><div class="sun"></div><div class="cloud a"></div><div class="cloud b"></div><div class="hill back"></div><div class="hill front"></div><div class="ca-house"></div><div class="white-fence"></div><div class="citrus-tree"></div><div class="patio-lights"></div><div class="lavender-edge left"></div><div class="lavender-edge right"></div><div class="path"></div><div class="pond"></div><div class="plot left ${target==='left'?'growth-now':''}">${plant(a)}</div><div class="plot right ${target==='right'?'growth-now':''}">${plant(b)}</div>${growthJourneyHtml(target)}${burst}${gardenReactionHtml()}<div id="gardenObjects"></div><div class="garden-tip">${celebration?'🌱 Look — stem, leaves, bud, bloom!':seatText}</div></div></div>`;
   const continuePlay=()=>{playSfx('tap');gardenCelebration=null;setView('play')};
   $('#gardenPlayBtn').onclick=()=>celebration?continuePlay():(playSfx('tap'),setView('play'));$('#treasureChestBtn')?.addEventListener('click',()=>{playSfx('tap');openTreasureChest()});
   $('#gardenNextWordBtn')?.addEventListener('click',continuePlay);
@@ -145,7 +153,7 @@ function reactToGardenDrop(id,p){
   const bp=id==='bunny'?p:bunnyDisplayPos();
   if(id==='bunny'){
     state.garden.bunnySeated=false;
-    const options=[['bench','seat',16],['picnic','picnic',17],['mail','mail',17],['cat','friends',16]].filter(([key])=>gardenUnlocked(key));
+    const options=[['bench','seat',16],['picnic','picnic',17],['mail','mail',17],['cat','friends',16],['birdbath','birds',16],['seedcrate','seeds',16],['arch','arch',18],['shed','shed',17]].filter(([key])=>gardenUnlocked(key));
     const hit=options.map(x=>({x,d:gardenDistance(p,gardenPos(x[0]))})).filter(o=>o.d<o.x[2]).sort((a,b)=>a.d-b.d)[0];
     if(!hit)return false;const [key,type]=hit.x;
     if(type==='seat'){state.garden.bunnySeated=true;delete state.garden.pos.bunny}else state.garden.pos.bunny={x:p.x,y:p.y};
@@ -155,12 +163,20 @@ function reactToGardenDrop(id,p){
   if(id==='picnic'&&gardenUnlocked('picnic')&&gardenDistance(p,bp)<17){releaseBunnyHere(bp);triggerGardenInteraction('picnic','bunny');return true}
   if(id==='mail'&&gardenUnlocked('mail')&&gardenDistance(p,bp)<17){releaseBunnyHere(bp);triggerGardenInteraction('mail','bunny');return true}
   if(id==='cat'&&gardenUnlocked('cat')&&gardenDistance(p,bp)<16){triggerGardenInteraction('friends','bunny');return true}
+  if(id==='birdbath'&&gardenUnlocked('birdbath')&&gardenDistance(p,bp)<16){triggerGardenInteraction('birds','bunny');return true}
+  if(id==='seedcrate'&&gardenUnlocked('seedcrate')&&gardenDistance(p,bp)<16){triggerGardenInteraction('seeds','bunny');return true}
+  if(id==='arch'&&gardenUnlocked('arch')&&gardenDistance(p,bp)<18){triggerGardenInteraction('arch','bunny');return true}
+  if(id==='shed'&&gardenUnlocked('shed')&&gardenDistance(p,bp)<17){triggerGardenInteraction('shed','bunny');return true}
   return false
 }
 function tapGardenObject(id){
   if(id==='picnic'){triggerGardenInteraction('picnic',id);renderGarden();return}
   if(id==='mail'){triggerGardenInteraction('mail',id);renderGarden();return}
   if(id==='cat'){triggerGardenInteraction('friends',id);renderGarden();return}
+  if(id==='birdbath'){triggerGardenInteraction('birds',id);renderGarden();return}
+  if(id==='seedcrate'){triggerGardenInteraction('seeds',id);renderGarden();return}
+  if(id==='arch'){triggerGardenInteraction('arch',id);renderGarden();return}
+  if(id==='shed'){triggerGardenInteraction('shed',id);renderGarden();return}
   if(id==='bench'&&state.garden.bunnySeated){triggerGardenInteraction('seat','bunny');renderGarden()}
 }
 function makeDraggable(el){
