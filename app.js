@@ -129,15 +129,26 @@ function renderGarden(){
   const a=Math.min(5,Math.max(0,state.garden.growth));const b=Math.min(5,Math.max(0,state.garden.growth-5));
   const next=rewards.find(r=>state.xp<r.xp);const nextText=next?`${next.icon||'✦'} ${next.label} at ${next.xp} XP`:'✨ All current garden surprises unlocked!';
   const seatText=state.xp<70?'Keep growing — Bunny’s cozy bench is coming!':state.garden.bunnySeated?'🐰 Bunny is cozy on the bench ♡':'Drag Bunny around the backyard — every special spot has its own little reaction.';
-  const celebration=gardenCelebration;const target=celebration?(celebration.growth<=5?'left':'right'):'';const storedCount=(state.garden.stored||[]).length;const unlockedTreasureCount=rewards.filter(r=>r.id!=='bunny'&&state.xp>=r.xp).length;
-  const rewardCard=celebration?`<div class="reward-garden-card"><div class="reward-emoji">${esc(celebration.emoji||'🌱')}</div><div class="copy"><b>${esc(celebration.word)} made the garden grow! ✦</b><span>+${celebration.gain} XP · Watch the shoot grow, then bloom.</span></div><button id="gardenNextWordBtn">${celebration.finished?'Finish ✦':'Next word →'}</button></div>`:'';
+  const celebration=gardenCelebration;let target='',beforeStage=0,afterStage=0;
+  if(celebration){const step=celebration.beforeGrowth<10?celebration.beforeGrowth:(celebration.beforeGrowth%10);target=step<5?'left':'right';beforeStage=step<5?step:step-5;afterStage=Math.min(5,beforeStage+1)}
+  const displayA=celebration&&target==='left'?beforeStage:a,displayB=celebration&&target==='right'?beforeStage:b;
+  const storedCount=(state.garden.stored||[]).length;const unlockedTreasureCount=rewards.filter(r=>r.id!=='bunny'&&state.xp>=r.xp).length;
+  const stageNames=['Seed','Tiny sprout','Growing stem','Leafy plant','Flower bud','Bloom!'];const growthCopy=celebration?`${stageNames[beforeStage]} → ${stageNames[afterStage]}`:'';
+  const rewardCard=celebration?`<div class="reward-garden-card"><div class="reward-emoji">${esc(celebration.emoji||'🌱')}</div><div class="copy"><b>${esc(celebration.word)} made THIS plant grow! ✦</b><span>+${celebration.gain} XP · ${growthCopy}</span></div><button id="gardenNextWordBtn">${celebration.finished?'Finish ✦':'Next word →'}</button></div>`:'';
   const burst=celebration?`<div class="growth-burst ${target}"><span>✦</span><span>✧</span><span>🌱</span><span>✦</span></div>`:'';
-  $('#gardenView').innerHTML=`<div class="garden-view"><div class="garden-head"><div><p class="eyebrow">YOUR GARDEN</p><h1>Miori’s little spell world ✦</h1><p class="sub">${esc(state.week.title)} · ${state.garden.growth} growth moments</p></div><div class="garden-head-actions"><button class="secondary-btn treasure-open" id="treasureChestBtn">🧺 Treasure Box <span>${storedCount}/${unlockedTreasureCount}</span></button><button class="primary-btn garden-play" id="gardenPlayBtn">${celebration?'Keep going ✦':'Play! ✦'}</button></div></div><div class="garden-scene ${celebration?'reward-moment':''}" id="gardenScene">${rewardCard}<div class="garden-update"><b>NEW ✦</b><span>Sunny backyard edition · collect, decorate, and grow</span></div><div class="next-surprise">${esc(nextText)}</div><div class="garden-spark s1">✦</div><div class="garden-spark s2">✧</div><div class="garden-spark s3">✦</div><div class="garden-butterfly b1">🦋</div><div class="garden-butterfly b2">🦋</div><div class="sun"></div><div class="cloud a"></div><div class="cloud b"></div><div class="hill back"></div><div class="hill front"></div><div class="ca-house"></div><div class="white-fence"></div><div class="citrus-tree"></div><div class="patio-lights"></div><div class="lavender-edge left"></div><div class="lavender-edge right"></div><div class="path"></div><div class="pond"></div><div class="plot left ${target==='left'?'growth-now':''}">${plant(a)}</div><div class="plot right ${target==='right'?'growth-now':''}">${plant(b)}</div>${growthJourneyHtml(target)}${burst}${gardenReactionHtml()}<div id="gardenObjects"></div><div class="garden-tip">${celebration?'🌱 Look — stem, leaves, bud, bloom!':seatText}</div></div></div>`;
+  const growthBadge=celebration?`<div class="growth-target-badge ${target}"><b>LOOK! THIS ONE ✦</b><span>${growthCopy}</span></div>`:'';
+  const sparkRing=celebration?`<div class="growth-spark-ring ${target}"><i>✦</i><i>✧</i><i>✦</i><i>✧</i><i>✦</i></div>`:'';
+  $('#gardenView').innerHTML=`<div class="garden-view"><div class="garden-head"><div><p class="eyebrow">YOUR GARDEN</p><h1>Miori’s little spell world ✦</h1><p class="sub">${esc(state.week.title)} · ${state.garden.growth} growth moments</p></div><div class="garden-head-actions"><button class="secondary-btn treasure-open" id="treasureChestBtn">🧺 Treasure Box <span>${storedCount}/${unlockedTreasureCount}</span></button><button class="primary-btn garden-play" id="gardenPlayBtn">${celebration?'Keep going ✦':'Play! ✦'}</button></div></div><div class="garden-scene ${celebration?'reward-moment':''}" id="gardenScene">${rewardCard}<div class="garden-update"><b>NEW ✦</b><span>Sunny backyard edition · collect, decorate, and grow</span></div><div class="next-surprise">${esc(nextText)}</div><div class="garden-spark s1">✦</div><div class="garden-spark s2">✧</div><div class="garden-spark s3">✦</div><div class="garden-butterfly b1">🦋</div><div class="garden-butterfly b2">🦋</div><div class="sun"></div><div class="cloud a"></div><div class="cloud b"></div><div class="hill back"></div><div class="hill front"></div><div class="ca-house"></div><div class="white-fence"></div><div class="citrus-tree"></div><div class="patio-lights"></div><div class="lavender-edge left"></div><div class="lavender-edge right"></div><div class="path"></div><div class="pond"></div><div class="plot left ${target==='left'?'growth-target':''}" data-growth-plot="left">${plant(displayA)}</div><div class="plot right ${target==='right'?'growth-target':''}" data-growth-plot="right">${plant(displayB)}</div>${burst}${growthBadge}${sparkRing}${gardenReactionHtml()}<div id="gardenObjects"></div><div class="garden-tip">${celebration?'🌱 Look — stem, leaves, bud, bloom!':seatText}</div></div></div>`;
   const continuePlay=()=>{playSfx('tap');gardenCelebration=null;setView('play')};
   $('#gardenPlayBtn').onclick=()=>celebration?continuePlay():(playSfx('tap'),setView('play'));$('#treasureChestBtn')?.addEventListener('click',()=>{playSfx('tap');openTreasureChest()});
   $('#gardenNextWordBtn')?.addEventListener('click',continuePlay);
   const root=$('#gardenObjects');rewards.filter(r=>state.xp>=r.xp&&!(state.garden.stored||[]).includes(r.id)).forEach(r=>{const p=r.id==='bunny'?bunnyDisplayPos():gardenPos(r.id);const el=document.createElement('div');el.className=`garden-object ${r.type} ${r.id}${r.id==='bunny'&&state.garden.bunnySeated?' seated':''}`;el.dataset.id=r.id;el.style.left=`${p.x}%`;el.style.top=`${p.y}%`;el.style.zIndex=r.id==='bunny'||r.id==='cat'?'18':'8';el.innerHTML=gardenObjectArt(r);root.appendChild(el);makeDraggable(el)});
-  if(celebration){setTimeout(()=>playSfx('sparkle'),180)}
+  if(celebration){
+    const targetPlot=$(`.plot[data-growth-plot="${target}"]`),bunny=root.querySelector('[data-id="bunny"]'),scene=$('#gardenScene');
+    if(bunny)bunny.classList.add('garden-cheer');
+    const bp=bunnyDisplayPos();scene?.insertAdjacentHTML('beforeend',`<div class="bunny-cheer-bubble" style="left:${bp.x}%;top:${Math.max(12,bp.y-16)}%">Yay! <span>♡</span></div>`);
+    setTimeout(()=>{if(!gardenCelebration||!targetPlot)return;targetPlot.innerHTML=plant(afterStage);targetPlot.classList.add('growth-change');playSfx('sparkle')},720)
+  }
 }
 function openTreasureChest(){
   const unlocked=rewards.filter(r=>r.id!=='bunny'&&state.xp>=r.xp);const stored=state.garden.stored||[];
@@ -438,6 +449,10 @@ async function playWordAudio(word,slow=false,{auto=false,userInitiated=false}={}
   if(currentAudio){try{currentAudio.pause()}catch{}currentAudio=null}
   const pill=$('#voicePill');
   const setPill=(text,cls='')=>{if(!pill)return;pill.textContent=text;pill.classList.remove('human-ready','human-wait','device-fallback');if(cls)pill.classList.add(cls)};
+  if(word.pronunciationUrl&&!storedHumanAudioLooksSafe(word)){
+    word.pronunciationUrl='';word.pronunciationSource='';word.audioTried=false;save();setPill('○ Finding a word-only recording…','human-wait');
+    const found=await resolveHumanAudioForWord(word);if(found)return playWordAudio(word,slow,{auto,userInitiated})
+  }
   if(word.pronunciationUrl){
     let finished=false,timer=null;const btn=$('#audioBtn');
     const cleanup=(audio)=>{if(timer)clearTimeout(timer);btn?.classList.remove('playing');if(currentAudio===audio)currentAudio=null};
@@ -473,7 +488,39 @@ async function playWordAudio(word,slow=false,{auto=false,userInitiated=false}={}
   }
   setPill('○ Device voice','');speak(word.word,{slow})
 }
-async function findHumanAudio(wordText){const word=norm(wordText);if(!word)return'';try{const q=encodeURIComponent(`${word} pronunciation`);const url=`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url|mime&format=json&origin=*`;const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),4500);const res=await fetch(url,{signal:controller.signal});clearTimeout(timer);if(!res.ok)return'';const data=await res.json();const pages=Object.values(data.query?.pages||{}).filter(p=>p.imageinfo?.[0]?.url);const scored=pages.map(p=>{const title=(p.title||'').toLowerCase(),info=p.imageinfo[0];let score=0;if(title.includes(word))score+=8;if(/en[-_ ]?(us|uk|gb)|english/.test(title))score+=5;if(/pronunciation|pronounce/.test(title))score+=3;if(/\.mp3(?:$|\?)/i.test(info.url||''))score+=7;else if(/\.(m4a|wav)(?:$|\?)/i.test(info.url||''))score+=5;else if(/\.(ogg|oga)(?:$|\?)/i.test(info.url||''))score+=3;if(/song|music|sentence|phrase/.test(title))score-=6;return{url:info.url,score}}).sort((a,b)=>b.score-a.score);return scored[0]?.score>=8?scored[0].url:''}catch{return''}}
+function humanAudioTokens(text){
+  try{text=decodeURIComponent(String(text||''))}catch{text=String(text||'')}
+  text=text.replace(/^File:/i,'').replace(/\.(ogg|oga|mp3|wav|m4a)(?:\?.*)?$/i,'').replace(/[_+()\[\],.-]+/g,' ').toLowerCase();
+  return text.match(/[a-z]+/g)||[]
+}
+function isWordOnlyHumanAudio(word,title='',url=''){
+  word=norm(word);if(!word)return false;
+  const source=title||String(url||'').split('/').pop()||'';const tokens=humanAudioTokens(source);
+  const meta=new Set(['en','eng','english','us','usa','uk','gb','au','ca','american','british','pronunciation','pronounce','audio','voice','spoken','male','female','wiktionary','commons','file']);
+  const meaningful=tokens.filter(t=>!meta.has(t));
+  return meaningful.length===1&&meaningful[0]===word
+}
+function storedHumanAudioLooksSafe(w){
+  if(!w?.pronunciationUrl)return false;
+  const auto=String(w.pronunciationSource||'').toLowerCase().includes('wikimedia')||/wikimedia\.org|upload\.wikimedia\.org/i.test(w.pronunciationUrl);
+  return !auto||isWordOnlyHumanAudio(w.word,'',w.pronunciationUrl)
+}
+async function findHumanAudio(wordText){
+  const word=norm(wordText);if(!word)return'';
+  try{
+    const q=encodeURIComponent(`${word} pronunciation`);
+    const url=`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrnamespace=6&gsrlimit=24&prop=imageinfo&iiprop=url|mime&format=json&origin=*`;
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);const res=await fetch(url,{signal:controller.signal});clearTimeout(timer);if(!res.ok)return'';
+    const data=await res.json();const pages=Object.values(data.query?.pages||{}).filter(p=>p.imageinfo?.[0]?.url);
+    const scored=pages.map(p=>{const title=String(p.title||''),low=title.toLowerCase(),info=p.imageinfo[0],audioUrl=info.url||'';
+      if(!isWordOnlyHumanAudio(word,title,audioUrl))return null;
+      let score=20;if(low.includes(word))score+=8;if(/en[-_ ]?(us|uk|gb)|english|american|british/i.test(title))score+=5;if(/pronunciation|pronounce/i.test(title))score+=3;
+      if(/\.mp3(?:$|\?)/i.test(audioUrl))score+=8;else if(/\.(m4a|wav)(?:$|\?)/i.test(audioUrl))score+=6;else if(/\.(ogg|oga)(?:$|\?)/i.test(audioUrl))score+=4;
+      return{url:audioUrl,score,title}
+    }).filter(Boolean).sort((a,b)=>b.score-a.score);
+    return scored[0]?.url||''
+  }catch{return''}
+}
 async function resolveHumanAudioForWord(w,{announce=false}={}){if(!w||w.pronunciationUrl)return false;w.audioTried=true;const found=await findHumanAudio(w.word);if(!found){save();if(announce)toast('No clear human recording found. Device voice will be used.');return false}w.pronunciationUrl=found;w.pronunciationSource='Wikimedia Commons';save();if(announce)toast('Human pronunciation found.');return true}
 function ensureAudioCtx(){
   if(!audioCtx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;audioCtx=new C()}
