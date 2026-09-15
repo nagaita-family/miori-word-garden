@@ -32,14 +32,14 @@ const WORD_CHUNKS={
 };
 const rewards=[
 {id:'bunny',xp:0,type:'rabbit',label:'Bunny',icon:'🐰',x:50,y:66},
-{id:'bench',xp:70,type:'treasure',label:'Cozy garden bench',icon:'🩷',x:25,y:73},
-{id:'picnic',xp:140,type:'treasure',label:'Strawberry picnic',icon:'🍓',x:78,y:72},
-{id:'mail',xp:220,type:'treasure',label:'Heart mailbox',icon:'💌',x:17,y:57},
-{id:'cat',xp:310,type:'friend',label:'Garden cat',icon:'🐱',x:69,y:64},
-{id:'birdbath',xp:400,type:'treasure',label:'Bird bath',icon:'🐦',x:85,y:51},
-{id:'seedcrate',xp:500,type:'treasure',label:'Seed crate',icon:'🌼',x:34,y:61},
-{id:'arch',xp:620,type:'treasure',label:'Flower arch',icon:'🌸',x:57,y:51},
-{id:'shed',xp:760,type:'treasure',label:'Little garden shed',icon:'🏡',x:90,y:34}
+{id:'bench',xp:30,type:'treasure',label:'Cozy garden bench',icon:'🩷',x:25,y:73},
+{id:'picnic',xp:60,type:'treasure',label:'Strawberry picnic',icon:'🍓',x:78,y:72},
+{id:'mail',xp:120,type:'treasure',label:'Heart mailbox',icon:'💌',x:17,y:57},
+{id:'cat',xp:180,type:'friend',label:'Garden cat',icon:'🐱',x:69,y:64},
+{id:'birdbath',xp:240,type:'treasure',label:'Bird bath',icon:'🐦',x:85,y:51},
+{id:'seedcrate',xp:300,type:'treasure',label:'Seed crate',icon:'🌼',x:34,y:61},
+{id:'arch',xp:390,type:'treasure',label:'Flower arch',icon:'🌸',x:57,y:51},
+{id:'shed',xp:480,type:'treasure',label:'Little garden shed',icon:'🏡',x:90,y:34}
 ];
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -127,7 +127,7 @@ function gardenReactionHtml(){
 function growthJourneyHtml(target){if(!target)return'';return`<div class="growth-journey ${target}"><i class="journey-stem"></i><i class="journey-leaf l"></i><i class="journey-leaf r"></i><i class="journey-bud"></i><i class="journey-bloom"></i></div>`}
 function renderGarden(){
   const a=Math.min(5,Math.max(0,state.garden.growth));const b=Math.min(5,Math.max(0,state.garden.growth-5));
-  const next=rewards.find(r=>state.xp<r.xp);const nextText=next?`${next.icon||'✦'} ${next.label} at ${next.xp} XP`:'✨ All current garden surprises unlocked!';
+  const next=rewards.find(r=>state.xp<r.xp);const wordsAway=next?Math.max(1,Math.ceil((next.xp-state.xp)/30)):0;const nextText=next?`${next.icon||'✦'} Next: ${next.label} · ${wordsAway} ${wordsAway===1?'word':'words'} away`:'✨ All current garden surprises unlocked!';
   const seatText=state.xp<70?'Keep growing — Bunny’s cozy bench is coming!':state.garden.bunnySeated?'🐰 Bunny is cozy on the bench ♡':'Drag Bunny around the backyard — every special spot has its own little reaction.';
   const celebration=gardenCelebration;let target='',beforeStage=0,afterStage=0;
   if(celebration){const step=celebration.beforeGrowth<10?celebration.beforeGrowth:(celebration.beforeGrowth%10);target=step<5?'left':'right';beforeStage=step<5?step:step-5;afterStage=Math.min(5,beforeStage+1)}
