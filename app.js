@@ -128,17 +128,19 @@ function growthJourneyHtml(target){if(!target)return'';return`<div class="growth
 function renderGarden(){
   const a=Math.min(5,Math.max(0,state.garden.growth));const b=Math.min(5,Math.max(0,state.garden.growth-5));
   const next=rewards.find(r=>state.xp<r.xp);const wordsAway=next?Math.max(1,Math.ceil((next.xp-state.xp)/30)):0;const nextText=next?`${next.icon||'✦'} Next: ${next.label} · ${wordsAway} ${wordsAway===1?'word':'words'} away`:'✨ All current garden surprises unlocked!';
-  const seatText=state.xp<70?'Keep growing — Bunny’s cozy bench is coming!':state.garden.bunnySeated?'🐰 Bunny is cozy on the bench ♡':'Drag Bunny around the backyard — every special spot has its own little reaction.';
+  const seatText=state.xp<90?'Keep growing — Bunny’s cozy bench is coming!':state.garden.bunnySeated?'🐰 Bunny is cozy on the bench ♡':'Drag Bunny around the backyard — every special spot has its own little reaction.';
   const celebration=gardenCelebration;let target='',beforeStage=0,afterStage=0;
   if(celebration){const step=celebration.beforeGrowth<10?celebration.beforeGrowth:(celebration.beforeGrowth%10);target=step<5?'left':'right';beforeStage=step<5?step:step-5;afterStage=Math.min(5,beforeStage+1)}
   const displayA=celebration&&target==='left'?beforeStage:a,displayB=celebration&&target==='right'?beforeStage:b;
   const storedCount=(state.garden.stored||[]).length;const unlockedTreasureCount=rewards.filter(r=>r.id!=='bunny'&&state.xp>=r.xp).length;
   const stageNames=['Seed','Tiny sprout','Growing stem','Leafy plant','Flower bud','Bloom!'];const growthCopy=celebration?`${stageNames[beforeStage]} → ${stageNames[afterStage]}`:'';
+  const unlockReward=celebration?.unlock?rewards.find(r=>r.id===celebration.unlock.id):null;
   const rewardCard=celebration?`<div class="reward-garden-card"><div class="reward-emoji">${esc(celebration.emoji||'🌱')}</div><div class="copy"><b>${esc(celebration.word)} made THIS plant grow! ✦</b><span>+${celebration.gain} XP · ${growthCopy}</span></div><button id="gardenNextWordBtn">${celebration.finished?'Finish ✦':'Next word →'}</button></div>`:'';
+  const unlockReveal=unlockReward?`<div class="treasure-unlock-reveal" id="treasureUnlockReveal"><div class="treasure-unlock-rays"></div><div class="treasure-unlock-copy"><small>NEW TREASURE! ✦</small><h2>${esc(unlockReward.label)}</h2><p>You got it! It’s going into your Treasure Box.</p></div><div class="treasure-unlock-fly ${unlockReward.id}" id="treasureUnlockFly">${gardenObjectArt(unlockReward)}</div><div class="treasure-unlock-stars">✦　✧　✦</div></div>`:'';
   const burst=celebration?`<div class="growth-burst ${target}"><span>✦</span><span>✧</span><span>🌱</span><span>✦</span></div>`:'';
   const growthBadge=celebration?`<div class="growth-target-badge ${target}"><b>LOOK! THIS ONE ✦</b><span>${growthCopy}</span></div>`:'';
   const sparkRing=celebration?`<div class="growth-spark-ring ${target}"><i>✦</i><i>✧</i><i>✦</i><i>✧</i><i>✦</i></div>`:'';
-  $('#gardenView').innerHTML=`<div class="garden-view"><div class="garden-head"><div><p class="eyebrow">YOUR GARDEN</p><h1>Miori’s little spell world ✦</h1><p class="sub">${esc(state.week.title)} · ${state.garden.growth} growth moments</p></div><div class="garden-head-actions"><button class="secondary-btn treasure-open" id="treasureChestBtn">🧺 Treasure Box <span>${storedCount}/${unlockedTreasureCount}</span></button><button class="primary-btn garden-play" id="gardenPlayBtn">${celebration?'Keep going ✦':'Play! ✦'}</button></div></div><div class="garden-scene ${celebration?'reward-moment':''}" id="gardenScene">${rewardCard}<div class="garden-update"><b>NEW ✦</b><span>Sunny backyard edition · collect, decorate, and grow</span></div><div class="next-surprise">${esc(nextText)}</div><div class="garden-spark s1">✦</div><div class="garden-spark s2">✧</div><div class="garden-spark s3">✦</div><div class="garden-butterfly b1">🦋</div><div class="garden-butterfly b2">🦋</div><div class="sun"></div><div class="cloud a"></div><div class="cloud b"></div><div class="hill back"></div><div class="hill front"></div><div class="ca-house"></div><div class="white-fence"></div><div class="citrus-tree"></div><div class="patio-lights"></div><div class="lavender-edge left"></div><div class="lavender-edge right"></div><div class="path"></div><div class="pond"></div><div class="plot left ${target==='left'?'growth-target':''}" data-growth-plot="left">${plant(displayA)}</div><div class="plot right ${target==='right'?'growth-target':''}" data-growth-plot="right">${plant(displayB)}</div>${burst}${growthBadge}${sparkRing}${gardenReactionHtml()}<div id="gardenObjects"></div><div class="garden-tip">${celebration?'🌱 Look — stem, leaves, bud, bloom!':seatText}</div></div></div>`;
+  $('#gardenView').innerHTML=`<div class="garden-view">${unlockReveal}<div class="garden-head"><div><p class="eyebrow">YOUR GARDEN</p><h1>Miori’s little spell world ✦</h1><p class="sub">${esc(state.week.title)} · ${state.garden.growth} growth moments</p></div><div class="garden-head-actions"><button class="secondary-btn treasure-open" id="treasureChestBtn">🧺 Treasure Box <span>${storedCount}/${unlockedTreasureCount}</span></button><button class="primary-btn garden-play" id="gardenPlayBtn">${celebration?'Keep going ✦':'Play! ✦'}</button></div></div><div class="garden-scene ${celebration?'reward-moment':''}" id="gardenScene">${rewardCard}<div class="garden-update"><b>NEW ✦</b><span>Sunny backyard edition · collect, decorate, and grow</span></div><div class="next-surprise">${esc(nextText)}</div><div class="garden-spark s1">✦</div><div class="garden-spark s2">✧</div><div class="garden-spark s3">✦</div><div class="garden-butterfly b1">🦋</div><div class="garden-butterfly b2">🦋</div><div class="sun"></div><div class="cloud a"></div><div class="cloud b"></div><div class="hill back"></div><div class="hill front"></div><div class="ca-house"></div><div class="white-fence"></div><div class="citrus-tree"></div><div class="patio-lights"></div><div class="lavender-edge left"></div><div class="lavender-edge right"></div><div class="path"></div><div class="pond"></div><div class="plot left ${target==='left'?'growth-target':''}" data-growth-plot="left">${plant(displayA)}</div><div class="plot right ${target==='right'?'growth-target':''}" data-growth-plot="right">${plant(displayB)}</div>${burst}${growthBadge}${sparkRing}${gardenReactionHtml()}<div id="gardenObjects"></div><div class="garden-tip">${celebration?'🌱 Look — stem, leaves, bud, bloom!':seatText}</div></div></div>`;
   const continuePlay=()=>{playSfx('tap');gardenCelebration=null;setView('play')};
   $('#gardenPlayBtn').onclick=()=>celebration?continuePlay():(playSfx('tap'),setView('play'));$('#treasureChestBtn')?.addEventListener('click',()=>{playSfx('tap');openTreasureChest()});
   $('#gardenNextWordBtn')?.addEventListener('click',continuePlay);
@@ -147,7 +149,20 @@ function renderGarden(){
     const targetPlot=$(`.plot[data-growth-plot="${target}"]`),bunny=root.querySelector('[data-id="bunny"]'),scene=$('#gardenScene');
     if(bunny)bunny.classList.add('garden-cheer');
     const bp=bunnyDisplayPos();scene?.insertAdjacentHTML('beforeend',`<div class="bunny-cheer-bubble" style="left:${bp.x}%;top:${Math.max(12,bp.y-16)}%">Yay! <span>♡</span></div>`);
-    setTimeout(()=>{if(!gardenCelebration||!targetPlot)return;targetPlot.innerHTML=plant(afterStage);targetPlot.classList.add('growth-change');playSfx('sparkle')},720)
+    setTimeout(()=>{if(!gardenCelebration||!targetPlot)return;targetPlot.innerHTML=plant(afterStage);targetPlot.classList.add('growth-change');playSfx('sparkle')},720);
+    if(unlockReward){
+      const reveal=$('#treasureUnlockReveal'),fly=$('#treasureUnlockFly'),chest=$('#treasureChestBtn');
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        if(!reveal||!fly||!chest)return;
+        const fr=fly.getBoundingClientRect(),cr=chest.getBoundingClientRect();
+        fly.style.setProperty('--treasure-fly-x',`${cr.left+cr.width/2-(fr.left+fr.width/2)}px`);
+        fly.style.setProperty('--treasure-fly-y',`${cr.top+cr.height/2-(fr.top+fr.height/2)}px`);
+        reveal.classList.add('show');
+        setTimeout(()=>playSfx('sparkle'),180);
+        setTimeout(()=>{if(!gardenCelebration)return;reveal.classList.add('flying');chest.classList.add('treasure-catch')},1650);
+        setTimeout(()=>{reveal.classList.add('done');chest.classList.remove('treasure-catch');playSfx('sparkle')},2700)
+      }))
+    }
   }
 }
 function openTreasureChest(){
@@ -190,16 +205,22 @@ function tapGardenObject(id){
   if(id==='shed'){triggerGardenInteraction('shed',id);renderGarden();return}
   if(id==='bench'&&state.garden.bunnySeated){triggerGardenInteraction('seat','bunny');renderGarden()}
 }
+function treasureDropHit(x,y){const chest=$('#treasureChestBtn');if(!chest)return false;const r=chest.getBoundingClientRect();return x>=r.left-12&&x<=r.right+12&&y>=r.top-12&&y<=r.bottom+12}
 function makeDraggable(el){
   let pid=null;const scene=$('#gardenScene');
   el.onpointerdown=e=>{pid=e.pointerId;el._p=null;el._start={x:e.clientX,y:e.clientY};el.setPointerCapture?.(pid);el.classList.add('dragging')};
-  el.onpointermove=e=>{if(e.pointerId!==pid)return;const r=scene.getBoundingClientRect();const x=Math.max(4,Math.min(96,(e.clientX-r.left)/r.width*100));const y=Math.max(10,Math.min(91,(e.clientY-r.top)/r.height*100));el.style.left=`${x}%`;el.style.top=`${y}%`;el._p={x,y}};
-  el.onpointerup=e=>{if(e.pointerId!==pid)return;el.classList.remove('dragging');const id=el.dataset.id,p=el._p,start=el._start;pid=null;
+  el.onpointermove=e=>{if(e.pointerId!==pid)return;const r=scene.getBoundingClientRect();const x=Math.max(4,Math.min(96,(e.clientX-r.left)/r.width*100));const y=Math.max(10,Math.min(91,(e.clientY-r.top)/r.height*100));el.style.left=`${x}%`;el.style.top=`${y}%`;el._p={x,y};const over=el.dataset.id!=='bunny'&&treasureDropHit(e.clientX,e.clientY);$('#treasureChestBtn')?.classList.toggle('drop-ready',over);el.classList.toggle('over-treasure',over)};
+  el.onpointerup=e=>{if(e.pointerId!==pid)return;const id=el.dataset.id,p=el._p,start=el._start,dropToTreasure=id!=='bunny'&&treasureDropHit(e.clientX,e.clientY);pid=null;el.classList.remove('dragging','over-treasure');$('#treasureChestBtn')?.classList.remove('drop-ready');
+    if(dropToTreasure){
+      if(id==='bench'&&state.garden.bunnySeated){state.garden.bunnySeated=false;state.garden.pos.bunny=gardenDefaultPos('bunny')}
+      if(!state.garden.stored.includes(id))state.garden.stored.push(id);save();renderGarden();const chest=$('#treasureChestBtn');chest?.classList.add('treasure-catch');setTimeout(()=>chest?.classList.remove('treasure-catch'),650);playSfx('sparkle');toast('Into the Treasure Box! ✦');return
+    }
     if(!p||Math.hypot(e.clientX-(start?.x||e.clientX),e.clientY-(start?.y||e.clientY))<5){tapGardenObject(id);return}
     if(id==='bunny')state.garden.bunnySeated=false;
     state.garden.pos[id]=p;const reacted=reactToGardenDrop(id,p);save();
     if(reacted||id==='bench'||id==='picnic'||id==='mail'||id==='cat'||id==='bunny')renderGarden();
   }
+  el.onpointercancel=()=>{$('#treasureChestBtn')?.classList.remove('drop-ready');el.classList.remove('dragging','over-treasure');pid=null}
 }
 
 function renderPlayHome(){session=null;helpKind='';$('#playView').innerHTML=`<div class="play-view"><div class="play-home"><div class="play-hero-card"><div><div class="play-new">TODAY’S SPELL ADVENTURE ✦</div><p class="eyebrow">READY WHEN YOU ARE</p><h1>Let’s make some words bloom.</h1><p>Listen, look at the picture clue, then spell with Apple Pencil. Every finished word makes your garden grow.</p><button class="giant" id="startSessionBtn">Start! ✦</button><div class="play-meta"><span>${esc(state.week.title)}</span><span>${state.week.ids.length} words</span><span>Real human pronunciation when available</span><span>Hints are always okay ♡</span></div></div><div class="play-mascot"><div class="mascot-bubble">🐰</div></div></div></div></div>`;$('#startSessionBtn').onclick=startSession;syncBgm()}
@@ -414,8 +435,10 @@ function wrong(w,q,attempt,correct){const l=w.learn;l.attempts++;l.mistakes++;l.
 function right(w,q){
   const l=w.learn;l.attempts++;l.correct++;if(q.first)l.first++;l.last=today();state.stats.answers=(state.stats.answers||0)+1;for(let i=q.range.start;i<q.range.end;i++)l.weak[i]=Math.max(0,(l.weak[i]||0)-1);playSfx('correct');q.feedback={good:true};
   if(q.stage<4){save();renderTask();const stage=q.stage;setTimeout(()=>{if(!session?.q||session.q.id!==w.id||session.q.stage!==stage)return;session.q=newQuestion(w,stage+1,q.range);helpKind='';renderTask()},520);return}
-  const gain=30,beforeGrowth=state.garden.growth;state.xp+=gain;state.garden.growth++;l.loops=(l.loops||0)+1;session.xp+=gain;session.count++;if(!session.doneIds.includes(w.id))session.doneIds.push(w.id);
-  const finished=session.count>=session.goal;gardenCelebration={word:w.word,emoji:w.pictureEmoji||'🌱',gain,beforeGrowth,growth:state.garden.growth,finished};session.q=null;save();
+  const gain=30,beforeGrowth=state.garden.growth,beforeXp=state.xp;state.xp+=gain;state.garden.growth++;l.loops=(l.loops||0)+1;session.xp+=gain;session.count++;if(!session.doneIds.includes(w.id))session.doneIds.push(w.id);
+  const unlockedReward=rewards.find(r=>r.id!=='bunny'&&beforeXp<r.xp&&state.xp>=r.xp)||null;
+  if(unlockedReward&&!state.garden.stored.includes(unlockedReward.id))state.garden.stored.push(unlockedReward.id);
+  const finished=session.count>=session.goal;gardenCelebration={word:w.word,emoji:w.pictureEmoji||'🌱',gain,beforeGrowth,growth:state.garden.growth,finished,unlock:unlockedReward?{id:unlockedReward.id,label:unlockedReward.label,icon:unlockedReward.icon}:null};session.q=null;save();
   setTimeout(()=>setView('garden'),360)
 }
 function renderReward(w,gain){const finished=session.count>=session.goal;$('#playView').innerHTML=`<div class="play-view"><div class="reward-screen"><div class="reward-card"><div class="big">${esc(w.pictureEmoji||'🌱')}</div><p class="eyebrow">WORD COMPLETE ✦</p><h1>${esc(w.word)}</h1><p class="muted">You finished Stage 1 → 2 → 3 → 4.</p><div class="reward-chips"><span>＋${gain} XP</span><span>🌱 Garden grew</span><span>✎ Pencil practice saved</span></div><button id="nextWordBtn" class="primary-btn">${finished?'Finish & see Garden':'Next word →'}</button></div></div></div>`;$('#nextWordBtn').onclick=()=>{if(finished)finishSession();else{session.q=null;helpKind='';renderTask()}}}
