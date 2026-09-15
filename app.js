@@ -122,8 +122,10 @@ function gardenShedSvg(){return`<svg viewBox="0 0 150 135" aria-hidden="true"><p
 function gardenObjectArt(r){if(r.id==='bunny')return rabbitSvg();if(r.id==='bench')return benchSvg();if(r.id==='picnic')return picnicSvg();if(r.id==='mail')return mailboxSvg();if(r.id==='cat')return catSvg();if(r.id==='birdbath')return birdBathSvg();if(r.id==='seedcrate')return seedCrateSvg();if(r.id==='arch')return flowerArchSvg();if(r.id==='shed')return gardenShedSvg();return r.icon||'✦'}
 function gardenDefaultPos(id){const r=rewards.find(x=>x.id===id);return{x:r?.x??50,y:r?.y??60}}
 function gardenPos(id){return state.garden.pos[id]||gardenDefaultPos(id)}
-function bunnyDisplayPos(){const bench=gardenPos('bench');return state.garden.bunnySeated&&state.xp>=90?{x:bench.x,y:bench.y-8}:gardenPos('bunny')}
 function gardenUnlocked(id){const r=rewards.find(x=>x.id===id);return!!r&&state.xp>=r.xp}
+function gardenPlaced(id){return gardenUnlocked(id)&&!(state.garden.stored||[]).includes(id)}
+function bunnyDisplayPos(){const bench=gardenPos('bench');return state.garden.bunnySeated&&gardenPlaced('bench')?{x:bench.x,y:bench.y-8}:gardenPos('bunny')}
+function interactionItem(type){return({seat:'bench',picnic:'picnic',mail:'mail',friends:'cat',birds:'birdbath',seeds:'seedcrate',arch:'arch',shed:'shed'})[type]||''}
 function gardenDistance(a,b){return Math.hypot((a?.x??0)-(b?.x??0),(a?.y??0)-(b?.y??0))}
 function triggerGardenInteraction(type,actor='bunny'){
   const token=Date.now();gardenInteraction={type,actor,token};const sound={seat:'seat',picnic:'sparkle',mail:'sparkle',friends:'friend',birds:'chirp',seeds:'grow',arch:'sparkle',shed:'drop'}[type]||'sparkle';playSfx(sound);
@@ -131,7 +133,7 @@ function triggerGardenInteraction(type,actor='bunny'){
 }
 function gardenReactionHtml(){
   if(!gardenInteraction)return'';const type=gardenInteraction.type;
-  const data={seat:['bench','♡','Cozy!'],picnic:['picnic','🍓','Snack time!'],mail:['mail','💌','A letter!'],friends:['cat','♡','New friend!'],birds:['birdbath','🐦','Bird visitors!'],seeds:['seedcrate','🌼','Planting time!'],arch:['arch','✦','Pretty!'],shed:['shed','🧤','Garden tools!']}[type];if(!data)return'';
+  const data={seat:['bench','♡','Cozy!'],picnic:['picnic','🍓','Snack time!'],mail:['mail','💌','A letter!'],friends:['cat','♡','New friend!'],birds:['birdbath','🐦','Bird visitors!'],seeds:['seedcrate','🌼','Planting time!'],arch:['arch','✦','Pretty!'],shed:['shed','🧤','Garden tools!']}[type];if(!data||!gardenPlaced(data[0])){gardenInteraction=null;return''}
   const p=gardenPos(data[0]);return`<div class="garden-reaction ${type}" style="left:${p.x}%;top:${Math.max(12,p.y-14)}%"><span>${data[1]}</span><b>${data[2]}</b></div>`
 }
 function growthJourneyHtml(target){if(!target)return'';return`<div class="growth-journey ${target}"><i class="journey-stem"></i><i class="journey-leaf l"></i><i class="journey-leaf r"></i><i class="journey-bud"></i><i class="journey-bloom"></i></div>`}
@@ -182,7 +184,7 @@ function openTreasureChest(){
   const cards=unlocked.length?unlocked.map(r=>{const away=stored.includes(r.id);return`<div class="treasure-card ${away?'stored':''}" data-treasure="${r.id}"><div class="treasure-art">${gardenObjectArt(r)}</div><div class="treasure-copy"><b>${esc(r.label)}</b><span>${away?'In Treasure Box':'In the garden'}</span></div><button class="${away?'place-item':'store-item'}" data-id="${r.id}">${away?'Place in garden':'Put away'}</button></div>`}).join(''):`<div class="treasure-empty">Keep spelling — your first garden treasure will unlock soon ✦</div>`;
   $('#modalRoot').innerHTML=`<div class="modal treasure-modal"><div class="modal-card treasure-panel"><div class="modal-head"><div><p class="eyebrow">MY COLLECTION</p><h2>🧺 Treasure Box</h2><p>Keep special items here, then bring them back whenever you want.</p></div><button id="closeTreasure" class="icon-btn">×</button></div><div class="treasure-grid">${cards}</div></div></div>`;
   $('#closeTreasure').onclick=()=>$('#modalRoot').innerHTML='';
-  $$('.store-item').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.id;if(id==='bench'&&state.garden.bunnySeated){state.garden.bunnySeated=false;state.garden.pos.bunny=gardenDefaultPos('bunny')}if(!state.garden.stored.includes(id))state.garden.stored.push(id);save();renderGarden();openTreasureChest();playSfx('store')});
+  $$('.store-item').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.id;if(id==='bench'&&state.garden.bunnySeated){state.garden.bunnySeated=false;state.garden.pos.bunny=gardenDefaultPos('bunny')}if(gardenInteraction&&interactionItem(gardenInteraction.type)===id)gardenInteraction=null;if(!state.garden.stored.includes(id))state.garden.stored.push(id);save();renderGarden();openTreasureChest();playSfx('store')});
   $$('.place-item').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.id;state.garden.stored=state.garden.stored.filter(x=>x!==id);state.garden.pos[id]=gardenDefaultPos(id);save();renderGarden();openTreasureChest();playSfx('place')});
 }
 
@@ -191,20 +193,20 @@ function reactToGardenDrop(id,p){
   const bp=id==='bunny'?p:bunnyDisplayPos();
   if(id==='bunny'){
     state.garden.bunnySeated=false;
-    const options=[['bench','seat',16],['picnic','picnic',17],['mail','mail',17],['cat','friends',16],['birdbath','birds',16],['seedcrate','seeds',16],['arch','arch',18],['shed','shed',17]].filter(([key])=>gardenUnlocked(key));
+    const options=[['bench','seat',16],['picnic','picnic',17],['mail','mail',17],['cat','friends',16],['birdbath','birds',16],['seedcrate','seeds',16],['arch','arch',18],['shed','shed',17]].filter(([key])=>gardenPlaced(key));
     const hit=options.map(x=>({x,d:gardenDistance(p,gardenPos(x[0]))})).filter(o=>o.d<o.x[2]).sort((a,b)=>a.d-b.d)[0];
     if(!hit)return false;const [key,type]=hit.x;
     if(type==='seat'){state.garden.bunnySeated=true;delete state.garden.pos.bunny}else state.garden.pos.bunny={x:p.x,y:p.y};
     triggerGardenInteraction(type,'bunny');return true
   }
-  if(id==='bench'&&gardenUnlocked('bench')&&gardenDistance(p,bp)<16){releaseBunnyHere(bp);state.garden.bunnySeated=true;delete state.garden.pos.bunny;triggerGardenInteraction('seat','bunny');return true}
-  if(id==='picnic'&&gardenUnlocked('picnic')&&gardenDistance(p,bp)<17){releaseBunnyHere(bp);triggerGardenInteraction('picnic','bunny');return true}
-  if(id==='mail'&&gardenUnlocked('mail')&&gardenDistance(p,bp)<17){releaseBunnyHere(bp);triggerGardenInteraction('mail','bunny');return true}
-  if(id==='cat'&&gardenUnlocked('cat')&&gardenDistance(p,bp)<16){triggerGardenInteraction('friends','bunny');return true}
-  if(id==='birdbath'&&gardenUnlocked('birdbath')&&gardenDistance(p,bp)<16){triggerGardenInteraction('birds','bunny');return true}
-  if(id==='seedcrate'&&gardenUnlocked('seedcrate')&&gardenDistance(p,bp)<16){triggerGardenInteraction('seeds','bunny');return true}
-  if(id==='arch'&&gardenUnlocked('arch')&&gardenDistance(p,bp)<18){triggerGardenInteraction('arch','bunny');return true}
-  if(id==='shed'&&gardenUnlocked('shed')&&gardenDistance(p,bp)<17){triggerGardenInteraction('shed','bunny');return true}
+  if(id==='bench'&&gardenPlaced('bench')&&gardenDistance(p,bp)<16){releaseBunnyHere(bp);state.garden.bunnySeated=true;delete state.garden.pos.bunny;triggerGardenInteraction('seat','bunny');return true}
+  if(id==='picnic'&&gardenPlaced('picnic')&&gardenDistance(p,bp)<17){releaseBunnyHere(bp);triggerGardenInteraction('picnic','bunny');return true}
+  if(id==='mail'&&gardenPlaced('mail')&&gardenDistance(p,bp)<17){releaseBunnyHere(bp);triggerGardenInteraction('mail','bunny');return true}
+  if(id==='cat'&&gardenPlaced('cat')&&gardenDistance(p,bp)<16){triggerGardenInteraction('friends','bunny');return true}
+  if(id==='birdbath'&&gardenPlaced('birdbath')&&gardenDistance(p,bp)<16){triggerGardenInteraction('birds','bunny');return true}
+  if(id==='seedcrate'&&gardenPlaced('seedcrate')&&gardenDistance(p,bp)<16){triggerGardenInteraction('seeds','bunny');return true}
+  if(id==='arch'&&gardenPlaced('arch')&&gardenDistance(p,bp)<18){triggerGardenInteraction('arch','bunny');return true}
+  if(id==='shed'&&gardenPlaced('shed')&&gardenDistance(p,bp)<17){triggerGardenInteraction('shed','bunny');return true}
   return false
 }
 function tapGardenObject(id){
@@ -225,6 +227,7 @@ function makeDraggable(el){
   el.onpointerup=e=>{if(e.pointerId!==pid)return;const id=el.dataset.id,p=el._p,start=el._start,dropToTreasure=id!=='bunny'&&treasureDropHit(e.clientX,e.clientY);pid=null;el.classList.remove('dragging','over-treasure');$('#treasureChestBtn')?.classList.remove('drop-ready');
     if(dropToTreasure){
       if(id==='bench'&&state.garden.bunnySeated){state.garden.bunnySeated=false;state.garden.pos.bunny=gardenDefaultPos('bunny')}
+      if(gardenInteraction&&interactionItem(gardenInteraction.type)===id)gardenInteraction=null;
       if(!state.garden.stored.includes(id))state.garden.stored.push(id);save();renderGarden();const chest=$('#treasureChestBtn');chest?.classList.add('treasure-catch');setTimeout(()=>chest?.classList.remove('treasure-catch'),650);playSfx('store');toast('Into the Treasure Box! ✦');return
     }
     if(!p||Math.hypot(e.clientX-(start?.x||e.clientX),e.clientY-(start?.y||e.clientY))<5){tapGardenObject(id);return}
