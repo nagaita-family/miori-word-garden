@@ -1,0 +1,134 @@
+/* GARDEN_PLAY_V11_20260915 */
+/* Reward moment: show the old plant clearly, then make the next growth step feel unmistakable. */
+.garden-scene.reward-moment .plot.growth-target{
+  transform:scale(1.055);
+  transform-origin:50% 100%;
+}
+.garden-scene.reward-moment .plot.growth-target:not(.growth-change) .plant{
+  animation:growthBeforeHoldV11 .62s ease both;
+}
+.garden-scene.reward-moment .plot.growth-target.growth-change{
+  animation:gardenPlotLiftV11 1.55s cubic-bezier(.16,.86,.2,1.12) both,gardenTargetGlow .72s ease-in-out 1.55s infinite alternate!important;
+}
+.garden-scene.reward-moment .plot.growth-target.growth-change .plant{
+  animation:gardenPlantGrowV11 1.45s cubic-bezier(.14,.88,.18,1.16) both!important;
+  transform-origin:50% 100%;
+}
+.garden-scene.reward-moment .plot.growth-target.growth-change .stem,
+.garden-scene.reward-moment .plot.growth-target.growth-change .leaf,
+.garden-scene.reward-moment .plot.growth-target.growth-change .bud,
+.garden-scene.reward-moment .plot.growth-target.growth-change .flower{
+  filter:drop-shadow(0 0 8px #fff6a6aa);
+}
+
+/* Keep labels out of the actual plant animation. They arrive after the growth is visible. */
+.garden-scene.reward-moment .growth-target-badge{
+  bottom:4.2%!important;
+  top:auto!important;
+  opacity:0;
+  animation:growthBadgeLateV11 .42s ease 2.05s both!important;
+}
+.garden-scene.reward-moment .growth-target-badge:after{display:none}
+
+/* Bigger magical halo and upward sparkle movement around only the growing bed. */
+.garden-scene.reward-moment .growth-spark-ring{
+  z-index:29;
+  bottom:8%;
+  height:46%;
+  pointer-events:none;
+}
+.garden-scene.reward-moment .growth-spark-ring:before{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:1%;
+  width:150%;
+  height:116%;
+  transform:translateX(-50%) scale(.58);
+  border-radius:50%;
+  background:radial-gradient(ellipse at 50% 74%,#fff9b9b8 0 13%,#ffe98a69 24%,#fff4a52e 43%,transparent 67%);
+  opacity:0;
+  animation:growthHaloV11 1.75s ease .48s both;
+}
+.garden-scene.reward-moment .growth-spark-ring:after{
+  content:"✦   ✧   ✦";
+  position:absolute;
+  left:50%;
+  bottom:16%;
+  transform:translateX(-50%);
+  color:#fff8b6;
+  font-size:26px;
+  letter-spacing:10px;
+  text-shadow:0 0 12px #ffe269,0 0 24px #fff2a0;
+  opacity:0;
+  white-space:nowrap;
+  animation:growthMagicRiseV11 1.55s ease .63s both;
+}
+.garden-scene.reward-moment .growth-spark-ring i{
+  font-size:26px!important;
+  animation-duration:1.9s!important;
+}
+
+/* Bunny celebrates immediately, but the speech bubble waits until the plant has finished growing. */
+.garden-scene.reward-moment .bunny-cheer-bubble{
+  opacity:0;
+  animation:bunnyBubbleLateV11 1.55s ease 1.95s both!important;
+}
+
+@keyframes growthBeforeHoldV11{
+  0%{filter:brightness(.96);transform:translateX(-50%) scale(.96)}
+  45%{filter:brightness(1.12);transform:translateX(-50%) scale(1.04)}
+  100%{filter:brightness(1);transform:translateX(-50%) scale(1)}
+}
+@keyframes gardenPlotLiftV11{
+  0%{transform:scale(1.055)}
+  24%{transform:scale(1.08) translateY(-3px)}
+  60%{transform:scale(1.12) translateY(-7px)}
+  82%{transform:scale(1.07) translateY(-2px)}
+  100%{transform:scale(1.055) translateY(0)}
+}
+@keyframes gardenPlantGrowV11{
+  0%{opacity:.3;transform:translateX(-50%) translateY(24px) scale(.56,.18);filter:brightness(1.45)}
+  28%{opacity:.9;transform:translateX(-50%) translateY(12px) scale(.72,.52);filter:brightness(1.35)}
+  62%{opacity:1;transform:translateX(-50%) translateY(-7px) scale(1.12,1.2);filter:brightness(1.18)}
+  82%{transform:translateX(-50%) translateY(2px) scale(.98,.96);filter:brightness(1.08)}
+  100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1);filter:brightness(1)}
+}
+@keyframes growthHaloV11{
+  0%{opacity:0;transform:translateX(-50%) scale(.44)}
+  28%{opacity:.98;transform:translateX(-50%) scale(.78)}
+  70%{opacity:.78;transform:translateX(-50%) scale(1.08)}
+  100%{opacity:0;transform:translateX(-50%) scale(1.24)}
+}
+@keyframes growthMagicRiseV11{
+  0%{opacity:0;transform:translate(-50%,20px) scale(.65)}
+  30%{opacity:1;transform:translate(-50%,0) scale(1.2)}
+  100%{opacity:0;transform:translate(-50%,-78px) scale(.82)}
+}
+@keyframes growthBadgeLateV11{
+  from{opacity:0;transform:translate(-50%,8px) scale(.9)}
+  to{opacity:1;transform:translate(-50%,0) scale(1)}
+}
+@keyframes bunnyBubbleLateV11{
+  0%,10%,100%{opacity:0;transform:translate(-50%,-42%) scale(.8)}
+  24%,82%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+
+/* Play is designed as a one-screen activity. Do not let Pencil/palm movement pan the page. */
+#playView.active-view,
+#playView.active-view .play-view,
+#playView.active-view .game-card{
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+  -webkit-overflow-scrolling:auto!important;
+}
+#playView.active-view .question-area,
+#playView.active-view .spell-wrap,
+#playView.active-view .letter-row{
+  overscroll-behavior:none!important;
+}
+
+@media(max-width:700px){
+  .garden-scene.reward-moment .growth-target-badge{bottom:4%!important}
+  .garden-scene.reward-moment .growth-spark-ring{height:42%}
+}
