@@ -26,6 +26,7 @@
   <link rel="stylesheet" href="garden-play-v11.css?v=20260915-v12">
   <link rel="stylesheet" href="version-badge-v15.css?v=20260915-v15">
   <link rel="stylesheet" href="treasure-unlock-v16.css?v=20260915-v16">
+  <link rel="stylesheet" href="audio-progress-v17.css?v=20260915-v17">
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -34,16 +35,16 @@
         <span class="brand-mark app-icon-mark"><img src="app-icon.svg?v=20260914-v4" alt=""></span>
         <span><strong>Miori's Word Garden</strong><small>spell · grow · collect ✦</small></span>
       </button>
-      <div class="level-wrap" aria-label="Level progress">
-        <div class="level-row"><span id="levelLabel">Level 1</span><span id="xpLabel">0 / 100 XP</span></div>
+      <div class="level-wrap" aria-label="Treasure progress">
+        <div class="level-row"><span id="levelLabel">🎁 Next treasure</span><span id="xpLabel">0 / 3 words</span></div>
         <div class="xp-track"><div id="xpFill" class="xp-fill"></div></div>
       </div>
-      <button id="musicToggle" class="music-toggle" aria-label="Turn soft garden ambience on" title="Soft garden ambience">♪</button>
+      <button id="musicToggle" class="music-toggle" aria-label="Mute music and sound effects" title="Music + sound effects on">♫</button>
       <nav class="main-nav" aria-label="Main navigation">
         <button class="nav-btn active" data-nav="garden">Garden</button>
         <button class="nav-btn play-nav" data-nav="play">Play</button>
         <button class="nav-btn" data-nav="parent">Parent</button>
-        <span class="app-version-badge" aria-label="App version 16, September 15">v16 · Sep 15</span>
+        <span class="app-version-badge" aria-label="App version 17, September 15">v17 · Sep 15</span>
       </nav>
     </header>
 
@@ -57,8 +58,8 @@
   <input id="importInput" type="file" accept="application/json,.json" hidden>
   <div id="modalRoot"></div>
   <div id="toast" class="toast hidden" role="status"></div>
-  <script src="app.js?v=20260915-treasure-v16"></script>
+  <script src="app.js?v=20260915-audio-progress-v17"></script>
   <script src="pencil-touch-guard.js?v=20260915-palm-v12"></script>
 </body>
 </html>
-<!-- v16 production: unlocked treasures celebrate, fly into the box, and can be dragged back into storage -->
+<!-- v17 production: default-on Garden/Play audio, tactile SFX, visible Pencil scratch trail, and 3-word treasure meter -->
