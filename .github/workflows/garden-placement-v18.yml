@@ -1,0 +1,35 @@
+name: Garden placement v18
+
+on:
+  push:
+    paths:
+      - '.github/workflows/garden-placement-v18.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Apply garden placement update
+        run: python3 tools/garden-placement-v18.py
+      - name: Validate JavaScript
+        run: node --check app.js
+      - name: Check v18 markers
+        run: |
+          grep -q "unlockShown" app.js
+          grep -q "x:57,y:76" app.js
+          grep -q "state.garden.pos\[id\]=gardenDefaultPos(id)" app.js
+      - name: Commit app update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Make treasure reveal single-use and improve placement"
+          git push
