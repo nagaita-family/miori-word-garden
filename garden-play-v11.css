@@ -1,4 +1,4 @@
-/* GARDEN_PLAY_V11_20260915 */
+/* GARDEN_PLAY_V12_20260915 */
 /* Reward moment: show the old plant clearly, then make the next growth step feel unmistakable. */
 .garden-scene.reward-moment .plot.growth-target{
   transform:scale(1.055);
@@ -20,8 +20,6 @@
 .garden-scene.reward-moment .plot.growth-target.growth-change .flower{
   filter:drop-shadow(0 0 8px #fff6a6aa);
 }
-
-/* Keep labels out of the actual plant animation. They arrive after the growth is visible. */
 .garden-scene.reward-moment .growth-target-badge{
   bottom:4.2%!important;
   top:auto!important;
@@ -29,8 +27,6 @@
   animation:growthBadgeLateV11 .42s ease 2.05s both!important;
 }
 .garden-scene.reward-moment .growth-target-badge:after{display:none}
-
-/* Bigger magical halo and upward sparkle movement around only the growing bed. */
 .garden-scene.reward-moment .growth-spark-ring{
   z-index:29;
   bottom:8%;
@@ -68,67 +64,162 @@
   font-size:26px!important;
   animation-duration:1.9s!important;
 }
-
-/* Bunny celebrates immediately, but the speech bubble waits until the plant has finished growing. */
 .garden-scene.reward-moment .bunny-cheer-bubble{
   opacity:0;
   animation:bunnyBubbleLateV11 1.55s ease 1.95s both!important;
 }
+@keyframes growthBeforeHoldV11{0%{filter:brightness(.96);transform:translateX(-50%) scale(.96)}45%{filter:brightness(1.12);transform:translateX(-50%) scale(1.04)}100%{filter:brightness(1);transform:translateX(-50%) scale(1)}}
+@keyframes gardenPlotLiftV11{0%{transform:scale(1.055)}24%{transform:scale(1.08) translateY(-3px)}60%{transform:scale(1.12) translateY(-7px)}82%{transform:scale(1.07) translateY(-2px)}100%{transform:scale(1.055) translateY(0)}}
+@keyframes gardenPlantGrowV11{0%{opacity:.3;transform:translateX(-50%) translateY(24px) scale(.56,.18);filter:brightness(1.45)}28%{opacity:.9;transform:translateX(-50%) translateY(12px) scale(.72,.52);filter:brightness(1.35)}62%{opacity:1;transform:translateX(-50%) translateY(-7px) scale(1.12,1.2);filter:brightness(1.18)}82%{transform:translateX(-50%) translateY(2px) scale(.98,.96);filter:brightness(1.08)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1);filter:brightness(1)}}
+@keyframes growthHaloV11{0%{opacity:0;transform:translateX(-50%) scale(.44)}28%{opacity:.98;transform:translateX(-50%) scale(.78)}70%{opacity:.78;transform:translateX(-50%) scale(1.08)}100%{opacity:0;transform:translateX(-50%) scale(1.24)}}
+@keyframes growthMagicRiseV11{0%{opacity:0;transform:translate(-50%,20px) scale(.65)}30%{opacity:1;transform:translate(-50%,0) scale(1.2)}100%{opacity:0;transform:translate(-50%,-78px) scale(.82)}}
+@keyframes growthBadgeLateV11{from{opacity:0;transform:translate(-50%,8px) scale(.9)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes bunnyBubbleLateV11{0%,10%,100%{opacity:0;transform:translate(-50%,-42%) scale(.8)}24%,82%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 
-@keyframes growthBeforeHoldV11{
-  0%{filter:brightness(.96);transform:translateX(-50%) scale(.96)}
-  45%{filter:brightness(1.12);transform:translateX(-50%) scale(1.04)}
-  100%{filter:brightness(1);transform:translateX(-50%) scale(1)}
+/* Stage 3/4 are laid out to fit comfortably inside the visible iPad Play area.
+   The writing row is already near the visual center before a Scribble field gets focus,
+   so Safari has no reason to re-center the page when Pencil input starts. */
+#playView .play-view:has(.letter-row){
+  height:100%;
+  padding:0 0 6px;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr);
 }
-@keyframes gardenPlotLiftV11{
-  0%{transform:scale(1.055)}
-  24%{transform:scale(1.08) translateY(-3px)}
-  60%{transform:scale(1.12) translateY(-7px)}
-  82%{transform:scale(1.07) translateY(-2px)}
-  100%{transform:scale(1.055) translateY(0)}
+#playView .play-view:has(.letter-row) .game-topline{
+  margin:0 4px 6px;
+  gap:10px;
 }
-@keyframes gardenPlantGrowV11{
-  0%{opacity:.3;transform:translateX(-50%) translateY(24px) scale(.56,.18);filter:brightness(1.45)}
-  28%{opacity:.9;transform:translateX(-50%) translateY(12px) scale(.72,.52);filter:brightness(1.35)}
-  62%{opacity:1;transform:translateX(-50%) translateY(-7px) scale(1.12,1.2);filter:brightness(1.18)}
-  82%{transform:translateX(-50%) translateY(2px) scale(.98,.96);filter:brightness(1.08)}
-  100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1);filter:brightness(1)}
+#playView .play-view:has(.letter-row) .icon-btn{width:38px;height:38px;border-radius:12px}
+#playView .play-view:has(.letter-row) .stage-track{height:10px}
+#playView .play-view:has(.letter-row) .stage-labels{margin-bottom:3px;font-size:10.5px}
+#playView .play-view:has(.letter-row) .session-xp{padding:6px 10px;font-size:11px}
+
+#playView .game-card:has(.letter-row){
+  min-height:0;
+  height:100%;
+  padding:10px 18px 11px;
+  display:grid;
+  grid-template-rows:auto auto minmax(180px,1fr) auto auto;
+  row-gap:4px;
+  align-content:stretch;
 }
-@keyframes growthHaloV11{
-  0%{opacity:0;transform:translateX(-50%) scale(.44)}
-  28%{opacity:.98;transform:translateX(-50%) scale(.78)}
-  70%{opacity:.78;transform:translateX(-50%) scale(1.08)}
-  100%{opacity:0;transform:translateX(-50%) scale(1.24)}
+#playView .game-card:has(.letter-row) .word-audio-row{
+  justify-content:flex-start;
+  gap:11px;
+  min-height:56px;
 }
-@keyframes growthMagicRiseV11{
-  0%{opacity:0;transform:translate(-50%,20px) scale(.65)}
-  30%{opacity:1;transform:translate(-50%,0) scale(1.2)}
-  100%{opacity:0;transform:translate(-50%,-78px) scale(.82)}
+#playView .game-card:has(.letter-row) .audio-orb{
+  width:56px;
+  height:56px;
+  border-radius:18px;
+  font-size:24px;
+  flex:0 0 auto;
 }
-@keyframes growthBadgeLateV11{
-  from{opacity:0;transform:translate(-50%,8px) scale(.9)}
-  to{opacity:1;transform:translate(-50%,0) scale(1)}
+#playView .game-card:has(.letter-row) .word-sound-button small{font-size:8px}
+#playView .game-card:has(.letter-row) .task-prompt{font-size:18px;line-height:1.08}
+#playView .game-card:has(.letter-row) .task-subprompt{font-size:10.5px;line-height:1.2;margin-top:2px}
+#playView .game-card:has(.letter-row) .voice-pill{margin-top:3px;padding:3px 7px;font-size:8px}
+
+/* The clue area becomes a compact listening toolbar during handwriting stages. */
+#playView .game-card:has(.letter-row) .word-visual-cue.audio-clue-panel{
+  width:min(870px,100%);
+  min-height:0;
+  margin:4px auto 3px;
+  padding:6px;
+  grid-template-columns:64px minmax(0,1fr);
+  gap:7px;
+  border-radius:19px;
 }
-@keyframes bunnyBubbleLateV11{
-  0%,10%,100%{opacity:0;transform:translate(-50%,-42%) scale(.8)}
-  24%,82%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#playView .game-card:has(.letter-row) .cue-picture-tile{
+  min-height:60px;
+  height:60px;
+  border-radius:16px;
+}
+#playView .game-card:has(.letter-row) .cue-picture-emoji{font-size:35px}
+#playView .game-card:has(.letter-row) .cue-picture-tile:after{content:"🔊 WORD";left:6px;bottom:4px;font-size:7px;padding:2px 5px;letter-spacing:.04em}
+#playView .game-card:has(.letter-row) .cue-listen-grid{gap:7px}
+#playView .game-card:has(.letter-row) .listen-card{
+  min-height:60px;
+  height:60px;
+  padding:6px 8px;
+  border-radius:15px;
+  grid-template-columns:31px 1fr;
+  grid-template-rows:1fr;
+  column-gap:6px;
+}
+#playView .game-card:has(.letter-row) .listen-card .listen-icon{width:31px;height:31px;border-radius:10px;font-size:16px;grid-row:1}
+#playView .game-card:has(.letter-row) .listen-card .listen-copy{grid-row:1}
+#playView .game-card:has(.letter-row) .listen-card small{font-size:7px;margin-bottom:3px}
+#playView .game-card:has(.letter-row) .listen-card b{font-size:12px}
+#playView .game-card:has(.letter-row) .listen-card .listen-action{display:none}
+
+/* Writing is the visual center of the stage, not the bottom of a tall page. */
+#playView .game-card:has(.letter-row) .question-area{
+  min-height:0;
+  height:100%;
+  padding:0;
+  display:grid;
+  place-items:center;
+}
+#playView .game-card:has(.letter-row) .spell-wrap{
+  width:min(900px,100%);
+  margin:0 auto;
+  display:grid;
+  grid-template-rows:auto auto auto auto;
+  align-content:center;
+  gap:5px;
+}
+#playView .game-card:has(.letter-row) .pencil-modebar{margin:0 auto 1px;gap:7px}
+#playView .game-card:has(.letter-row) .mode-btn{padding:6px 11px;font-size:10.5px}
+#playView .game-card:has(.letter-row) .box-note,
+#playView .game-card:has(.letter-row) .stage3-bridge-note{margin:0 auto 1px;font-size:9px;line-height:1.2}
+#playView .game-card:has(.letter-row) .letter-row{margin:0 auto;align-self:center}
+#playView .game-card:has(.letter-row) .letter-box,
+#playView .game-card:has(.letter-row) .fixed-box,
+#playView .game-card:has(.letter-row) .written-box{height:76px!important}
+#playView .game-card:has(.letter-row) .trace-cell{height:76px!important}
+#playView .game-card:has(.letter-row) .check-answer{margin-top:2px;min-height:42px;padding:9px 24px}
+#playView .game-card:has(.letter-row) .hint-strip{margin-top:1px}
+
+#playView .game-card:has(.letter-row) .feedback{
+  min-height:24px;
+  margin:0 auto;
+  display:grid;
+  place-items:center;
+}
+#playView .game-card:has(.letter-row) .assist-dock{
+  margin:0;
+  gap:9px;
+}
+#playView .game-card:has(.letter-row) .assist-btn{
+  min-height:45px;
+  padding:7px 13px;
 }
 
-/* Play is designed as a one-screen activity. Do not let Pencil/palm movement pan the page. */
-#playView.active-view,
-#playView.active-view .play-view,
-#playView.active-view .game-card{
-  overflow:hidden!important;
-  overscroll-behavior:none!important;
-  -webkit-overflow-scrolling:auto!important;
-}
-#playView.active-view .question-area,
-#playView.active-view .spell-wrap,
-#playView.active-view .letter-row{
-  overscroll-behavior:none!important;
+/* Short landscape iPads get an even tighter, still readable composition. */
+@media(max-height:760px){
+  #playView .game-card:has(.letter-row){padding:7px 15px 8px;row-gap:2px;grid-template-rows:auto auto minmax(160px,1fr) auto auto}
+  #playView .game-card:has(.letter-row) .word-audio-row{min-height:50px}
+  #playView .game-card:has(.letter-row) .audio-orb{width:50px;height:50px;border-radius:16px;font-size:21px}
+  #playView .game-card:has(.letter-row) .task-prompt{font-size:16px}
+  #playView .game-card:has(.letter-row) .task-subprompt{font-size:9.5px}
+  #playView .game-card:has(.letter-row) .word-visual-cue.audio-clue-panel{grid-template-columns:56px minmax(0,1fr);padding:5px;margin:2px auto}
+  #playView .game-card:has(.letter-row) .cue-picture-tile{height:52px;min-height:52px}
+  #playView .game-card:has(.letter-row) .cue-picture-emoji{font-size:30px}
+  #playView .game-card:has(.letter-row) .listen-card{height:52px;min-height:52px;padding:5px 7px}
+  #playView .game-card:has(.letter-row) .listen-card .listen-icon{width:27px;height:27px;font-size:14px}
+  #playView .game-card:has(.letter-row) .listen-card b{font-size:11px}
+  #playView .game-card:has(.letter-row) .letter-box,
+  #playView .game-card:has(.letter-row) .fixed-box,
+  #playView .game-card:has(.letter-row) .written-box,
+  #playView .game-card:has(.letter-row) .trace-cell{height:70px!important}
+  #playView .game-card:has(.letter-row) .assist-btn{min-height:41px}
 }
 
 @media(max-width:700px){
   .garden-scene.reward-moment .growth-target-badge{bottom:4%!important}
   .garden-scene.reward-moment .growth-spark-ring{height:42%}
+  #playView .game-card:has(.letter-row){padding-left:10px;padding-right:10px}
+  #playView .game-card:has(.letter-row) .cue-listen-grid{gap:4px}
+  #playView .game-card:has(.letter-row) .listen-card{padding:5px 4px;display:grid;text-align:left}
 }
