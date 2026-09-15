@@ -1,0 +1,42 @@
+/* TREASURE_UNLOCK_V16_20260915 */
+.treasure-unlock-reveal{
+  position:fixed;inset:0;z-index:160;display:grid;place-items:center;pointer-events:none;
+  background:radial-gradient(circle at 50% 44%,#fffbe8ee 0 13%,#fff6c6c9 25%,#725b7638 58%,#4034474f 100%);
+  opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s ease;overflow:hidden
+}
+.treasure-unlock-reveal.show{opacity:1;visibility:visible}
+.treasure-unlock-reveal.done{opacity:0;visibility:hidden;transition-delay:.08s}
+.treasure-unlock-rays{position:absolute;width:min(72vw,720px);aspect-ratio:1;border-radius:50%;opacity:.62;background:repeating-conic-gradient(from 0deg,#fff7b788 0 9deg,transparent 9deg 20deg);animation:treasureRaySpin 8s linear infinite}
+.treasure-unlock-copy{position:absolute;top:13%;left:50%;transform:translateX(-50%);width:min(560px,86vw);text-align:center;z-index:3;text-shadow:0 2px 0 #fff}
+.treasure-unlock-copy small{display:inline-block;padding:8px 14px;border-radius:999px;background:#fff9d8;border:2px solid #f3d36c;font-size:12px;font-weight:1000;letter-spacing:.13em;color:#88651c;box-shadow:0 8px 24px #6b512622}
+.treasure-unlock-copy h2{margin:10px 0 3px;font-size:clamp(30px,5vw,54px);line-height:1;color:#514051}
+.treasure-unlock-copy p{margin:7px 0 0;font-size:14px;font-weight:850;color:#665a65}
+.treasure-unlock-fly{position:absolute;left:50%;top:52%;width:220px;height:190px;display:grid;place-items:center;z-index:4;transform:translate(-50%,-50%) scale(.45);opacity:0;filter:drop-shadow(0 25px 20px #4a3d4238);animation:treasurePopIn .7s cubic-bezier(.16,.9,.22,1.25) .22s forwards}
+.treasure-unlock-fly svg{width:100%;height:100%}
+.treasure-unlock-fly.cat{width:175px;height:200px}.treasure-unlock-fly.arch{width:185px;height:205px}.treasure-unlock-fly.shed{width:205px;height:185px}.treasure-unlock-fly.birdbath{width:175px;height:195px}.treasure-unlock-fly.seedcrate{width:205px;height:175px}
+.treasure-unlock-stars{position:absolute;left:50%;top:70%;transform:translateX(-50%);font-size:38px;letter-spacing:14px;color:#fff7ac;text-shadow:0 0 12px #f5d45f,0 0 28px #fff2a0;opacity:0;animation:treasureStars 1.25s ease .38s both}
+.treasure-unlock-reveal.flying .treasure-unlock-copy{animation:treasureCopyOut .3s ease both}
+.treasure-unlock-reveal.flying .treasure-unlock-rays{animation:treasureRaySpin 8s linear infinite,treasureRaysOut .45s ease both}
+.treasure-unlock-reveal.flying .treasure-unlock-stars{animation:treasureStarsOut .4s ease both}
+.treasure-unlock-reveal.flying .treasure-unlock-fly{
+  animation:treasureFlyToBox 1s cubic-bezier(.35,.02,.2,1) both!important
+}
+.treasure-open.drop-ready{transform:scale(1.12);box-shadow:0 0 0 6px #fff0a866,0 10px 26px #775a2740!important;background:#fff8cf!important;color:#6e531d!important}
+.treasure-open.treasure-catch{animation:treasureCatch .65s cubic-bezier(.2,.8,.2,1)}
+.garden-object.over-treasure{opacity:.65;filter:drop-shadow(0 0 18px #ffe778);transform:translate(-50%,-50%) scale(.84)!important}
+@keyframes treasurePopIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.25) rotate(-8deg)}55%{opacity:1;transform:translate(-50%,-50%) scale(1.13) rotate(3deg)}78%{transform:translate(-50%,-50%) scale(.96) rotate(-1deg)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes treasureRaySpin{to{transform:rotate(360deg)}}
+@keyframes treasureStars{0%{opacity:0;transform:translate(-50%,18px) scale(.6)}35%{opacity:1;transform:translate(-50%,0) scale(1.2)}100%{opacity:.25;transform:translate(-50%,-18px) scale(.92)}}
+@keyframes treasureCopyOut{to{opacity:0;transform:translate(-50%,-12px) scale(.96)}}
+@keyframes treasureRaysOut{to{opacity:0;transform:scale(.75)}}
+@keyframes treasureStarsOut{to{opacity:0;transform:translate(-50%,-30px) scale(.7)}}
+@keyframes treasureFlyToBox{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+  18%{transform:translate(-50%,-50%) scale(1.12) rotate(-3deg)}
+  100%{opacity:.18;transform:translate(calc(-50% + var(--treasure-fly-x)),calc(-50% + var(--treasure-fly-y))) scale(.12) rotate(18deg)}
+}
+@keyframes treasureCatch{0%,100%{transform:scale(1)}36%{transform:scale(1.2) rotate(-2deg)}62%{transform:scale(.96) rotate(2deg)}}
+@media(max-width:760px){
+  .treasure-unlock-copy{top:14%}.treasure-unlock-copy h2{font-size:clamp(28px,8vw,44px)}.treasure-unlock-copy p{font-size:12px}
+  .treasure-unlock-fly{width:180px;height:160px}.treasure-unlock-stars{font-size:30px;top:72%}
+}
