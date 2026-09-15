@@ -1,0 +1,53 @@
+/* GARDEN_LAYOUT_V18_20260915 */
+/* Keep the growing beds together on the left so the right half reads as a clear decorating/play space. */
+.garden-scene .plot{
+  width:18.5%;
+  height:14.5%;
+  bottom:10.5%;
+  border-width:8px;
+}
+.garden-scene .plot.left{left:4.5%}
+.garden-scene .plot.right{left:25.5%}
+.garden-scene .plot .plant{transform:translateX(-50%) scale(.9);transform-origin:50% 100%}
+
+/* Celebration geometry follows the smaller beds. */
+.growth-target-badge.left{left:13.75%}
+.growth-target-badge.right{left:34.75%}
+.growth-spark-ring{width:18.5%;height:25%;bottom:10%}
+.growth-spark-ring.left{left:4.5%}
+.growth-spark-ring.right{left:25.5%}
+.growth-journey.left{left:13.75%}
+.growth-journey.right{left:34.75%}
+
+/* Decorations should always read in front of the raised beds when first placed. */
+.garden-object{z-index:13}
+.garden-object.arch,.garden-object.shed{z-index:12!important}
+.garden-object.bunny,.garden-object.cat{z-index:18!important}
+
+/* Give the free decorating area a subtle visual cue without adding more UI. */
+.garden-scene:after{
+  content:"";
+  position:absolute;
+  z-index:2;
+  right:4%;
+  bottom:8%;
+  width:51%;
+  height:31%;
+  border-radius:50%;
+  background:radial-gradient(ellipse at center,#fff8df18 0 42%,transparent 72%);
+  pointer-events:none;
+}
+
+@media(max-width:760px){
+  .garden-scene .plot{width:19.5%;height:14%;bottom:10%}
+  .garden-scene .plot.left{left:3.5%}
+  .garden-scene .plot.right{left:25%}
+  .growth-target-badge.left{left:13.25%}
+  .growth-target-badge.right{left:34.75%}
+  .growth-spark-ring{width:19.5%;bottom:9.5%}
+  .growth-spark-ring.left{left:3.5%}
+  .growth-spark-ring.right{left:25%}
+  .growth-journey.left{left:13.25%}
+  .growth-journey.right{left:34.75%}
+  .garden-scene .plot .plant{transform:translateX(-50%) scale(.82)}
+}
