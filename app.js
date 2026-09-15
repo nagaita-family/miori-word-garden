@@ -31,15 +31,15 @@ const WORD_CHUNKS={
   thicket:['thick','et']
 };
 const rewards=[
-{id:'bunny',xp:0,type:'rabbit',label:'Bunny',icon:'🐰',x:50,y:66},
-{id:'bench',xp:90,type:'treasure',label:'Cozy garden bench',icon:'🩷',x:25,y:73},
-{id:'picnic',xp:180,type:'treasure',label:'Strawberry picnic',icon:'🍓',x:78,y:72},
-{id:'mail',xp:270,type:'treasure',label:'Heart mailbox',icon:'💌',x:17,y:57},
-{id:'cat',xp:360,type:'friend',label:'Garden cat',icon:'🐱',x:69,y:64},
-{id:'birdbath',xp:450,type:'treasure',label:'Bird bath',icon:'🐦',x:85,y:51},
-{id:'seedcrate',xp:540,type:'treasure',label:'Seed crate',icon:'🌼',x:34,y:61},
-{id:'arch',xp:630,type:'treasure',label:'Flower arch',icon:'🌸',x:57,y:51},
-{id:'shed',xp:720,type:'treasure',label:'Little garden shed',icon:'🏡',x:90,y:34}
+{id:'bunny',xp:0,type:'rabbit',label:'Bunny',icon:'🐰',x:53,y:68},
+{id:'bench',xp:90,type:'treasure',label:'Cozy garden bench',icon:'🩷',x:57,y:76},
+{id:'picnic',xp:180,type:'treasure',label:'Strawberry picnic',icon:'🍓',x:78,y:77},
+{id:'mail',xp:270,type:'treasure',label:'Heart mailbox',icon:'💌',x:48,y:58},
+{id:'cat',xp:360,type:'friend',label:'Garden cat',icon:'🐱',x:71,y:65},
+{id:'birdbath',xp:450,type:'treasure',label:'Bird bath',icon:'🐦',x:88,y:57},
+{id:'seedcrate',xp:540,type:'treasure',label:'Seed crate',icon:'🌼',x:48,y:78},
+{id:'arch',xp:630,type:'treasure',label:'Flower arch',icon:'🌸',x:64,y:49},
+{id:'shed',xp:720,type:'treasure',label:'Little garden shed',icon:'🏡',x:89,y:36}
 ];
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -144,7 +144,8 @@ function renderGarden(){
   const displayA=celebration&&target==='left'?beforeStage:a,displayB=celebration&&target==='right'?beforeStage:b;
   const storedCount=(state.garden.stored||[]).length;const unlockedTreasureCount=rewards.filter(r=>r.id!=='bunny'&&state.xp>=r.xp).length;
   const stageNames=['Seed','Tiny sprout','Growing stem','Leafy plant','Flower bud','Bloom!'];const growthCopy=celebration?`${stageNames[beforeStage]} → ${stageNames[afterStage]}`:'';
-  const unlockReward=celebration?.unlock?rewards.find(r=>r.id===celebration.unlock.id):null;
+  const unlockReward=celebration?.unlock&&!celebration.unlockShown?rewards.find(r=>r.id===celebration.unlock.id):null;
+  if(unlockReward)celebration.unlockShown=true;
   const rewardCard=celebration?`<div class="reward-garden-card"><div class="reward-emoji">${esc(celebration.emoji||'🌱')}</div><div class="copy"><b>${esc(celebration.word)} made THIS plant grow! ✦</b><span>Word complete · ${growthCopy}</span></div><button id="gardenNextWordBtn">${celebration.finished?'Finish ✦':'Next word →'}</button></div>`:'';
   const unlockReveal=unlockReward?`<div class="treasure-unlock-reveal" id="treasureUnlockReveal"><div class="treasure-unlock-rays"></div><div class="treasure-unlock-copy"><small>NEW TREASURE! ✦</small><h2>${esc(unlockReward.label)}</h2><p>You got it! It’s going into your Treasure Box.</p></div><div class="treasure-unlock-fly ${unlockReward.id}" id="treasureUnlockFly">${gardenObjectArt(unlockReward)}</div><div class="treasure-unlock-stars">✦　✧　✦</div></div>`:'';
   const burst=celebration?`<div class="growth-burst ${target}"><span>✦</span><span>✧</span><span>🌱</span><span>✦</span></div>`:'';
@@ -181,7 +182,7 @@ function openTreasureChest(){
   $('#modalRoot').innerHTML=`<div class="modal treasure-modal"><div class="modal-card treasure-panel"><div class="modal-head"><div><p class="eyebrow">MY COLLECTION</p><h2>🧺 Treasure Box</h2><p>Keep special items here, then bring them back whenever you want.</p></div><button id="closeTreasure" class="icon-btn">×</button></div><div class="treasure-grid">${cards}</div></div></div>`;
   $('#closeTreasure').onclick=()=>$('#modalRoot').innerHTML='';
   $$('.store-item').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.id;if(id==='bench'&&state.garden.bunnySeated){state.garden.bunnySeated=false;state.garden.pos.bunny=gardenDefaultPos('bunny')}if(!state.garden.stored.includes(id))state.garden.stored.push(id);save();renderGarden();openTreasureChest();playSfx('store')});
-  $$('.place-item').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.id;state.garden.stored=state.garden.stored.filter(x=>x!==id);if(!state.garden.pos[id])state.garden.pos[id]=gardenDefaultPos(id);save();renderGarden();openTreasureChest();playSfx('place')});
+  $$('.place-item').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.id;state.garden.stored=state.garden.stored.filter(x=>x!==id);state.garden.pos[id]=gardenDefaultPos(id);save();renderGarden();openTreasureChest();playSfx('place')});
 }
 
 function releaseBunnyHere(pos){if(state.garden.bunnySeated){state.garden.pos.bunny={x:pos.x,y:pos.y};state.garden.bunnySeated=false}}
