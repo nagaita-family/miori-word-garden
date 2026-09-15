@@ -157,10 +157,10 @@ function renderGarden(){
         const fr=fly.getBoundingClientRect(),cr=chest.getBoundingClientRect();
         fly.style.setProperty('--treasure-fly-x',`${cr.left+cr.width/2-(fr.left+fr.width/2)}px`);
         fly.style.setProperty('--treasure-fly-y',`${cr.top+cr.height/2-(fr.top+fr.height/2)}px`);
-        reveal.classList.add('show');
-        setTimeout(()=>playSfx('sparkle'),180);
-        setTimeout(()=>{if(!gardenCelebration)return;reveal.classList.add('flying');chest.classList.add('treasure-catch')},1650);
-        setTimeout(()=>{reveal.classList.add('done');chest.classList.remove('treasure-catch');playSfx('sparkle')},2700)
+        const nextBtn=$('#gardenNextWordBtn'),playBtn=$('#gardenPlayBtn');if(nextBtn)nextBtn.disabled=true;if(playBtn)playBtn.disabled=true;
+        setTimeout(()=>{if(!gardenCelebration)return;reveal.classList.add('show');playSfx('sparkle')},1900);
+        setTimeout(()=>{if(!gardenCelebration)return;reveal.classList.add('flying');chest.classList.add('treasure-catch')},3550);
+        setTimeout(()=>{reveal.classList.add('done');chest.classList.remove('treasure-catch');playSfx('sparkle');if(nextBtn)nextBtn.disabled=false;if(playBtn)playBtn.disabled=false},4600)
       }))
     }
   }
