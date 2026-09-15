@@ -1,0 +1,35 @@
+name: Placed item reactions v20
+
+on:
+  push:
+    paths:
+      - '.github/workflows/placed-item-reactions-v20.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Apply placed-item reaction fix
+        run: python3 tools/placed-item-reactions-v20.py
+      - name: Validate JavaScript
+        run: node --check app.js
+      - name: Check v20 markers
+        run: |
+          grep -q "function gardenPlaced" app.js
+          grep -q "interactionItem" app.js
+          grep -q "filter((\[key\])=>gardenPlaced(key))" app.js
+      - name: Commit app update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Limit garden reactions to placed items"
+          git push
