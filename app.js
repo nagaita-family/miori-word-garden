@@ -62,7 +62,7 @@ let gardenCelebration=null;
 let gardenInteraction=null;
 
 function learning(word){return{attempts:0,correct:0,first:0,mistakes:0,stageMist:{1:0,2:0,3:0,4:0},weak:Array(word.length).fill(0),lastWrong:'',last:'',hints:0,peeks:0,loops:0}}
-function defaultState(){return{version:3,xp:0,week:{id:'2026-09-17-unit-5a',title:'Sept 17 · Unit 5A',ids:[]},lib:{},garden:{growth:0,pos:{},bunnySeated:false,stored:[]},settings:{sound:true,music:false,musicV2:true,voice:''},stats:{answers:0,sessions:0}}}
+function defaultState(){return{version:3,xp:0,week:{id:'2026-09-17-unit-5a',title:'Sept 17 · Unit 5A',ids:[]},lib:{},garden:{growth:0,pos:{},bunnySeated:false,stored:[]},settings:{sound:true,music:true,musicV2:true,voice:'',audioDefaultV17:true},stats:{answers:0,sessions:0}}}
 function emojiFor(word){return({beetle:'🪲',butterfly:'🦋',cricket:'🦗',grasshopper:'🦗',honeybee:'🐝',insect:'🔎',ladybug:'🐞',raisin:'🍇',riding:'🚲',thicket:'🌿'})[word]||'✦'}
 function normalizeWord(raw={},old=null){
   const word=norm(raw.word||old?.word||'');
@@ -87,17 +87,27 @@ function loadState(){
   if(!s)s=defaultState();
   if(s.version===2){s.version=3;s.stats=s.stats||{answers:0,sessions:0};s.settings=s.settings||{sound:true,voice:''};s.garden=s.garden||{growth:0,pos:{}};s.week=s.week||{id:'',title:'This Week',ids:[]};const next={};for(const [id,w] of Object.entries(s.lib||{})){const n=normalizeWord(w,w);next[n.id||id]=n}s.lib=next}
   if(s.version!==3)s={...defaultState(),...s,version:3};
-  s.lib=s.lib||{};s.stats=s.stats||{answers:0,sessions:0};s.garden=s.garden||{growth:0,pos:{},bunnySeated:false,stored:[]};s.garden.pos=s.garden.pos||{};if(typeof s.garden.bunnySeated!=='boolean')s.garden.bunnySeated=false;if(!Array.isArray(s.garden.stored))s.garden.stored=[];s.settings=s.settings||{sound:true,music:false,musicV2:true,voice:''};if(typeof s.settings.music!=='boolean')s.settings.music=false;if(!s.settings.musicV2){s.settings.musicV2=true;s.settings.music=false;}
+  s.lib=s.lib||{};s.stats=s.stats||{answers:0,sessions:0};s.garden=s.garden||{growth:0,pos:{},bunnySeated:false,stored:[]};s.garden.pos=s.garden.pos||{};if(typeof s.garden.bunnySeated!=='boolean')s.garden.bunnySeated=false;if(!Array.isArray(s.garden.stored))s.garden.stored=[];s.settings=s.settings||{sound:true,music:true,musicV2:true,voice:'',audioDefaultV17:true};if(typeof s.settings.sound!=='boolean')s.settings.sound=true;if(typeof s.settings.music!=='boolean')s.settings.music=true;if(!s.settings.audioDefaultV17){s.settings.sound=true;s.settings.music=true;s.settings.audioDefaultV17=true}s.settings.musicV2=true;
   seedSchoolWords(s);localStorage.setItem(STORAGE_KEY,JSON.stringify(s));return s;
 }
 let state=loadState();
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));renderTopbar()}
-function renderTopbar(){
-  const level=Math.floor(state.xp/LEVEL_XP)+1,p=state.xp%LEVEL_XP;
-  $('#levelLabel').textContent=`Level ${level}`;$('#xpLabel').textContent=`${p} / ${LEVEL_XP} XP`;$('#xpFill').style.width=`${p}%`;
-  const music=$('#musicToggle');if(music){music.textContent=state.settings.music?'♫':'♪';music.classList.toggle('off',!state.settings.music);music.setAttribute('aria-label',state.settings.music?'Turn garden music off':'Turn garden music on');music.title=state.settings.music?'Soft garden ambience on':'Soft garden ambience off'}
+function treasureProgress(){
+  const collectible=rewards.filter(r=>r.id!=='bunny');
+  const next=collectible.find(r=>state.xp<r.xp)||null;
+  if(!next)return{done:true,next:null,doneWords:3,away:0,pct:100};
+  const previous=[...collectible].reverse().find(r=>state.xp>=r.xp);const base=previous?.xp||0;
+  const earned=Math.max(0,state.xp-base),doneWords=Math.max(0,Math.min(3,Math.floor((earned+0.001)/30))),away=Math.max(0,Math.ceil((next.xp-state.xp)/30));
+  return{done:false,next,doneWords,away,pct:Math.max(0,Math.min(100,earned/90*100))}
 }
-function setView(name){currentView=name;$$('.view').forEach(v=>v.classList.remove('active-view'));$(`#${name}View`).classList.add('active-view');$$('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===name));if(name==='garden')renderGarden();if(name==='play'){if(session){if(session.count>=session.goal)finishSession();else renderTask()}else renderPlayHome()}if(name==='parent')renderParent();renderTopbar();syncBgm()}
+function treasureStatusText(){const t=treasureProgress();return t.done?'🎁 Collection complete':`🎁 ${t.away} ${t.away===1?'word':'words'} to treasure`}
+function renderTopbar(){
+  const t=treasureProgress(),label=$('#levelLabel'),count=$('#xpLabel'),fill=$('#xpFill');
+  if(t.done){if(label)label.textContent='✨ Garden collection complete';if(count)count.textContent='All treasures';if(fill)fill.style.width='100%'}
+  else{if(label)label.textContent=`🎁 Next: ${t.next.label}`;if(count)count.textContent=`${t.doneWords} / 3 words`;if(fill)fill.style.width=`${t.pct}%`}
+  const music=$('#musicToggle'),enabled=!!(state.settings.music&&state.settings.sound);if(music){music.textContent='♫';music.classList.toggle('off',!enabled);music.setAttribute('aria-label',enabled?'Mute music and sound effects':'Turn music and sound effects on');music.title=enabled?'Music + sound effects on':'Music + sound effects off'}
+}
+function setView(name){const changing=currentView!==name;currentView=name;if(changing&&audioUnlocked)playSfx('transition');$$('.view').forEach(v=>v.classList.remove('active-view'));$(`#${name}View`).classList.add('active-view');$$('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===name));if(name==='garden')renderGarden();if(name==='play'){if(session){if(session.count>=session.goal)finishSession();else renderTask()}else renderPlayHome()}if(name==='parent')renderParent();renderTopbar();syncBgm()}
 
 function rabbitSvg(){return`<svg viewBox="0 0 130 150"><ellipse cx="43" cy="38" rx="18" ry="42" fill="#f8eee9" transform="rotate(-16 43 38)"/><ellipse cx="87" cy="38" rx="18" ry="42" fill="#f8eee9" transform="rotate(16 87 38)"/><ellipse cx="43" cy="38" rx="7" ry="28" fill="#efc1cb" transform="rotate(-16 43 38)"/><ellipse cx="87" cy="38" rx="7" ry="28" fill="#efc1cb" transform="rotate(16 87 38)"/><ellipse cx="65" cy="84" rx="48" ry="43" fill="#fffaf5"/><ellipse cx="65" cy="124" rx="35" ry="23" fill="#fffaf5"/><circle cx="48" cy="80" r="5" fill="#493f3e"/><circle cx="82" cy="80" r="5" fill="#493f3e"/><ellipse cx="65" cy="94" rx="6" ry="4" fill="#db9299"/><path d="M65 98q-8 10-15 1M65 98q8 10 15 1" fill="none" stroke="#6d5750" stroke-width="3" stroke-linecap="round"/><circle cx="36" cy="96" r="8" fill="#f5d8da"/><circle cx="94" cy="96" r="8" fill="#f5d8da"/></svg>`}
 function plant(stage){return`<div class="plant p${stage}"><i class="stem"></i><i class="leaf"></i><i class="leaf r"></i><i class="bud"></i><i class="flower"></i><i class="flower mini"></i></div>`}
@@ -112,11 +122,11 @@ function gardenShedSvg(){return`<svg viewBox="0 0 150 135" aria-hidden="true"><p
 function gardenObjectArt(r){if(r.id==='bunny')return rabbitSvg();if(r.id==='bench')return benchSvg();if(r.id==='picnic')return picnicSvg();if(r.id==='mail')return mailboxSvg();if(r.id==='cat')return catSvg();if(r.id==='birdbath')return birdBathSvg();if(r.id==='seedcrate')return seedCrateSvg();if(r.id==='arch')return flowerArchSvg();if(r.id==='shed')return gardenShedSvg();return r.icon||'✦'}
 function gardenDefaultPos(id){const r=rewards.find(x=>x.id===id);return{x:r?.x??50,y:r?.y??60}}
 function gardenPos(id){return state.garden.pos[id]||gardenDefaultPos(id)}
-function bunnyDisplayPos(){const bench=gardenPos('bench');return state.garden.bunnySeated&&state.xp>=70?{x:bench.x,y:bench.y-8}:gardenPos('bunny')}
+function bunnyDisplayPos(){const bench=gardenPos('bench');return state.garden.bunnySeated&&state.xp>=90?{x:bench.x,y:bench.y-8}:gardenPos('bunny')}
 function gardenUnlocked(id){const r=rewards.find(x=>x.id===id);return!!r&&state.xp>=r.xp}
 function gardenDistance(a,b){return Math.hypot((a?.x??0)-(b?.x??0),(a?.y??0)-(b?.y??0))}
 function triggerGardenInteraction(type,actor='bunny'){
-  const token=Date.now();gardenInteraction={type,actor,token};playSfx(type==='friends'?'correct':'sparkle');
+  const token=Date.now();gardenInteraction={type,actor,token};const sound={seat:'seat',picnic:'sparkle',mail:'sparkle',friends:'friend',birds:'chirp',seeds:'grow',arch:'sparkle',shed:'drop'}[type]||'sparkle';playSfx(sound);
   setTimeout(()=>{if(gardenInteraction?.token===token){gardenInteraction=null;if(currentView==='garden'&&!gardenCelebration)renderGarden()}},2200)
 }
 function gardenReactionHtml(){
@@ -135,7 +145,7 @@ function renderGarden(){
   const storedCount=(state.garden.stored||[]).length;const unlockedTreasureCount=rewards.filter(r=>r.id!=='bunny'&&state.xp>=r.xp).length;
   const stageNames=['Seed','Tiny sprout','Growing stem','Leafy plant','Flower bud','Bloom!'];const growthCopy=celebration?`${stageNames[beforeStage]} → ${stageNames[afterStage]}`:'';
   const unlockReward=celebration?.unlock?rewards.find(r=>r.id===celebration.unlock.id):null;
-  const rewardCard=celebration?`<div class="reward-garden-card"><div class="reward-emoji">${esc(celebration.emoji||'🌱')}</div><div class="copy"><b>${esc(celebration.word)} made THIS plant grow! ✦</b><span>+${celebration.gain} XP · ${growthCopy}</span></div><button id="gardenNextWordBtn">${celebration.finished?'Finish ✦':'Next word →'}</button></div>`:'';
+  const rewardCard=celebration?`<div class="reward-garden-card"><div class="reward-emoji">${esc(celebration.emoji||'🌱')}</div><div class="copy"><b>${esc(celebration.word)} made THIS plant grow! ✦</b><span>Word complete · ${growthCopy}</span></div><button id="gardenNextWordBtn">${celebration.finished?'Finish ✦':'Next word →'}</button></div>`:'';
   const unlockReveal=unlockReward?`<div class="treasure-unlock-reveal" id="treasureUnlockReveal"><div class="treasure-unlock-rays"></div><div class="treasure-unlock-copy"><small>NEW TREASURE! ✦</small><h2>${esc(unlockReward.label)}</h2><p>You got it! It’s going into your Treasure Box.</p></div><div class="treasure-unlock-fly ${unlockReward.id}" id="treasureUnlockFly">${gardenObjectArt(unlockReward)}</div><div class="treasure-unlock-stars">✦　✧　✦</div></div>`:'';
   const burst=celebration?`<div class="growth-burst ${target}"><span>✦</span><span>✧</span><span>🌱</span><span>✦</span></div>`:'';
   const growthBadge=celebration?`<div class="growth-target-badge ${target}"><b>LOOK! THIS ONE ✦</b><span>${growthCopy}</span></div>`:'';
@@ -149,7 +159,7 @@ function renderGarden(){
     const targetPlot=$(`.plot[data-growth-plot="${target}"]`),bunny=root.querySelector('[data-id="bunny"]'),scene=$('#gardenScene');
     if(bunny)bunny.classList.add('garden-cheer');
     const bp=bunnyDisplayPos();scene?.insertAdjacentHTML('beforeend',`<div class="bunny-cheer-bubble" style="left:${bp.x}%;top:${Math.max(12,bp.y-16)}%">Yay! <span>♡</span></div>`);
-    setTimeout(()=>{if(!gardenCelebration||!targetPlot)return;targetPlot.innerHTML=plant(afterStage);targetPlot.classList.add('growth-change');playSfx('sparkle')},720);
+    setTimeout(()=>{if(!gardenCelebration||!targetPlot)return;targetPlot.innerHTML=plant(afterStage);targetPlot.classList.add('growth-change');playSfx('grow')},720);
     if(unlockReward){
       const reveal=$('#treasureUnlockReveal'),fly=$('#treasureUnlockFly'),chest=$('#treasureChestBtn');
       requestAnimationFrame(()=>requestAnimationFrame(()=>{
@@ -158,9 +168,9 @@ function renderGarden(){
         fly.style.setProperty('--treasure-fly-x',`${cr.left+cr.width/2-(fr.left+fr.width/2)}px`);
         fly.style.setProperty('--treasure-fly-y',`${cr.top+cr.height/2-(fr.top+fr.height/2)}px`);
         const nextBtn=$('#gardenNextWordBtn'),playBtn=$('#gardenPlayBtn');if(nextBtn)nextBtn.disabled=true;if(playBtn)playBtn.disabled=true;
-        setTimeout(()=>{if(!gardenCelebration)return;reveal.classList.add('show');playSfx('sparkle')},1900);
+        setTimeout(()=>{if(!gardenCelebration)return;reveal.classList.add('show');playSfx('unlock')},1900);
         setTimeout(()=>{if(!gardenCelebration)return;reveal.classList.add('flying');chest.classList.add('treasure-catch')},3550);
-        setTimeout(()=>{reveal.classList.add('done');chest.classList.remove('treasure-catch');playSfx('sparkle');if(nextBtn)nextBtn.disabled=false;if(playBtn)playBtn.disabled=false},4600)
+        setTimeout(()=>{reveal.classList.add('done');chest.classList.remove('treasure-catch');playSfx('store');if(nextBtn)nextBtn.disabled=false;if(playBtn)playBtn.disabled=false},4600)
       }))
     }
   }
@@ -170,8 +180,8 @@ function openTreasureChest(){
   const cards=unlocked.length?unlocked.map(r=>{const away=stored.includes(r.id);return`<div class="treasure-card ${away?'stored':''}" data-treasure="${r.id}"><div class="treasure-art">${gardenObjectArt(r)}</div><div class="treasure-copy"><b>${esc(r.label)}</b><span>${away?'In Treasure Box':'In the garden'}</span></div><button class="${away?'place-item':'store-item'}" data-id="${r.id}">${away?'Place in garden':'Put away'}</button></div>`}).join(''):`<div class="treasure-empty">Keep spelling — your first garden treasure will unlock soon ✦</div>`;
   $('#modalRoot').innerHTML=`<div class="modal treasure-modal"><div class="modal-card treasure-panel"><div class="modal-head"><div><p class="eyebrow">MY COLLECTION</p><h2>🧺 Treasure Box</h2><p>Keep special items here, then bring them back whenever you want.</p></div><button id="closeTreasure" class="icon-btn">×</button></div><div class="treasure-grid">${cards}</div></div></div>`;
   $('#closeTreasure').onclick=()=>$('#modalRoot').innerHTML='';
-  $$('.store-item').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.id;if(id==='bench'&&state.garden.bunnySeated){state.garden.bunnySeated=false;state.garden.pos.bunny=gardenDefaultPos('bunny')}if(!state.garden.stored.includes(id))state.garden.stored.push(id);save();renderGarden();openTreasureChest();playSfx('tap')});
-  $$('.place-item').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.id;state.garden.stored=state.garden.stored.filter(x=>x!==id);if(!state.garden.pos[id])state.garden.pos[id]=gardenDefaultPos(id);save();renderGarden();openTreasureChest();playSfx('sparkle')});
+  $$('.store-item').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.id;if(id==='bench'&&state.garden.bunnySeated){state.garden.bunnySeated=false;state.garden.pos.bunny=gardenDefaultPos('bunny')}if(!state.garden.stored.includes(id))state.garden.stored.push(id);save();renderGarden();openTreasureChest();playSfx('store')});
+  $$('.place-item').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.id;state.garden.stored=state.garden.stored.filter(x=>x!==id);if(!state.garden.pos[id])state.garden.pos[id]=gardenDefaultPos(id);save();renderGarden();openTreasureChest();playSfx('place')});
 }
 
 function releaseBunnyHere(pos){if(state.garden.bunnySeated){state.garden.pos.bunny={x:pos.x,y:pos.y};state.garden.bunnySeated=false}}
@@ -208,23 +218,23 @@ function tapGardenObject(id){
 function treasureDropHit(x,y){const chest=$('#treasureChestBtn');if(!chest)return false;const r=chest.getBoundingClientRect();return x>=r.left-12&&x<=r.right+12&&y>=r.top-12&&y<=r.bottom+12}
 function makeDraggable(el){
   let pid=null;const scene=$('#gardenScene');
-  el.onpointerdown=e=>{pid=e.pointerId;el._p=null;el._start={x:e.clientX,y:e.clientY};el.setPointerCapture?.(pid);el.classList.add('dragging')};
+  el.onpointerdown=e=>{pid=e.pointerId;el._p=null;el._start={x:e.clientX,y:e.clientY};el.setPointerCapture?.(pid);el.classList.add('dragging');playSfx('pickup')};
   el.onpointermove=e=>{if(e.pointerId!==pid)return;const r=scene.getBoundingClientRect();const x=Math.max(4,Math.min(96,(e.clientX-r.left)/r.width*100));const y=Math.max(10,Math.min(91,(e.clientY-r.top)/r.height*100));el.style.left=`${x}%`;el.style.top=`${y}%`;el._p={x,y};const over=el.dataset.id!=='bunny'&&treasureDropHit(e.clientX,e.clientY);$('#treasureChestBtn')?.classList.toggle('drop-ready',over);el.classList.toggle('over-treasure',over)};
   el.onpointerup=e=>{if(e.pointerId!==pid)return;const id=el.dataset.id,p=el._p,start=el._start,dropToTreasure=id!=='bunny'&&treasureDropHit(e.clientX,e.clientY);pid=null;el.classList.remove('dragging','over-treasure');$('#treasureChestBtn')?.classList.remove('drop-ready');
     if(dropToTreasure){
       if(id==='bench'&&state.garden.bunnySeated){state.garden.bunnySeated=false;state.garden.pos.bunny=gardenDefaultPos('bunny')}
-      if(!state.garden.stored.includes(id))state.garden.stored.push(id);save();renderGarden();const chest=$('#treasureChestBtn');chest?.classList.add('treasure-catch');setTimeout(()=>chest?.classList.remove('treasure-catch'),650);playSfx('sparkle');toast('Into the Treasure Box! ✦');return
+      if(!state.garden.stored.includes(id))state.garden.stored.push(id);save();renderGarden();const chest=$('#treasureChestBtn');chest?.classList.add('treasure-catch');setTimeout(()=>chest?.classList.remove('treasure-catch'),650);playSfx('store');toast('Into the Treasure Box! ✦');return
     }
     if(!p||Math.hypot(e.clientX-(start?.x||e.clientX),e.clientY-(start?.y||e.clientY))<5){tapGardenObject(id);return}
     if(id==='bunny')state.garden.bunnySeated=false;
-    state.garden.pos[id]=p;const reacted=reactToGardenDrop(id,p);save();
+    state.garden.pos[id]=p;const reacted=reactToGardenDrop(id,p);save();if(!reacted)playSfx('drop');
     if(reacted||id==='bench'||id==='picnic'||id==='mail'||id==='cat'||id==='bunny')renderGarden();
   }
   el.onpointercancel=()=>{$('#treasureChestBtn')?.classList.remove('drop-ready');el.classList.remove('dragging','over-treasure');pid=null}
 }
 
 function renderPlayHome(){session=null;helpKind='';$('#playView').innerHTML=`<div class="play-view"><div class="play-home"><div class="play-hero-card"><div><div class="play-new">TODAY’S SPELL ADVENTURE ✦</div><p class="eyebrow">READY WHEN YOU ARE</p><h1>Let’s make some words bloom.</h1><p>Listen, look at the picture clue, then spell with Apple Pencil. Every finished word makes your garden grow.</p><button class="giant" id="startSessionBtn">Start! ✦</button><div class="play-meta"><span>${esc(state.week.title)}</span><span>${state.week.ids.length} words</span><span>Real human pronunciation when available</span><span>Hints are always okay ♡</span></div></div><div class="play-mascot"><div class="mascot-bubble">🐰</div></div></div></div></div>`;$('#startSessionBtn').onclick=startSession;syncBgm()}
-function startSession(){if(!state.week.ids.length)return toast('Add words in Parent first.');playSfx('start');stopBgm();session={count:0,goal:Math.min(GOAL,state.week.ids.length),doneIds:[],last:'',q:null,xp:0};helpKind='';renderTask()}
+function startSession(){if(!state.week.ids.length)return toast('Add words in Parent first.');playSfx('start');syncBgm();session={count:0,goal:Math.min(GOAL,state.week.ids.length),doneIds:[],last:'',q:null,xp:0};helpKind='';renderTask()}
 function chooseWord(){let pool=state.week.ids.filter(id=>!session.doneIds.includes(id)).map(id=>state.lib[id]).filter(Boolean);if(pool.length>1)pool=pool.filter(w=>w.id!==session.last);const scored=pool.map(w=>{const l=w.learn,max=Math.max(0,...l.weak),rate=l.attempts?l.mistakes/l.attempts:0;return{w,score:(w.mioriSpelling&&w.mioriSpelling!==w.word?5:0)+max*.7+rate*5+Math.random()}}).sort((a,b)=>b.score-a.score);return scored[0]?.w}
 function chunkRanges(w){
   const parts=(WORD_CHUNKS[w.word]||[]).map(norm).filter(Boolean);
@@ -278,9 +288,9 @@ function gapChoices(w,r){const c=w.word.slice(r.start,r.end);let out=[c,...confu
 function expectedText(w,q){return q.stage===3?w.word.slice(q.range.start,q.range.end):w.word}
 function clueHtml(w){return`<div class="word-visual-cue audio-clue-panel"><button id="pictureWordAudioBtn" class="cue-picture-tile" type="button" aria-label="Hear the word again"><span class="cue-picture-emoji">${esc(w.pictureEmoji||emojiFor(w.word))}</span><span class="cue-picture-sound">🔊 WORD</span></button><div class="cue-listen-grid"><button id="meaningEnAudioBtn" class="listen-card english" type="button" aria-label="Hear the English meaning"><span class="listen-icon">🔊</span><span class="listen-copy"><small>ENGLISH</small><b>Meaning</b></span><span class="listen-action">Tap to hear <span class="sound-bars">▮▮▮</span></span></button><button id="meaningJaAudioBtn" class="listen-card japanese" type="button" aria-label="日本語の意味を聞く"><span class="listen-icon">🔊</span><span class="listen-copy"><small>日本語</small><b>いみ</b></span><span class="listen-action">タップして聞く <span class="sound-bars">▮▮▮</span></span></button><button id="exampleAudioBtn" class="listen-card example" type="button" aria-label="Hear the example sentence"><span class="listen-icon">💬</span><span class="listen-copy"><small>EXAMPLE</small><b>Sentence</b></span><span class="listen-action">Tap to hear <span class="sound-bars">▮▮▮</span></span></button></div></div>`}
 function renderTask(){
-  if(!session)return renderPlayHome();stopBgm();if(session.count>=session.goal)return finishSession();if(!session.q){const w=chooseWord();if(!w)return finishSession();session.last=w.id;session.q=newQuestion(w,1)}
+  if(!session)return renderPlayHome();syncBgm();if(session.count>=session.goal)return finishSession();if(!session.q){const w=chooseWord();if(!w)return finishSession();session.last=w.id;session.q=newQuestion(w,1)}
   const q=session.q,w=state.lib[q.id];
-  $('#playView').innerHTML=`<div class="play-view"><div class="game-topline"><button id="exitPlayBtn" class="icon-btn">×</button><div><div class="stage-labels"><span>Stage ${q.stage} · ${STAGE_NAMES[q.stage]}</span><span>${session.count+1} / ${session.goal}</span></div><div class="stage-track"><div class="stage-fill" style="width:${((q.stage-1)/4)*100}%"></div></div></div><div class="session-xp">+${session.xp} XP</div></div><div class="game-card"><div class="word-audio-row"><button id="audioBtn" class="audio-orb word-sound-button" aria-label="Hear the spelling word"><span class="speaker-glyph">🔊</span><small>WORD</small></button><div><p class="task-prompt">${STAGE_PROMPTS[q.stage]}</p><p class="task-subprompt">${q.stage===3?'Trace the dotted letters, then write the empty boxes.':q.stage===4?'Write one letter in each box. Scratch a written box to erase.':'You can play the sound again.'}</p><span id="voicePill" class="voice-pill">${w.pronunciationUrl?'● Human recording':'○ Device voice while human audio loads'}</span></div></div>${clueHtml(w)}<div id="questionArea" class="question-area">${questionHtml(w,q)}</div><div id="feedback" class="feedback ${q.feedback?.bad?'bad':q.feedback?.good?'good':''}">${feedbackText(q)}</div><div class="help-row assist-dock"><button id="hintBtn" class="help-btn hint assist-btn"><span class="assist-icon">✦</span><span><b>Hint</b><small>Give me a clue</small></span></button><button id="peekBtn" class="help-btn peek assist-btn"><span class="assist-icon">◉</span><span><b>Peek</b><small>Show the word</small></span></button></div></div></div>`;
+  $('#playView').innerHTML=`<div class="play-view"><div class="game-topline"><button id="exitPlayBtn" class="icon-btn">×</button><div><div class="stage-labels"><span>Stage ${q.stage} · ${STAGE_NAMES[q.stage]}</span><span>${session.count+1} / ${session.goal}</span></div><div class="stage-track"><div class="stage-fill" style="width:${((q.stage-1)/4)*100}%"></div></div></div><div class="session-xp">${treasureStatusText()}</div></div><div class="game-card"><div class="word-audio-row"><button id="audioBtn" class="audio-orb word-sound-button" aria-label="Hear the spelling word"><span class="speaker-glyph">🔊</span><small>WORD</small></button><div><p class="task-prompt">${STAGE_PROMPTS[q.stage]}</p><p class="task-subprompt">${q.stage===3?'Trace the dotted letters, then write the empty boxes.':q.stage===4?'Write one letter in each box. Scratch a written box to erase.':'You can play the sound again.'}</p><span id="voicePill" class="voice-pill">${w.pronunciationUrl?'● Human recording':'○ Device voice while human audio loads'}</span></div></div>${clueHtml(w)}<div id="questionArea" class="question-area">${questionHtml(w,q)}</div><div id="feedback" class="feedback ${q.feedback?.bad?'bad':q.feedback?.good?'good':''}">${feedbackText(q)}</div><div class="help-row assist-dock"><button id="hintBtn" class="help-btn hint assist-btn"><span class="assist-icon">✦</span><span><b>Hint</b><small>Give me a clue</small></span></button><button id="peekBtn" class="help-btn peek assist-btn"><span class="assist-icon">◉</span><span><b>Peek</b><small>Show the word</small></span></button></div></div></div>`;
   $('#exitPlayBtn').onclick=renderPlayHome;$('#audioBtn').onclick=()=>playWordAudio(w,false,{userInitiated:true});$('#pictureWordAudioBtn')?.addEventListener('click',()=>playWordAudio(w,false,{userInitiated:true}));$('#meaningEnAudioBtn')?.addEventListener('click',e=>speakLearningText(w.meaningEn||w.pictureCue||'',{lang:'en-US',button:e.currentTarget}));$('#meaningJaAudioBtn')?.addEventListener('click',e=>speakLearningText(w.meaningJa||'',{lang:'ja-JP',button:e.currentTarget}));$('#exampleAudioBtn')?.addEventListener('click',e=>speakLearningText(w.example||'',{lang:'en-US',button:e.currentTarget}));$('#hintBtn').onclick=()=>showHint(w,q);$('#peekBtn').onclick=()=>showPeek(w);bindQuestion(w,q);setTimeout(()=>playWordAudio(w,false,{auto:true}),120);if(!w.pronunciationUrl&&!w.audioTried)resolveHumanAudioForWord(w).then(found=>{if(found&&session?.q?.id===w.id){const pill=$('#voicePill');if(pill)pill.textContent='● Human recording'}});
 }
 function questionHtml(w,q){
@@ -347,19 +357,21 @@ function bindTraceBox(input,full,w,q){
 }
 function startFilledBoxScratch(e,index,w,q,input){
   const pointerId=e.pointerId,rect=input.getBoundingClientRect(),points=[];let finished=false;
-  const add=ev=>{const list=ev.getCoalescedEvents?.()||[ev];for(const p of list)points.push({x:p.clientX,y:p.clientY,t:performance.now()})};
+  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),line=document.createElementNS(ns,'polyline');svg.classList.add('scratch-trail');svg.setAttribute('viewBox',`0 0 ${Math.max(1,rect.width)} ${Math.max(1,rect.height)}`);svg.setAttribute('preserveAspectRatio','none');svg.appendChild(line);input.appendChild(svg);input.classList.add('scratch-active');
+  const redraw=()=>{const visible=points.slice(-64).map(p=>`${(p.x-rect.left).toFixed(1)},${(p.y-rect.top).toFixed(1)}`).join(' ');line.setAttribute('points',visible)};
+  const add=ev=>{const list=ev.getCoalescedEvents?.()||[ev];for(const p of list)points.push({x:p.clientX,y:p.clientY,t:performance.now()});redraw()};
+  const endTrail=()=>{input.classList.remove('scratch-active');svg.style.opacity='0';setTimeout(()=>svg.remove(),120)};
   const cleanup=()=>{window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',finish,true);window.removeEventListener('pointercancel',finish,true)};
   const move=ev=>{if(ev.pointerId!==pointerId)return;add(ev);ev.preventDefault()};
   const finish=ev=>{if(finished||ev.pointerId!==pointerId)return;finished=true;add(ev);cleanup();
-    if(points.length<3)return;
+    if(points.length<3){endTrail();return}
     let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity,path=0,reversals=0,lastSign=0;
     for(let i=0;i<points.length;i++){const p=points[i];minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);if(i){const dx=p.x-points[i-1].x,dy=p.y-points[i-1].y;path+=Math.hypot(dx,dy);if(Math.abs(dx)>2){const sign=Math.sign(dx);if(lastSign&&sign!==lastSign)reversals++;lastSign=sign}}}
     const width=maxX-minX,height=maxY-minY,duration=points.at(-1).t-points[0].t;
     const looksScratch=duration<2200&&height<=rect.height*1.65&&width>=Math.max(10,rect.width*.12)&&(reversals>=1||path>=Math.max(28,width*1.65));
-    if(looksScratch)clearOneBox(index,w,q,false);
+    if(looksScratch){playSfx('erase');endTrail();clearOneBox(index,w,q,false)}else endTrail()
   };
-  input.blur();e.preventDefault();e.stopPropagation();add(e);
-  window.addEventListener('pointermove',move,{capture:true,passive:false});window.addEventListener('pointerup',finish,true);window.addEventListener('pointercancel',finish,true);
+  input.blur();e.preventDefault();e.stopPropagation();add(e);window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',finish,true);window.addEventListener('pointercancel',finish,true)
 }
 function normalizeScribbleLetter(raw,expected=''){
   const original=String(raw??'').trim();
@@ -433,7 +445,7 @@ function pickChoice(button,w,q){const val=button.dataset.choice;const correct=q.
 function checkHandwriting(w,q){const attempt=q.letters.join(''),correct=expectedText(w,q);if(attempt===correct)right(w,q);else{wrong(w,q,attempt,correct);q.feedback={bad:true};q.hint=null;renderTask();playSfx('wrong')}}
 function wrong(w,q,attempt,correct){const l=w.learn;l.attempts++;l.mistakes++;l.stageMist[q.stage]=(l.stageMist[q.stage]||0)+1;l.lastWrong=q.stage===3?w.word.slice(0,q.range.start)+attempt+w.word.slice(q.range.end):attempt;l.last=today();q.first=false;state.stats.answers=(state.stats.answers||0)+1;if(q.stage>1){const aligned=alignChars(correct,attempt);aligned.slots.forEach((slot,i)=>{if(!slot||slot.state!=='ok'){const full=(q.stage===3?q.range.start:0)+i;l.weak[full]=(l.weak[full]||0)+2}})}save()}
 function right(w,q){
-  const l=w.learn;l.attempts++;l.correct++;if(q.first)l.first++;l.last=today();state.stats.answers=(state.stats.answers||0)+1;for(let i=q.range.start;i<q.range.end;i++)l.weak[i]=Math.max(0,(l.weak[i]||0)-1);playSfx('correct');q.feedback={good:true};
+  const l=w.learn;l.attempts++;l.correct++;if(q.first)l.first++;l.last=today();state.stats.answers=(state.stats.answers||0)+1;for(let i=q.range.start;i<q.range.end;i++)l.weak[i]=Math.max(0,(l.weak[i]||0)-1);playSfx(q.stage===4?'finish':'correct');q.feedback={good:true};
   if(q.stage<4){save();renderTask();const stage=q.stage;setTimeout(()=>{if(!session?.q||session.q.id!==w.id||session.q.stage!==stage)return;session.q=newQuestion(w,stage+1,q.range);helpKind='';renderTask()},520);return}
   const gain=30,beforeGrowth=state.garden.growth,beforeXp=state.xp;state.xp+=gain;state.garden.growth++;l.loops=(l.loops||0)+1;session.xp+=gain;session.count++;if(!session.doneIds.includes(w.id))session.doneIds.push(w.id);
   const unlockedReward=rewards.find(r=>r.id!=='bunny'&&beforeXp<r.xp&&state.xp>=r.xp)||null;
@@ -441,11 +453,11 @@ function right(w,q){
   const finished=session.count>=session.goal;gardenCelebration={word:w.word,emoji:w.pictureEmoji||'🌱',gain,beforeGrowth,growth:state.garden.growth,finished,unlock:unlockedReward?{id:unlockedReward.id,label:unlockedReward.label,icon:unlockedReward.icon}:null};session.q=null;save();
   setTimeout(()=>setView('garden'),360)
 }
-function renderReward(w,gain){const finished=session.count>=session.goal;$('#playView').innerHTML=`<div class="play-view"><div class="reward-screen"><div class="reward-card"><div class="big">${esc(w.pictureEmoji||'🌱')}</div><p class="eyebrow">WORD COMPLETE ✦</p><h1>${esc(w.word)}</h1><p class="muted">You finished Stage 1 → 2 → 3 → 4.</p><div class="reward-chips"><span>＋${gain} XP</span><span>🌱 Garden grew</span><span>✎ Pencil practice saved</span></div><button id="nextWordBtn" class="primary-btn">${finished?'Finish & see Garden':'Next word →'}</button></div></div></div>`;$('#nextWordBtn').onclick=()=>{if(finished)finishSession();else{session.q=null;helpKind='';renderTask()}}}
-function finishSession(){const doneCount=session?.count||0,earned=session?.xp||0;state.stats.sessions=(state.stats.sessions||0)+1;save();session=null;gardenCelebration=null;$('#playView').innerHTML=`<div class="play-view"><div class="reward-screen"><div class="reward-card"><div class="big">🌷</div><p class="eyebrow">PLAY COMPLETE</p><h1>You made the garden grow!</h1><p class="muted">You earned ${earned} XP this session.</p><div class="reward-chips"><span>${doneCount} words complete</span><span>XP stays forever</span></div><button id="seeGardenBtn" class="primary-btn">See Garden</button></div></div></div>`;$('#seeGardenBtn').onclick=()=>setView('garden')}
-function showHint(w,q){if(q.stage<3){playWordAudio(w,true);toast('Listen slowly, then try again.');return}w.learn.hints++;save();const exp=expectedText(w,q);let local=q.letters.findIndex((x,i)=>x!==exp[i]);if(local<0)local=firstEmptyIndex(q);const correct=exp[local];let alts=[...(CONF[correct]||['a','e','i'])].filter(x=>x!==correct);while(alts.length<2){const c='abcdefghijklmnopqrstuvwxyz'[(local+alts.length*7)%26];if(c!==correct&&!alts.includes(c))alts.push(c)}q.hint={local,correct,options:shuffle([correct,...alts.slice(0,2)])};q.mode='write';renderTask();setTimeout(()=>playWordAudio(w,true),70)}
+function renderReward(w,gain){const finished=session.count>=session.goal;$('#playView').innerHTML=`<div class="play-view"><div class="reward-screen"><div class="reward-card"><div class="big">${esc(w.pictureEmoji||'🌱')}</div><p class="eyebrow">WORD COMPLETE ✦</p><h1>${esc(w.word)}</h1><p class="muted">You finished Stage 1 → 2 → 3 → 4.</p><div class="reward-chips"><span>🎁 Treasure progress +1</span><span>🌱 Garden grew</span><span>✎ Pencil practice saved</span></div><button id="nextWordBtn" class="primary-btn">${finished?'Finish & see Garden':'Next word →'}</button></div></div></div>`;$('#nextWordBtn').onclick=()=>{if(finished)finishSession();else{session.q=null;helpKind='';renderTask()}}}
+function finishSession(){const doneCount=session?.count||0,earned=session?.xp||0;state.stats.sessions=(state.stats.sessions||0)+1;save();session=null;gardenCelebration=null;$('#playView').innerHTML=`<div class="play-view"><div class="reward-screen"><div class="reward-card"><div class="big">🌷</div><p class="eyebrow">PLAY COMPLETE</p><h1>You made the garden grow!</h1><p class="muted">${doneCount} finished words made your garden grow.</p><div class="reward-chips"><span>${doneCount} words complete</span><span>🎁 Every 3 words unlocks a treasure</span></div><button id="seeGardenBtn" class="primary-btn">See Garden</button></div></div></div>`;$('#seeGardenBtn').onclick=()=>setView('garden')}
+function showHint(w,q){playSfx('hint');if(q.stage<3){playWordAudio(w,true);toast('Listen slowly, then try again.');return}w.learn.hints++;save();const exp=expectedText(w,q);let local=q.letters.findIndex((x,i)=>x!==exp[i]);if(local<0)local=firstEmptyIndex(q);const correct=exp[local];let alts=[...(CONF[correct]||['a','e','i'])].filter(x=>x!==correct);while(alts.length<2){const c='abcdefghijklmnopqrstuvwxyz'[(local+alts.length*7)%26];if(c!==correct&&!alts.includes(c))alts.push(c)}q.hint={local,correct,options:shuffle([correct,...alts.slice(0,2)])};q.mode='write';renderTask();setTimeout(()=>playWordAudio(w,true),70)}
 function chooseHint(button,w,q){if(button.dataset.hint!==q.hint?.correct){button.classList.add('nope');setTimeout(()=>button.classList.remove('nope'),380);playSfx('wrong');return}button.classList.add('yes');q.letters[q.hint.local]=q.hint.correct;q.hint=null;q.feedback=null;playSfx('correct');setTimeout(()=>renderTask(),240)}
-function showPeek(w){w.learn.peeks++;save();playWordAudio(w);const el=document.createElement('div');el.className='peek-overlay';el.innerHTML=`<b>${esc(w.word)}</b>`;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}
+function showPeek(w){playSfx('peek');w.learn.peeks++;save();playWordAudio(w);const el=document.createElement('div');el.className='peek-overlay';el.innerHTML=`<b>${esc(w.word)}</b>`;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}
 function toggleHelp(kind,w){helpKind=helpKind===kind?'':kind;const panel=$('#helpPanel');if(panel){panel.classList.toggle('hidden',!helpKind);panel.innerHTML=helpPanelHtml(w)}}
 function helpPanelHtml(w){if(helpKind==='meaning')return`<strong>Meaning</strong><br>${esc(w.meaningEn||'No meaning saved.')}${w.meaningJa?`<br><span class="muted">${esc(w.meaningJa)}</span>`:''}`;if(helpKind==='example')return`<strong>Example</strong><br>${esc(w.example||'No example saved.')}`;return''}
 
@@ -551,28 +563,44 @@ function ensureAudioCtx(){
 }
 function tone(ctx,f,start,dur,gain=.035,type='sine',dest=null){const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.0001,start);g.gain.exponentialRampToValueAtTime(gain,start+.018);g.gain.exponentialRampToValueAtTime(.0001,start+dur);o.connect(g);g.connect(dest||ctx.destination);o.start(start);o.stop(start+dur+.03)}
 function playSfx(type){
-  if(!state.settings.sound)return;try{const ctx=ensureAudioCtx();if(!ctx)return;const now=ctx.currentTime+.01;let notes=[220,196],kind='triangle',gain=.035,step=.07,dur=.15;
-    if(type==='correct'){notes=[523,659];kind='sine';gain=.045}
-    if(type==='level'){notes=[523,659,784,1047];kind='sine';gain=.05;step=.075}
-    if(type==='start'){notes=[392,523,659,784];kind='sine';gain=.055;step=.065;dur=.18}
-    if(type==='tap'){notes=[659];kind='sine';gain=.025;dur=.09}
-    if(type==='sparkle'){notes=[784,988,1175];kind='sine';gain=.038;step=.055;dur=.14}
+  if(!state.settings.sound)return;try{const stamp=performance.now(),last=playSfx._last||{};playSfx._last=last;const cooldown=type==='tap'?75:type==='pickup'?90:0;if(cooldown&&stamp-(last[type]||0)<cooldown)return;last[type]=stamp;
+    const ctx=ensureAudioCtx();if(!ctx)return;const now=ctx.currentTime+.008;let notes=[220,196],kind='triangle',gain=.032,step=.07,dur=.14;
+    if(type==='tap'){notes=[740];kind='sine';gain=.021;dur=.065}
+    if(type==='correct'){notes=[523,659];kind='sine';gain=.043;step=.07}
+    if(type==='wrong'){notes=[247,196];kind='triangle';gain=.028;step=.085;dur=.13}
+    if(type==='finish'){notes=[523,659,784,1047];kind='sine';gain=.052;step=.075;dur=.2}
+    if(type==='level'||type==='unlock'){notes=[659,784,988,1319];kind='sine';gain=.052;step=.07;dur=.2}
+    if(type==='start'){notes=[392,523,659,784];kind='sine';gain=.05;step=.065;dur=.17}
+    if(type==='transition'){notes=[440,587];kind='sine';gain=.018;step=.065;dur=.08}
+    if(type==='pickup'){notes=[392,523];kind='triangle';gain=.022;step=.045;dur=.075}
+    if(type==='drop'){notes=[523,440];kind='triangle';gain=.024;step=.055;dur=.08}
+    if(type==='store'){notes=[659,523,392];kind='sine';gain=.03;step=.055;dur=.105}
+    if(type==='place'){notes=[392,523,659];kind='sine';gain=.032;step=.055;dur=.12}
+    if(type==='seat'){notes=[330,440,523];kind='triangle';gain=.03;step=.065;dur=.13}
+    if(type==='grow'){notes=[392,523,659,784];kind='sine';gain=.038;step=.065;dur=.16}
+    if(type==='friend'){notes=[523,659,784];kind='sine';gain=.04;step=.065;dur=.15}
+    if(type==='chirp'){notes=[1175,1568,1319];kind='sine';gain=.018;step=.05;dur=.09}
+    if(type==='erase'){notes=[300,230];kind='triangle';gain=.02;step=.055;dur=.07}
+    if(type==='hint'){notes=[659,784];kind='sine';gain=.025;step=.06;dur=.1}
+    if(type==='peek'){notes=[784,659];kind='sine';gain=.024;step=.07;dur=.11}
+    if(type==='sparkle'){notes=[784,988,1175];kind='sine';gain=.036;step=.055;dur=.14}
     notes.forEach((f,i)=>tone(ctx,f,now+i*step,dur,gain,kind));
   }catch{}
 }
 function scheduleBgmBar(){
-  if(!audioUnlocked||!state.settings.music||bgmTimer===null)return;const ctx=ensureAudioCtx();if(!ctx||!musicGain)return;const now=ctx.currentTime+.05;
-  const phrases=[[[659,0],[784,.82],[880,1.78],[784,3.15]],[[587,0],[659,.9],[784,1.95],[659,3.25]],[[659,0],[880,1.05],[988,2.2],[784,3.45]]];
-  const phrase=phrases[Math.floor(Date.now()/5600)%phrases.length];phrase.forEach(([f,t],i)=>tone(ctx,f,now+t,.58,i===0?.008:.0065,'sine',musicGain));
-  tone(ctx,329.6,now+.18,1.05,.0028,'sine',musicGain)
+  if(!audioUnlocked||!state.settings.music||bgmTimer===null)return;const ctx=ensureAudioCtx();if(!ctx||!musicGain)return;const now=ctx.currentTime+.05,isPlay=currentView==='play';
+  const gardenPhrases=[[[659,0],[784,.82],[880,1.78],[784,3.15]],[[587,0],[659,.9],[784,1.95],[659,3.25]],[[659,0],[880,1.05],[988,2.2],[784,3.45]]];
+  const playPhrases=[[[523,0],[659,1.12],[587,2.3],[659,3.65]],[[494,0],[587,1.08],[659,2.28],[587,3.62]],[[523,0],[587,1.14],[698,2.35],[659,3.68]]];
+  const phrases=isPlay?playPhrases:gardenPhrases,phrase=phrases[Math.floor(Date.now()/5600)%phrases.length];phrase.forEach(([f,t],i)=>tone(ctx,f,now+t,.58,i===0?.0065:.005,'sine',musicGain));
+  tone(ctx,isPlay?261.6:329.6,now+.18,1.05,isPlay?.0018:.0025,'sine',musicGain)
 }
 function startBgm(){
-  if(!audioUnlocked||!state.settings.music||bgmTimer!==null||currentView!=='garden')return;const ctx=ensureAudioCtx();if(!ctx)return;musicGain=ctx.createGain();musicGain.gain.setValueAtTime(.0001,ctx.currentTime);musicGain.gain.exponentialRampToValueAtTime(.22,ctx.currentTime+.5);musicGain.connect(ctx.destination);bgmTimer=setInterval(scheduleBgmBar,5600);scheduleBgmBar();renderTopbar()
+  if(!audioUnlocked||!state.settings.music||bgmTimer!==null||!['garden','play'].includes(currentView))return;const ctx=ensureAudioCtx();if(!ctx)return;musicGain=ctx.createGain();musicGain.gain.setValueAtTime(.0001,ctx.currentTime);musicGain.gain.exponentialRampToValueAtTime(.2,ctx.currentTime+.5);musicGain.connect(ctx.destination);bgmTimer=setInterval(scheduleBgmBar,5600);scheduleBgmBar();renderTopbar()
 }
 function stopBgm(){
   if(bgmTimer!==null){clearInterval(bgmTimer);bgmTimer=null}if(musicGain&&audioCtx){try{musicGain.gain.cancelScheduledValues(audioCtx.currentTime);musicGain.gain.setValueAtTime(Math.max(.0001,musicGain.gain.value),audioCtx.currentTime);musicGain.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.18)}catch{};const old=musicGain;setTimeout(()=>{try{old.disconnect()}catch{}},260)}musicGain=null;renderTopbar()
 }
-function syncBgm(){const should=state.settings.music&&currentView==='garden';if(should)startBgm();else stopBgm()}
+function syncBgm(){const should=state.settings.music&&['garden','play'].includes(currentView);if(should)startBgm();else stopBgm()}
 
 
 function alignChars(target,typed){target=norm(target);typed=norm(typed);const n=target.length,m=typed.length,d=Array.from({length:n+1},()=>Array(m+1).fill(0));for(let i=0;i<=n;i++)d[i][0]=i;for(let j=0;j<=m;j++)d[0][j]=j;for(let i=1;i<=n;i++)for(let j=1;j<=m;j++)d[i][j]=Math.min(d[i-1][j-1]+(target[i-1]===typed[j-1]?0:1),d[i-1][j]+1,d[i][j-1]+1);const slots=Array(n);let i=n,j=m;while(i||j){const diag=i&&j?d[i-1][j-1]+(target[i-1]===typed[j-1]?0:1):1e9;if(i&&j&&d[i][j]===diag){slots[i-1]={expected:target[i-1],typed:typed[j-1],state:target[i-1]===typed[j-1]?'ok':'bad'};i--;j--;continue}if(i&&d[i][j]===d[i-1][j]+1){slots[i-1]={expected:target[i-1],typed:'',state:'missing'};i--;continue}j--}return{slots}}
@@ -580,11 +608,11 @@ function alignChars(target,typed){target=norm(target);typed=norm(typed);const n=
 function resetOneLearning(id){const w=state.lib[id];if(!w)return;if(confirm(`Reset learning data for “${w.word}” only?`)){w.learn=learning(w.word);save();renderParent();toast(`${w.word}: learning data reset.`)}}
 function resetAllLearning(){if(!confirm('Reset learning data for ALL words? Garden items and XP will stay.'))return;Object.values(state.lib).forEach(w=>w.learn=learning(w.word));save();renderParent();toast('All learning data reset.')}
 function resetGardenLayout(){if(!confirm('Reset garden positions? Items in the Treasure Box will stay there.'))return;state.garden.pos={};state.garden.bunnySeated=false;save();renderParent();toast('Garden layout reset.')}
-function resetGardenProgress(){if(!confirm('Reset the whole garden? This resets XP, plant growth, item positions, and the Treasure Box. Word learning data will NOT be deleted.'))return;state.xp=0;state.garden={growth:0,pos:{},bunnySeated:false,stored:[]};save();renderParent();toast('Garden reset. Learning data kept.')}
+function resetGardenProgress(){if(!confirm('Reset the whole garden? This resets plant growth, treasure progress, item positions, and the Treasure Box. Word learning data will NOT be deleted.'))return;state.xp=0;state.garden={growth:0,pos:{},bunnySeated:false,stored:[]};save();renderParent();toast('Garden reset. Learning data kept.')}
 function learningSummary(w){const l=w.learn||learning(w.word),weak=Math.max(0,...(l.weak||[])),wi=weak?(l.weak||[]).indexOf(weak):-1;return{loops:l.loops||0,correct:l.correct||0,mistakes:l.mistakes||0,weak:wi>=0?w.word.slice(wi,Math.min(w.word.length,wi+2)):'—',last:l.last||'Not practiced yet'}}
 function renderParent(){
   const week=state.week.ids.map(id=>state.lib[id]).filter(Boolean),all=Object.values(state.lib).sort((a,b)=>a.word.localeCompare(b.word));
-  $('#parentView').innerHTML=`<div class="parent-view parent-v4"><div class="parent-head"><div><p class="eyebrow">DAD SPACE</p><h1>Parent</h1><p>Everything Dad needs to maintain words, pronunciation, learning data, and the garden.</p></div><div class="parent-actions"><label class="secondary-btn file-btn">Import Word Pack<input id="parentImport" type="file" accept="application/json,.json"></label><button id="exportBtn" class="secondary-btn">Export Backup</button><button id="addWordBtn" class="primary-btn">+ Add Word</button></div></div><div class="parent-stats-row"><div><b>${week.length}</b><span>This week</span></div><div><b>${state.xp}</b><span>Total XP</span></div><div><b>${state.garden.growth||0}</b><span>Garden growth</span></div><div><b>${rewards.filter(r=>state.xp>=r.xp).length}</b><span>Unlocked friends & items</span></div></div><div class="parent-grid parent-main-grid"><section class="panel"><div class="panel-head"><div><p class="eyebrow">THIS WEEK</p><h2>${esc(state.week.title)}</h2></div><span>${week.length} words</span></div><div class="week-list word-card-list">${week.map(wordRowHtml).join('')}</div></section><aside class="panel settings parent-audio-panel"><p class="eyebrow">PRONUNCIATION</p><h2>English voice & audio</h2><select id="voiceSelect"><option value="">Best available</option>${voices.filter(v=>/^en/i.test(v.lang)).map(v=>`<option value="${esc(v.voiceURI)}" ${v.voiceURI===state.settings.voice?'selected':''}>${esc(v.name)} · ${esc(v.lang)}</option>`).join('')}</select><p>Human recordings are used first when available. Device voice is the fallback.</p><button id="testVoiceBtn" class="parent-big-button">🔊 Test voice</button></aside></div><section class="panel library-panel"><div class="panel-head"><div><p class="eyebrow">WORD LIBRARY</p><h2>All saved words</h2></div><input id="librarySearch" class="search-input" placeholder="Search words…"></div><div id="libraryList" class="library-list word-card-list">${all.map(wordRowHtml).join('')}</div></section><section class="panel maintenance-panel"><div><p class="eyebrow">MAINTENANCE</p><h2>Reset & maintenance</h2><p>These controls are intentionally down here because you probably will not need them often.</p></div><div class="maintenance-actions"><button id="resetAllLearningBtn" class="maintenance-btn learning">↻ Reset all learning data<span>Keeps XP and the garden</span></button><button id="resetGardenLayoutBtn" class="maintenance-btn layout">▦ Reset garden layout<span>Keeps growth and unlocked items</span></button><button id="resetGardenProgressBtn" class="maintenance-btn danger-soft">Reset whole garden<span>Keeps word learning data</span></button></div></section></div>`;
+  $('#parentView').innerHTML=`<div class="parent-view parent-v4"><div class="parent-head"><div><p class="eyebrow">DAD SPACE</p><h1>Parent</h1><p>Everything Dad needs to maintain words, pronunciation, learning data, and the garden.</p></div><div class="parent-actions"><label class="secondary-btn file-btn">Import Word Pack<input id="parentImport" type="file" accept="application/json,.json"></label><button id="exportBtn" class="secondary-btn">Export Backup</button><button id="addWordBtn" class="primary-btn">+ Add Word</button></div></div><div class="parent-stats-row"><div><b>${week.length}</b><span>This week</span></div><div><b>${Math.floor(state.xp/30)}</b><span>Words completed</span></div><div><b>${state.garden.growth||0}</b><span>Garden growth</span></div><div><b>${rewards.filter(r=>state.xp>=r.xp).length}</b><span>Unlocked friends & items</span></div></div><div class="parent-grid parent-main-grid"><section class="panel"><div class="panel-head"><div><p class="eyebrow">THIS WEEK</p><h2>${esc(state.week.title)}</h2></div><span>${week.length} words</span></div><div class="week-list word-card-list">${week.map(wordRowHtml).join('')}</div></section><aside class="panel settings parent-audio-panel"><p class="eyebrow">PRONUNCIATION</p><h2>English voice & audio</h2><select id="voiceSelect"><option value="">Best available</option>${voices.filter(v=>/^en/i.test(v.lang)).map(v=>`<option value="${esc(v.voiceURI)}" ${v.voiceURI===state.settings.voice?'selected':''}>${esc(v.name)} · ${esc(v.lang)}</option>`).join('')}</select><p>Human recordings are used first when available. Device voice is the fallback.</p><button id="testVoiceBtn" class="parent-big-button">🔊 Test voice</button></aside></div><section class="panel library-panel"><div class="panel-head"><div><p class="eyebrow">WORD LIBRARY</p><h2>All saved words</h2></div><input id="librarySearch" class="search-input" placeholder="Search words…"></div><div id="libraryList" class="library-list word-card-list">${all.map(wordRowHtml).join('')}</div></section><section class="panel maintenance-panel"><div><p class="eyebrow">MAINTENANCE</p><h2>Reset & maintenance</h2><p>These controls are intentionally down here because you probably will not need them often.</p></div><div class="maintenance-actions"><button id="resetAllLearningBtn" class="maintenance-btn learning">↻ Reset all learning data<span>Keeps garden progress</span></button><button id="resetGardenLayoutBtn" class="maintenance-btn layout">▦ Reset garden layout<span>Keeps growth and unlocked items</span></button><button id="resetGardenProgressBtn" class="maintenance-btn danger-soft">Reset whole garden<span>Keeps word learning data</span></button></div></section></div>`;
   $('#parentImport').onchange=e=>importWordPack(e.target.files?.[0]);$('#exportBtn').onclick=exportBackup;$('#addWordBtn').onclick=()=>openWordModal();$('#voiceSelect').onchange=e=>{state.settings.voice=e.target.value;save()};$('#testVoiceBtn').onclick=()=>speak('Hello Miori. Let’s practice spelling together.');$('#librarySearch').oninput=e=>{const q=e.target.value.toLowerCase();$('#libraryList').innerHTML=all.filter(w=>!q||w.word.includes(q)||(w.meaningEn||'').toLowerCase().includes(q)).map(wordRowHtml).join('');bindParentRows()};$('#resetAllLearningBtn').onclick=resetAllLearning;$('#resetGardenLayoutBtn').onclick=resetGardenLayout;$('#resetGardenProgressBtn').onclick=resetGardenProgress;bindParentRows()
 }
 function wordRowHtml(w){const m=learningSummary(w);return`<div class="word-row parent-word-card" data-id="${w.id}"><div class="word-main"><strong>${esc(w.word)}</strong><span class="audio-status">${w.pronunciationUrl?'● Human audio':'○ Device voice'}</span><p>${esc(w.meaningEn||'No meaning saved')}</p></div><div class="learning-mini"><span><b>${m.loops}</b> full loops</span><span><b>${m.correct}</b> correct</span><span><b>${m.mistakes}</b> mistakes</span><span>weak: <b>${esc(m.weak)}</b></span><small>${esc(m.last)}</small></div><div class="word-actions"><button class="parent-row-btn audio-preview">🔊 Audio</button><button class="parent-row-btn edit-word">✎ Edit</button><button class="parent-row-btn reset-word">↻ Reset learning</button></div></div>`}
@@ -595,8 +623,9 @@ function exportBackup(){const blob=new Blob([JSON.stringify(state,null,2)],{type
 function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add('hidden'),2200)}
 
 function init(){
-  $$('[data-nav]').forEach(b=>b.addEventListener('click',()=>{playSfx('tap');setView(b.dataset.nav)}));
-  $('#musicToggle')?.addEventListener('click',()=>{audioUnlocked=true;state.settings.music=!state.settings.music;save();if(state.settings.music){playSfx('sparkle');syncBgm()}else stopBgm()});
+  $$('[data-nav]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.nav)));
+  document.addEventListener('click',e=>{const btn=e.target.closest?.('button');if(btn&&!btn.disabled&&btn.id!=='musicToggle')playSfx('tap')},true);
+  $('#musicToggle')?.addEventListener('click',()=>{audioUnlocked=true;const on=!(state.settings.music&&state.settings.sound);state.settings.music=on;state.settings.sound=on;state.settings.audioDefaultV17=true;save();if(on){playSfx('sparkle');syncBgm()}else stopBgm()});
   document.addEventListener('pointerdown',()=>{audioUnlocked=true;ensureAudioCtx();syncBgm()},{once:true,capture:true});
   renderTopbar();loadVoices();if('speechSynthesis'in window)speechSynthesis.onvoiceschanged=loadVoices;setView('garden');for(const id of state.week.ids){const w=state.lib[id];if(w&&!w.pronunciationUrl&&!w.audioTried)resolveHumanAudioForWord(w)}
 }
