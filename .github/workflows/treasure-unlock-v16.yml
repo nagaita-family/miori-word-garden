@@ -1,0 +1,36 @@
+name: Treasure unlock v16
+
+on:
+  push:
+    paths:
+      - '.github/workflows/treasure-unlock-v16.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Apply treasure unlock flow
+        run: python3 tools/treasure-unlock-v16.py
+      - name: Validate JavaScript
+        run: node --check app.js
+      - name: Check treasure flow markers
+        run: |
+          grep -q "treasureUnlockReveal" app.js
+          grep -q "treasureDropHit" app.js
+          grep -q "beforeXp<r.xp" app.js
+          grep -q "id:'bench',xp:90" app.js
+      - name: Commit app update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Add Treasure Box unlock celebration and drag return"
+          git push
