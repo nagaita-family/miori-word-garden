@@ -19,7 +19,7 @@ assert(stageTransition.includes('if(q.stage<4)'),'Stage 4 still completes the wo
 assert(grading.includes('if(!confirm(message))return'),'Grading always requires a deliberate confirmation even when nothing is blank');
 assert(grading.includes('state.weekTestResult=')&&grading.includes('delete state.weekTestDraft'),'Final grade still saves results and clears the draft');
 assert(result.includes('Stage 3 → 4'),'Review button explains shortened flow');
-assert(html.includes('weekly-test-palm-v25.js?v=20260917-v25')&&html.includes('app.js?v=20260917-weekly-results-v26')&&/v[0-9]+ · Sep 17/.test(html),'v25 guard is loaded and cache-busted');
+assert(html.includes('weekly-test-palm-v25.js?v=20260917-listen-fix-v27')&&html.includes('app.js?v=20260917-weekly-results-v26')&&/v[0-9]+ · Sep 17/.test(html),'v25 guard is loaded and cache-busted');
 assert(v24.includes('overflow-y:auto')&&v24.includes('display:inline-flex!important'),'Always-visible grading layout retained');
 assert(src.includes('Number(!!b.w.parentPriority)-Number(!!a.w.parentPriority)'),'Parent-starred word priority is unchanged');
 assert(fs.readFileSync('test-mode-v21.js','utf8').includes("const TEST_KEY='mwg-v2-rebuild-test'"),'Parent Test Mode isolation retained');
@@ -31,7 +31,7 @@ const document={
 };
 vm.runInNewContext(guard,{document,Date:{now:()=>clock}}, {filename:'weekly-test-palm-v25.js'});
 const answer={closest(selector){return selector==='.weekly-answer-sheet'?{}:null}};
-const gradeButton={closest(selector){return selector==='.weekly-test-view button'?{}:null}};
+const gradeButton={closest(selector){return selector==='#weeklyGradeBtn,#weeklyGradeTopBtn'?{}:null}};
 function fire(type,target,extra={}){
   const e={target,prevented:false,stopped:false,preventDefault(){this.prevented=true},stopImmediatePropagation(){this.stopped=true},...extra};
   for(const fn of handlers.get(type)||[]){fn(e);if(e.stopped)break;}
