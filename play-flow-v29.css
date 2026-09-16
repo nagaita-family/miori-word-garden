@@ -1,0 +1,41 @@
+/* v29: make fluent Pencil writing the focus, not per-letter recognition latency. */
+.flow-word-wrap{width:min(850px,100%);margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.flow-word-note{font-size:14px;line-height:1.5;color:#6a5974;margin:0}
+.flow-word-label{font-size:12px;font-weight:950;letter-spacing:.1em;color:#705684}
+.flow-word-input,.stage3-gap-flow{
+  display:block;box-sizing:border-box;width:100%;min-width:0;
+  border:3px solid #ae8bcb;border-radius:19px;
+  background:linear-gradient(180deg,#fffdfa,#fff8fe);
+  color:#39304b;-webkit-text-fill-color:#39304b;
+  caret-color:transparent!important;
+  font:800 clamp(23px,4.5vw,36px)/1.3 ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
+  letter-spacing:.065em;text-transform:lowercase;
+  -webkit-appearance:none;appearance:none;outline:none!important;
+  autocapitalize:none;
+}
+.flow-word-input{min-height:100px;padding:19px 22px}
+.flow-word-input:focus,.stage3-gap-flow:focus{border-color:#8d6caf;box-shadow:0 0 0 5px #b693ce24}
+.flow-word-input::placeholder,.stage3-gap-flow::placeholder{font-size:clamp(12px,2.2vw,17px);font-weight:650;letter-spacing:normal;color:#aa95b6;-webkit-text-fill-color:#aa95b6}
+.flow-word-controls{display:flex;gap:12px;align-items:center;justify-content:flex-end}
+.flow-word-controls #checkAnswerBtn{flex:1;max-width:320px;min-height:52px}
+.flow-word-controls #clearFlowBtn{min-height:48px;padding:10px 20px}
+.stage3-trace-row .stage3-gap-flow{
+  height:82px;min-height:0;padding:10px 8px;border-style:dashed;
+  text-align:center;font-size:clamp(20px,3.8vw,32px);
+  grid-column:span var(--gap-count);min-width:0;
+  box-shadow:inset 0 -8px #f8f0fb;
+}
+.stage3-trace-row .stage3-gap-flow.flow-needs-fix{border-color:#d97d8b;background:#fff6f6}
+.stage3-trace-row .stage3-gap-flow.hint-target{box-shadow:0 0 0 5px #b48ed329,inset 0 -8px #f8f0fb}
+.flow-word-diff{width:100%;margin:2px auto 4px;overflow-x:auto}
+.flow-word-diff .weekly-diff{max-width:100%;margin:0}
+.flow-hint{display:flex;align-items:center;justify-content:space-between;gap:12px}
+@media(max-width:720px){
+  .flow-word-input{min-height:84px;padding:13px 15px}
+  .stage3-trace-row .stage3-gap-flow{height:74px;font-size:clamp(17px,4.3vw,27px);padding:5px}
+}
+@media(max-width:420px){
+  .stage3-trace-row .stage3-gap-flow::placeholder{font-size:11px}
+  .flow-word-controls{gap:8px}
+  .flow-word-controls #clearFlowBtn{padding:8px 12px}
+}
