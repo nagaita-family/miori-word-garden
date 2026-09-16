@@ -1,0 +1,35 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const moduleSource=fs.readFileSync('weekly-result-compare-v26.js','utf8');
+const app=fs.readFileSync('app.js','utf8');
+const page=fs.readFileSync('index.html','utf8');
+const styles=fs.readFileSync('weekly-result-compare-v26.css','utf8');
+const window={};vm.runInNewContext(moduleSource,{window}, {filename:'weekly-result-compare-v26.js'});
+const {align,render}=window.WordGardenWeeklyDiff;
+function kinds(a,b){return Array.from(align(a,b),cell=>cell.kind)}
+function reconstruction(a,b){const cells=Array.from(align(a,b));assert.equal(cells.map(c=>c.written).join(''),a.replace(/\s+/g,''),'Written letters are preserved in order');assert.equal(cells.map(c=>c.correct).join(''),b.replace(/\s+/g,''),'Correct letters are preserved in order');return cells}
+assert.deepEqual(kinds('raisin','raisin'),Array(6).fill('match'));
+assert.equal(kinds('raisen','raisin').filter(k=>k==='replace').length,1,'A replacement highlights only the wrong letter');
+assert.deepEqual(kinds('ladybg','ladybug'),['match','match','match','match','match','missing','match'],'A missing middle letter is aligned, not a cascade of errors');
+assert.equal(kinds('ladybugg','ladybug').filter(k=>k==='extra').length,1,'Extra letter is identified');
+assert.equal(kinds('grasshoper','grasshopper').filter(k=>k==='missing').length,1,'Repeated-letter omission has one gap');
+assert.equal(kinds('honey bee','honeybee').every(k=>k==='match'),true,'Handwriting-inserted spaces do not cause errors');
+for(const pair of [['raisen','raisin'],['ladybg','ladybug'],['ladybugg','ladybug'],['grasshoper','grasshopper'],['','raisin'],['a','butterfly']])reconstruction(...pair);
+const missing=render('ladybg','ladybug');assert(missing.includes('is-missing')&&missing.includes('is-correction')&&missing.includes('>+</span>'),'Missing letter has marker above and highlighted correct letter below');
+assert.equal((missing.match(/is-replace/g)||[]).length,0,'Insertion does not mark every later letter red');
+const wrong=render('raisen','raisin');assert(wrong.includes('is-replace')&&wrong.includes('is-correction'),'Substitution highlights both the original and repair');
+const extra=render('ladybugg','ladybug');assert(extra.includes('is-extra')&&extra.includes('is-gap'),'Extra letter aligns with an empty place below');
+assert(render('','raisin').includes('No answer'),'Blank answer has a clear fallback');
+const untrusted=render('<img src=x onerror=alert(1)>','raisin');assert(!untrusted.includes('<img')&&untrusted.includes('&lt;'),'User-provided answer is escaped, never markup');
+assert(render('x'.repeat(400),'raisin').length<2000,'Very long answers use bounded visual fallback');
+const result=app.slice(app.indexOf('function renderWeeklyResult(){'),app.indexOf('function practiceIds(){'));
+assert(result.includes('window.WordGardenWeeklyDiff?.render(item.answer,word)'),'Only the existing result view uses comparison');
+assert(result.includes('item.correct?')&&result.includes('reviewMissed:true'),'Correct words and missed-only short review remain in place');
+assert(page.includes('weekly-result-compare-v26.js?v=20260917-v26')&&page.includes('weekly-result-compare-v26.css?v=20260917-v26'),'Versioned comparison assets loaded');
+assert(page.indexOf('weekly-result-compare-v26.js')<page.indexOf('app.js?v='),'Comparison helper is loaded before app.js');
+assert(page.includes('v26 · Sep 17'),'Visible version v26');
+assert(styles.includes('.weekly-diff-letters')&&styles.includes('overflow-x:auto'),'Long comparisons scroll within their own row');
+assert(!app.slice(app.indexOf('function gradeWeeklyTest(){'),app.indexOf('function renderWeeklyResult(){')).includes('WordGardenWeeklyDiff'),'Grading is not modified');
+console.log('PASS v26: substitution, omission, repeated letters, extra letters, compound spaces, blank, HTML escaping, result-only integration, v25 review preserved.');
