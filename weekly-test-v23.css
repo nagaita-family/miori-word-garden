@@ -1,0 +1,46 @@
+/* v23: practice test is a quiet answer sheet, separate from the ordinary four stages. */
+.weekly-test-entry{margin:16px 0 4px;padding:17px 18px;border-radius:20px;background:linear-gradient(130deg,#fffdf7,#f1f4ff);border:1px solid #e8e2ed;box-shadow:0 9px 25px #65516e12}
+.weekly-entry-kicker{display:inline-block;font-size:10px;font-weight:950;letter-spacing:.13em;color:#76618d}
+.weekly-test-entry h2{font-size:19px;line-height:1.2;margin:6px 0}
+.weekly-test-entry p{font-size:12px;line-height:1.5;color:#71677a;margin:0 0 11px}
+.weekly-entry-actions,.weekly-result-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.weekly-entry-actions button,.weekly-result-actions button{font-size:12px;min-height:42px}
+.weekly-test-view{padding:12px 12px 28px;max-width:1200px;margin:0 auto}
+.weekly-sheet{padding:18px 20px 20px;border-radius:24px;background:linear-gradient(175deg,#fffefa,#fffdfa);box-shadow:0 15px 46px #443c531a,inset 0 0 0 1px #eee7e2;color:#423b4e}
+.weekly-sheet-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.weekly-sheet-head h1,.weekly-results-head h1{margin:4px 0 3px;font-size:clamp(23px,3vw,33px);letter-spacing:-.035em}
+.weekly-sheet-head p,.weekly-results-head p{margin:3px 0 0;font-size:11.5px;color:#796f7a;line-height:1.45}
+.weekly-sheet-head .secondary-btn{flex:none;font-size:11px;min-height:36px}
+.weekly-instructions{display:flex;align-items:center;gap:9px 17px;flex-wrap:wrap;margin:13px 0 12px;padding:10px 13px;border-radius:13px;background:#f3eff9;color:#665776;font-size:11px;line-height:1.4}
+.weekly-instructions b{font-size:12px;color:#4b3c60}
+.weekly-instructions #weeklyAnswered{margin-right:auto;font-weight:900}
+.weekly-answer-sheet{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 13px}
+.weekly-question{min-width:0;display:grid;grid-template-columns:1fr;gap:3px;padding:7px 10px 9px;border-radius:13px;border:1.5px solid #ece7e2;background:#fff;transition:border-color .18s,background .18s}
+.weekly-question.active{border-color:#b39ade;background:#fbf8ff;box-shadow:0 0 0 2px #dcd0ee55}
+.weekly-question-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:24px}
+.weekly-number{font-weight:950;font-size:16px;color:#665c78;font-variant-numeric:tabular-nums}
+.weekly-hear{border:0;border-radius:999px;background:#eee8fb;color:#62498c;font-size:12px;font-weight:900;padding:4px 11px;min-height:27px;touch-action:manipulation}
+.weekly-hear span{font-size:10px;letter-spacing:.02em}
+.weekly-answer{box-sizing:border-box;width:100%;min-width:0;height:40px;border:0;border-bottom:2px solid #e4dbe8;border-radius:3px;background:transparent;outline:none;color:#3b3548;font-size:21px;font-weight:650;letter-spacing:.045em;padding:3px 5px;text-transform:none;box-shadow:none;touch-action:auto}
+.weekly-answer::placeholder{color:#b4a9b6;font-size:12px;font-weight:500;letter-spacing:0}
+.weekly-answer:focus{border-bottom-color:#8e71cb;background:#ffffffa6}
+.weekly-sheet-actions{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:14px}
+.weekly-sheet-actions button{min-height:43px;font-size:12px}
+.weekly-sheet-note{font-size:10.5px;color:#857b86;margin:11px 0 0;line-height:1.5}
+.weekly-results-head{border-radius:19px;background:linear-gradient(135deg,#f3edfb,#f7f9ee);padding:17px 18px;margin-bottom:14px}
+.weekly-results-note{font-weight:760;color:#60516d!important}
+.weekly-result-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px}
+.weekly-result-row{min-width:0;display:grid;grid-template-columns:26px 21px minmax(0,1fr) 32px;align-items:center;gap:6px;padding:11px;border-radius:12px;border:1px solid #eee4ec;background:#fff}
+.weekly-result-row.is-correct{background:#f3faef;border-color:#dcebd4}
+.weekly-result-row.needs-review{background:#fff9ed;border-color:#efe2c6}
+.weekly-result-number{font-size:13px;font-weight:900;color:#766c7b}
+.weekly-result-status{font-size:18px;font-weight:950;color:#68865a}
+.weekly-result-row.needs-review .weekly-result-status{color:#a7854c}
+.weekly-result-row b{display:block;font-size:17px;font-weight:850;overflow-wrap:anywhere}
+.weekly-result-row i{font-size:12px;color:#897b81;font-style:normal;font-weight:500}
+.weekly-result-row small{display:block;margin-top:3px;font-size:11px;color:#6f6175;line-height:1.4}
+.weekly-result-row small strong{font-size:12px;color:#654690}
+.weekly-result-hear{border:0;border-radius:50%;width:32px;height:32px;background:#eee6fb;font-size:15px;color:#5b4883}
+.weekly-result-actions{margin-top:18px}
+@media(max-width:680px){.weekly-test-view{padding:8px 7px 20px}.weekly-sheet{padding:13px 11px;border-radius:18px}.weekly-answer-sheet,.weekly-result-list{grid-template-columns:1fr}.weekly-sheet-head{align-items:center}.weekly-sheet-head h1{font-size:24px}.weekly-sheet-head p{font-size:10.5px}.weekly-instructions{padding:9px 10px}.weekly-sheet-actions{flex-wrap:wrap}.weekly-sheet-actions button{flex:1 1 140px}.weekly-test-entry{padding:13px}.weekly-hear{padding:4px 9px}}
+@media(max-height:760px) and (min-width:681px){.weekly-test-view{padding-top:6px}.weekly-sheet{padding:12px 17px}.weekly-instructions{margin:9px 0}.weekly-question{padding:5px 9px 7px}.weekly-answer{height:36px}.weekly-sheet-actions{margin-top:9px}}
