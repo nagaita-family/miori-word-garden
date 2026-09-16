@@ -18,21 +18,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Normalize weekly exam answers only
         run: python3 tools/weekly-lowercase-v28-patch.py
-      - name: Refresh v24 historical source-shape assertions
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('tests/weekly-test-v24.test.cjs')
-          s=p.read_text(encoding='utf-8')
-          edits={
-            "assert(sheet.includes('weeklyAnswerText(input.value)'),'The stored draft is cleaned');": "assert(sheet.includes('weeklyAnswerText(input.value,state.lib[id].word)'),'The stored draft is cleaned');",
-            "assert(grade.includes('weeklyAnswerText(input.value)'),'Grading the last active field ignores spaces too');": "assert(grade.includes('weeklyAnswerText(input.value,state.lib[input.dataset.id].word)'),'Grading the last active field uses the same normalization');",
-          }
-          for old,new in edits.items():
-            assert s.count(old)==1, f'Historical source assertion not found: {old}'
-            s=s.replace(old,new,1)
-          p.write_text(s,encoding='utf-8')
-          PY
       - name: Check JavaScript syntax
         run: |
           node --check app.js
