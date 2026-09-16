@@ -30,3 +30,4 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m "Add This Week Test answer sheet and missed-word review"
           git push
+# Re-run after fixing spelling-only regression test fixtures.
