@@ -1,0 +1,43 @@
+name: Fluent Play v29
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fluent-play-v29.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Apply isolated fluency and music patch
+        run: python3 tools/flow-v29-patch.py
+      - name: Validate JavaScript syntax
+        run: |
+          node --check app.js
+          node --check weekly-test-palm-v25.js
+          node --check weekly-result-compare-v26.js
+      - name: Run historical and fluency regressions
+        run: |
+          node tests/parent-priority-v22.test.cjs
+          node tests/weekly-test-v23.test.cjs
+          node tests/weekly-test-v24.test.cjs
+          node tests/weekly-test-v25.test.cjs
+          node tests/weekly-result-v26.test.cjs
+          node tests/weekly-listen-v27.test.cjs
+          node tests/weekly-lowercase-v28.test.cjs
+          node tests/fluent-play-v29.test.cjs
+      - name: Commit verified v29 changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js index.html tests/weekly-test-v24.test.cjs tests/weekly-test-v25.test.cjs tests/weekly-lowercase-v28.test.cjs
+          git diff --cached --quiet && exit 0
+          git commit -m "Keep Play quiet and let Stage 4 flow as full-word Pencil writing (v29)"
+          git push
