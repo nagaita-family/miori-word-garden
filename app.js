@@ -243,8 +243,27 @@ function renderPlayHome(){session=null;helpKind='';const draft=state.weekTestDra
 // A weekly exam is a separate assessment, not a four-stage learning attempt.
 // The same local state store is used, so the existing Parent Test Mode remains isolated.
 function weeklyTestIds(){return[...new Set(state.week.ids)].filter(id=>!!state.lib[id]).slice(0,10)}
-function weeklyAnswerText(raw){return String(raw??'').replace(/\s+/g,'')}
-function weeklyScore(ids,answers,lib){return ids.map(id=>({id,answer:weeklyAnswerText(answers[id]),correct:norm(answers[id])===lib[id].word}))}
+// Scribble can read a handwritten lower-case l as 1. Keep it as l only when
+// that one recognition fix fits the expected spelling better than discarding it.
+// Never alter actual alphabetic spelling mistakes or reveal the correct word.
+function weeklyLetterDistance(a,b){
+  let prev=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){
+    const next=[i];
+    for(let j=1;j<=b.length;j++)next[j]=Math.min(prev[j]+1,next[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    prev=next;
+  }
+  return prev[b.length]
+}
+function weeklyAnswerText(raw,expected=''){
+  let text=String(raw??'').normalize('NFKC').toLowerCase().replace(/[^a-z1]/g,'');
+  while(text.includes('1')){
+    const i=text.indexOf('1'),asL=text.slice(0,i)+'l'+text.slice(i+1),without=text.slice(0,i)+text.slice(i+1);
+    text=expected.includes('l')&&weeklyLetterDistance(asL,expected)<weeklyLetterDistance(without,expected)?asL:without;
+  }
+  return text
+}
+function weeklyScore(ids,answers,lib){return ids.map(id=>{const answer=weeklyAnswerText(answers[id],lib[id].word);return{id,answer,correct:answer===lib[id].word}})}
 function saveWeeklyDraft(){
   if(!weeklyTest)return;
   state.weekTestDraft={weekId:state.week.id,weekTitle:state.week.title,ids:[...weeklyTest.ids],answers:{...weeklyTest.answers},active:weeklyTest.active,startedAt:weeklyTest.startedAt};
@@ -256,7 +275,7 @@ function startWeeklyTest(fresh=false){
   if(fresh&&draft?.weekId===state.week.id&&!confirm('Start a new test? Your unfinished answer sheet will be discarded.'))return;
   const resume=!fresh&&draft?.weekId===state.week.id&&Array.isArray(draft.ids)&&draft.ids.length===current.length&&draft.ids.every(id=>current.includes(id));
   const ids=resume?[...draft.ids]:shuffle(current);
-  weeklyTest={ids,answers:Object.fromEntries(ids.map(id=>[id,resume&&typeof draft.answers?.[id]==='string'?weeklyAnswerText(draft.answers[id]):''])),active:resume?Math.max(0,Math.min(ids.length-1,Number(draft.active)||0)):0,startedAt:resume?draft.startedAt:new Date().toISOString()};
+  weeklyTest={ids,answers:Object.fromEntries(ids.map(id=>[id,resume&&typeof draft.answers?.[id]==='string'?weeklyAnswerText(draft.answers[id],state.lib[id].word):''])),active:resume?Math.max(0,Math.min(ids.length-1,Number(draft.active)||0)):0,startedAt:resume?draft.startedAt:new Date().toISOString()};
   session=null;helpKind='';saveWeeklyDraft();renderWeeklyTest();
   // The start button is a user gesture, so reading the first/current word can begin here.
   playWordAudio(state.lib[weeklyTest.ids[weeklyTest.active]],false,{userInitiated:true})
@@ -287,7 +306,7 @@ function renderWeeklyTest(){
     },true);
     input.addEventListener('focus',()=>{setWeeklyActive(index,false);try{navigator.virtualKeyboard?.hide?.()}catch{}});
     const storeWeeklyAnswer=(cleanField=true)=>{
-      const cleaned=weeklyAnswerText(input.value);
+      const cleaned=weeklyAnswerText(input.value,state.lib[id].word);
       // Scribble sometimes inserts a space while the Pencil pauses between parts of a compound word.
       // Leave IME composition alone until it commits, then remove spaces from the visible text and saved answer.
       if(cleanField&&input.value!==cleaned)input.value=cleaned;
@@ -309,7 +328,7 @@ function gradeWeeklyTest(){
   if(!weeklyTest)return;
   // Grab the actual field contents before grading; Scribble may commit its final input on blur.
   document.activeElement?.blur?.();
-  $$('.weekly-answer').forEach(input=>weeklyTest.answers[input.dataset.id]=weeklyAnswerText(input.value));
+  $$('.weekly-answer').forEach(input=>weeklyTest.answers[input.dataset.id]=weeklyAnswerText(input.value,state.lib[input.dataset.id].word));
   const blank=weeklyTest.ids.filter(id=>!norm(weeklyTest.answers[id])).length;
   const message=blank?`${blank} ${blank===1?'answer is':'answers are'} blank. Finish and grade all ${weeklyTest.ids.length} answers anyway?`:`Finished writing? Grade all ${weeklyTest.ids.length} answers now?`;
   if(!confirm(message))return;

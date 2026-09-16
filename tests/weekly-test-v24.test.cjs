@@ -15,10 +15,10 @@ vm.runInContext(between('function weeklyTestIds(){','function saveWeeklyDraft(){
 assert.equal(ctx.weeklyAnswerText('lady bug'),'ladybug');
 assert.equal(ctx.weeklyAnswerText('  lady\tbug \n'),'ladybug');
 assert.equal(ctx.weeklyAnswerText('honey\u00a0bee'),'honeybee');
-assert.equal(ctx.weeklyAnswerText('Rai Sin'),'RaiSin');
+assert.equal(ctx.weeklyAnswerText('Rai Sin'),'raisin');
 const scored=Array.from(ctx.weeklyScore(ids,{ladybug:'lady bug',raisin:'RAI SIN',honeybee:'honey bee',butterfly:'buter fly'},lib));
 assert.equal(scored[0].correct,true);assert.equal(scored[0].answer,'ladybug');
-assert.equal(scored[1].correct,true);assert.equal(scored[1].answer,'RAISIN');
+assert.equal(scored[1].correct,true);assert.equal(scored[1].answer,'raisin');
 assert.equal(scored[2].correct,true);assert.equal(scored[2].answer,'honeybee');
 assert.equal(scored[3].correct,false,'Removing spaces must not forgive an actual missing letter');
 assert.equal(scored[4].correct,false,'An unanswered field remains incorrect');
@@ -35,6 +35,6 @@ assert(grade.includes('state.weekTestResult=')&&grade.includes('delete state.wee
 assert(css.includes('.weekly-test-view .weekly-answer-sheet')&&css.includes('overflow-y:auto')&&css.includes('flex:1 1 auto'),'Only the answer list can scroll under pinned controls');
 assert(css.includes('.weekly-sheet-actions #weeklyGradeBtn')&&css.includes('display:inline-flex!important'),'Grade control receives an always-visible button style');
 assert(css.includes('caret-color:transparent!important'),'No blinking keyboard caret');
-assert(page.includes('weekly-test-v24.css?v=20260917-v24')&&page.includes('app.js?v=20260917-weekly-results-v26')&&/v[0-9]+ · Sep 17/.test(page),'v24 assets have cache busting and a visible version');
+assert(page.includes('weekly-test-v24.css?v=20260917-v24')&&page.includes('app.js?v=20260917-weekly-lowercase-v28')&&/v[0-9]+ · Sep 17/.test(page),'v24 assets have cache busting and a visible version');
 assert(js.includes('const PROD_KEY=')===false,'Test Mode remains a separately loaded script, not duplicated in app.js');
 console.log('PASS v24: visible top/bottom grading, independent scroll, no caret, Pencil keyboard suppression, spaces ignored in drafts and grading, true misspellings retained.');
