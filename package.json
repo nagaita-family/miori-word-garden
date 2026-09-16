@@ -1,0 +1,9 @@
+{
+  "name": "miori-word-garden",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "latest",
+    "@netlify/functions": "latest"
+  }
+}
