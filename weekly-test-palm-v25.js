@@ -1,8 +1,10 @@
-/* v25 — protect weekly-test controls from stray palm contacts without blocking Pencil Scribble. */
+/* v27: protect only irreversible grading controls; Listen remains usable while writing. */
 (()=>{
 'use strict';
 const inExam=()=>!!document.querySelector('.weekly-test-view .weekly-answer-sheet');
-const control=target=>target?.closest?.('.weekly-test-view button');
+// The old selector covered every button, swallowing Listen after Pencil strokes.
+// Grading needs palm protection; listening, navigating and saving must remain available.
+const control=target=>target?.closest?.('#weeklyGradeBtn,#weeklyGradeTopBtn');
 let penOnPaper=false;
 let lastWritingAt=-Infinity;
 let suppressClicksUntil=0;
@@ -13,8 +15,6 @@ function suppress(event){
   event.preventDefault();
   event.stopImmediatePropagation();
 }
-// Only a Pencil stroke in the actual answer-sheet area starts the palm-protection window.
-// Tapping a button with the Pencil should remain possible.
 document.addEventListener('pointerdown',event=>{
   if(!inExam())return;
   if(event.pointerType==='pen'){
@@ -34,8 +34,6 @@ document.addEventListener('pointermove',event=>{
 for(const type of ['pointerup','pointercancel'])document.addEventListener(type,event=>{
   if(event.pointerType==='pen'&&penOnPaper){penOnPaper=false;lastWritingAt=now();}
 },{capture:true,passive:true});
-// On Safari, touchstart can report multiple fingers or a wide palm even when the
-// pointer event reports a tiny contact. Block the synthetic click at capture too.
 document.addEventListener('touchstart',event=>{
   if(!inExam()||!control(event.target))return;
   const contacts=event.touches?.length||0;
