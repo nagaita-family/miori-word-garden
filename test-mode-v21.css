@@ -1,0 +1,9 @@
+/* TEST_MODE_V21_20260916 */
+body.mwg-test-mode .app-shell{box-shadow:inset 0 0 0 3px #9a70bd}
+#mwgTestBanner{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));z-index:9998;pointer-events:none;display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:16px;background:#4f3d5fef;color:#fff;box-shadow:0 8px 24px #32253e38;font-size:10px;line-height:1.2;backdrop-filter:blur(10px)}
+#mwgTestBanner b{font-size:10.5px;letter-spacing:.04em;white-space:nowrap}#mwgTestBanner span{color:#f4eafa;font-weight:750}
+.test-mode-panel{margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:18px;background:linear-gradient(135deg,#f8f2ff,#fff9f1);box-shadow:inset 0 0 0 1px #e6d9ef,0 8px 22px #5d477415}
+.test-mode-panel.active{background:linear-gradient(135deg,#eee2fa,#fff2df);box-shadow:inset 0 0 0 2px #9f7abd,0 10px 24px #5d477420}
+.test-mode-copy{max-width:720px}.test-mode-copy h2{margin:2px 0 7px}.test-mode-copy p:not(.eyebrow){margin:0;color:#6c626e;font-size:11px;line-height:1.6}.test-mode-copy small{display:block;margin-top:7px;color:#88798e;font-size:9.5px;font-weight:800;line-height:1.45}
+.test-mode-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.test-mode-actions button{white-space:nowrap}.test-end-btn{background:#76538f!important}
+@media(max-width:760px){.test-mode-panel{align-items:flex-start;flex-direction:column}.test-mode-actions{width:100%;justify-content:flex-start}#mwgTestBanner{left:12px;right:12px;justify-content:center;flex-wrap:wrap;text-align:center}}
