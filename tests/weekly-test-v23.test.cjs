@@ -8,7 +8,7 @@ const isolation=fs.readFileSync('test-mode-v21.js','utf8');
 const norm=s=>String(s??'').toLowerCase().replace(/[^a-z]/g,'');
 const between=(from,to)=>{const a=src.indexOf(from),b=src.indexOf(to,a+from.length);assert(a>=0&&b>a,`Missing source span: ${from}`);return src.slice(a,b)};
 const pure=between('function weeklyTestIds(){','function saveWeeklyDraft(){');
-const lib={};for(let n=0;n<12;n++){const id=`word${n}`;lib[id]={id,word:id,parentPriority:false};}
+const lib={};for(let n=0;n<12;n++){const id=`word${String.fromCharCode(97+n)}`;lib[id]={id,word:id,parentPriority:false};}
 lib.extra={id:'extra',word:'extra',parentPriority:true};
 const ctx={state:{week:{ids:Object.keys(lib).filter(x=>x!=='extra')},lib},norm,Set,Object,String};
 vm.createContext(ctx);vm.runInContext(pure,ctx);
