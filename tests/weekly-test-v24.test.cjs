@@ -29,8 +29,8 @@ assert(sheet.includes("$('#weeklyGradeBtn').onclick=gradeWeeklyTest")&&sheet.inc
 assert(sheet.includes('inputmode="none"')&&sheet.includes('virtualkeyboardpolicy="manual"'),'Native Pencil fields suppress software keyboard');
 assert(sheet.includes("e.pointerType==='touch'")&&sheet.includes('input.focus({preventScroll:true})'),'Finger focus is prevented and Pencil focus avoids unwanted scrolling');
 assert(sheet.includes('storeWeeklyAnswer(!e.isComposing)')&&sheet.includes("'compositionend'"),'Spacing is removed after Scribble commits');
-assert(sheet.includes('weeklyAnswerText(input.value)'),'The stored draft is cleaned');
-assert(grade.includes('weeklyAnswerText(input.value)'),'Grading the last active field ignores spaces too');
+assert(sheet.includes('weeklyAnswerText(input.value,state.lib[id].word)'),'The stored draft is cleaned with its target word');
+assert(grade.includes('weeklyAnswerText(input.value,state.lib[input.dataset.id].word)'),'Grading the last active field uses the same normalization');
 assert(grade.includes('state.weekTestResult=')&&grade.includes('delete state.weekTestDraft'),'Original grading result and draft completion remain intact');
 assert(css.includes('.weekly-test-view .weekly-answer-sheet')&&css.includes('overflow-y:auto')&&css.includes('flex:1 1 auto'),'Only the answer list can scroll under pinned controls');
 assert(css.includes('.weekly-sheet-actions #weeklyGradeBtn')&&css.includes('display:inline-flex!important'),'Grade control receives an always-visible button style');
