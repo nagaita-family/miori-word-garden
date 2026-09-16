@@ -23,6 +23,8 @@ assert(writing.includes('data-guide-full')&&writing.includes('bindTraceBox('),'T
 assert(writing.includes('weeklyAnswerText(input.value,expectedText(w,q))'),'Both fluent inputs use v28 lowercase normalization');
 assert(writing.includes("input.addEventListener('compositionend'"),'Scribble composition is not truncated mid-word');
 assert(writing.includes('if(!finishComposition)return'),'Text is cleaned after composition, not per incomplete stroke');
+assert(writing.includes("q.stage===3&&q.mode==='erase'"),'Stage 3 erase button clears the new shared gap');
+assert(src.includes('if(!q.audioStarted){q.audioStarted=true;'),'A stage speaks automatically once, never on a correction rerender');
 assert(writing.includes("e.pointerType==='touch'")&&writing.includes('virtualKeyboard?.hide'),'A finger does not summon the keyboard');
 assert(writing.includes('Clear ✎')&&writing.includes('clearFlowBtn'),'Whole-word answer has an explicit correction button');
 assert(writing.includes('flowComparisonHtml(answer,w.word)'),'Stage 4 reveals aligned error details only after a wrong check');
