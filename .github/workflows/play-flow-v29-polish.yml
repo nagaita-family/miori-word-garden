@@ -1,0 +1,39 @@
+name: Final v29 flowing handwriting polish
+
+on:
+  push:
+    paths:
+      - '.github/workflows/play-flow-v29-polish.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Apply targeted audio and eraser corrections
+        run: python3 tools/play-flow-v29-polish.py
+      - name: Validate syntax and all features
+        run: |
+          node --check app.js
+          node tests/parent-priority-v22.test.cjs
+          node tests/weekly-test-v23.test.cjs
+          node tests/weekly-test-v24.test.cjs
+          node tests/weekly-test-v25.test.cjs
+          node tests/weekly-result-v26.test.cjs
+          node tests/weekly-listen-v27.test.cjs
+          node tests/weekly-lowercase-v28.test.cjs
+          node tests/play-flow-v29.test.cjs
+      - name: Publish final v29 corrections
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js tests/play-flow-v29.test.cjs
+          git diff --cached --quiet && exit 0
+          git commit -m "Avoid repeated word audio and support Stage 3 shared-gap eraser (v29)"
+          git push
