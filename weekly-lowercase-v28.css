@@ -1,0 +1,9 @@
+/* v28: weekly spelling answers use lower-case letters, including during Scribble composition. */
+.weekly-test-view .weekly-answer,
+.weekly-test-view .weekly-answer:focus{
+  text-transform:lowercase!important;
+}
+.weekly-test-view .weekly-result-row b,
+.weekly-test-view .weekly-diff-letters{
+  text-transform:lowercase;
+}
