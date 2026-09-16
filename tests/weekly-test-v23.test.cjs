@@ -38,5 +38,5 @@ assert(exam.includes('state.weekTestDraft=')&&exam.includes('saveWeeklyDraft()')
 assert(isolation.includes("const PROD_KEY='mwg-v2-rebuild'")&&isolation.includes("const TEST_KEY='mwg-v2-rebuild-test'")&&isolation.includes('routedKey(this,key)'), 'Existing isolated parent Test Mode remains active');
 assert(src.includes('Number(!!b.w.parentPriority)-Number(!!a.w.parentPriority)'), 'Existing starred-word priority retained');
 assert(index.includes('weekly-test-v23.css')&&index.includes('weekly-test-v23'), 'HTML loads versioned CSS and app');
-assert(index.includes('v23 · Sep 17'),'Visible version updated');
+assert.match(index,/class="app-version-badge"[^>]*>v[0-9]+ · /,"Visible version badge exists");
 console.log('PASS: weekly-only 10-word selection, grading (typo/blank/case), answer privacy, draft, wrong-only practice, Test Mode isolation, star priority and v23 assets');

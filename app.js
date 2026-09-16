@@ -243,7 +243,8 @@ function renderPlayHome(){session=null;helpKind='';const draft=state.weekTestDra
 // A weekly exam is a separate assessment, not a four-stage learning attempt.
 // The same local state store is used, so the existing Parent Test Mode remains isolated.
 function weeklyTestIds(){return[...new Set(state.week.ids)].filter(id=>!!state.lib[id]).slice(0,10)}
-function weeklyScore(ids,answers,lib){return ids.map(id=>({id,answer:String(answers[id]||'').trim(),correct:norm(answers[id])===lib[id].word}))}
+function weeklyAnswerText(raw){return String(raw??'').replace(/\s+/g,'')}
+function weeklyScore(ids,answers,lib){return ids.map(id=>({id,answer:weeklyAnswerText(answers[id]),correct:norm(answers[id])===lib[id].word}))}
 function saveWeeklyDraft(){
   if(!weeklyTest)return;
   state.weekTestDraft={weekId:state.week.id,weekTitle:state.week.title,ids:[...weeklyTest.ids],answers:{...weeklyTest.answers},active:weeklyTest.active,startedAt:weeklyTest.startedAt};
@@ -255,7 +256,7 @@ function startWeeklyTest(fresh=false){
   if(fresh&&draft?.weekId===state.week.id&&!confirm('Start a new test? Your unfinished answer sheet will be discarded.'))return;
   const resume=!fresh&&draft?.weekId===state.week.id&&Array.isArray(draft.ids)&&draft.ids.length===current.length&&draft.ids.every(id=>current.includes(id));
   const ids=resume?[...draft.ids]:shuffle(current);
-  weeklyTest={ids,answers:Object.fromEntries(ids.map(id=>[id,resume&&typeof draft.answers?.[id]==='string'?draft.answers[id]:''])),active:resume?Math.max(0,Math.min(ids.length-1,Number(draft.active)||0)):0,startedAt:resume?draft.startedAt:new Date().toISOString()};
+  weeklyTest={ids,answers:Object.fromEntries(ids.map(id=>[id,resume&&typeof draft.answers?.[id]==='string'?weeklyAnswerText(draft.answers[id]):''])),active:resume?Math.max(0,Math.min(ids.length-1,Number(draft.active)||0)):0,startedAt:resume?draft.startedAt:new Date().toISOString()};
   session=null;helpKind='';saveWeeklyDraft();renderWeeklyTest();
   // The start button is a user gesture, so reading the first/current word can begin here.
   playWordAudio(state.lib[weeklyTest.ids[weeklyTest.active]],false,{userInitiated:true})
@@ -271,24 +272,44 @@ function setWeeklyActive(next,readAloud=false){
 function renderWeeklyTest(){
   if(!weeklyTest)return renderPlayHome();
   const total=weeklyTest.ids.length,answered=weeklyTest.ids.filter(id=>norm(weeklyTest.answers[id])).length;
-  $('#playView').innerHTML=`<div class="play-view weekly-test-view"><div class="weekly-sheet"><header class="weekly-sheet-head"><div><span class="weekly-entry-kicker">📝 THIS WEEK TEST</span><h1>My spelling test</h1><p>${esc(state.week.title)} · Listen and write. Answers stay hidden until you finish.</p></div><button id="weeklyLeaveBtn" class="secondary-btn" type="button">Save & exit</button></header><div class="weekly-instructions"><b id="weeklyNow">Question ${weeklyTest.active+1} of ${total}</b><span id="weeklyAnswered">${answered} / ${total} answered</span><span>Tap 🔊 to hear a word again. You can change any answer.</span></div><div class="weekly-answer-sheet">${weeklyTest.ids.map((id,i)=>`<div class="weekly-question ${i===weeklyTest.active?'active':''}" data-id="${esc(id)}" data-index="${i}"><div class="weekly-question-head"><span class="weekly-number">${i+1}.</span><button type="button" class="weekly-hear" aria-label="Hear question ${i+1}" data-index="${i}">🔊 <span>Listen</span></button></div><input type="text" class="weekly-answer" data-id="${esc(id)}" data-index="${i}" value="${esc(weeklyTest.answers[id])}" aria-label="Spelling answer for question ${i+1}" placeholder="Write your answer" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done"></div>`).join('')}</div><footer class="weekly-sheet-actions"><button id="weeklyNextBtn" class="secondary-btn" type="button">${weeklyTest.active===total-1?'Back to question 1 ↻':'Next word →'}</button><button id="weeklyGradeBtn" class="primary-btn" type="button">Check all ${total} answers ✓</button></footer><p class="weekly-sheet-note">No hints, no answer checks yet. This test does not change your Garden, XP, or spelling mastery. Practice after grading can grow the Garden.</p></div></div>`;
+  $('#playView').innerHTML=`<div class="play-view weekly-test-view"><div class="weekly-sheet"><header class="weekly-sheet-head"><div><span class="weekly-entry-kicker">📝 THIS WEEK TEST</span><h1>My spelling test</h1><p>${esc(state.week.title)} · Listen and write. Answers stay hidden until you finish.</p></div><div class="weekly-header-actions"><button id="weeklyLeaveBtn" class="secondary-btn" type="button">Save & exit</button><button id="weeklyGradeTopBtn" class="primary-btn" type="button">Check answers ✓</button></div></header><div class="weekly-instructions"><b id="weeklyNow">Question ${weeklyTest.active+1} of ${total}</b><span id="weeklyAnswered">${answered} / ${total} answered</span><span>Tap 🔊 to hear a word again. You can change any answer.</span></div><div class="weekly-answer-sheet">${weeklyTest.ids.map((id,i)=>`<div class="weekly-question ${i===weeklyTest.active?'active':''}" data-id="${esc(id)}" data-index="${i}"><div class="weekly-question-head"><span class="weekly-number">${i+1}.</span><button type="button" class="weekly-hear" aria-label="Hear question ${i+1}" data-index="${i}">🔊 <span>Listen</span></button></div><input type="text" class="weekly-answer" inputmode="none" virtualkeyboardpolicy="manual" data-id="${esc(id)}" data-index="${i}" value="${esc(weeklyTest.answers[id])}" aria-label="Spelling answer for question ${i+1}" placeholder="Write with Apple Pencil" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done"></div>`).join('')}</div><footer class="weekly-sheet-actions"><button id="weeklyNextBtn" class="secondary-btn" type="button">${weeklyTest.active===total-1?'Back to question 1 ↻':'Next word →'}</button><button id="weeklyGradeBtn" class="primary-btn" type="button">Check all ${total} answers ✓</button></footer><p class="weekly-sheet-note">No hints, no answer checks yet. This test does not change your Garden, XP, or spelling mastery. Practice after grading can grow the Garden.</p></div></div>`;
   $('#weeklyLeaveBtn').onclick=()=>{saveWeeklyDraft();renderPlayHome()};
   $$('.weekly-hear').forEach(button=>button.onclick=()=>setWeeklyActive(Number(button.dataset.index),true));
   $$('.weekly-answer').forEach(input=>{
     const id=input.dataset.id,index=Number(input.dataset.index);
-    input.addEventListener('focus',()=>setWeeklyActive(index,false));
-    input.addEventListener('input',()=>{weeklyTest.answers[id]=input.value;saveWeeklyDraft();const answered=weeklyTest.ids.filter(x=>norm(weeklyTest.answers[x])).length;const n=$('#weeklyAnswered');if(n)n.textContent=`${answered} / ${weeklyTest.ids.length} answered`;});
-    input.addEventListener('change',()=>{weeklyTest.answers[id]=input.value;saveWeeklyDraft()});
+    // A finger should scroll/tap controls, not raise an on-screen keyboard. Let Pencil Scribble own the field.
+    input.addEventListener('pointerdown',e=>{
+      if(e.pointerType==='touch'){e.preventDefault();input.blur();return}
+      if(e.pointerType==='pen'){
+        try{if(document.activeElement!==input)input.focus({preventScroll:true})}catch{}
+        try{navigator.virtualKeyboard?.hide?.()}catch{}
+      }
+    },true);
+    input.addEventListener('focus',()=>{setWeeklyActive(index,false);try{navigator.virtualKeyboard?.hide?.()}catch{}});
+    const storeWeeklyAnswer=(cleanField=true)=>{
+      const cleaned=weeklyAnswerText(input.value);
+      // Scribble sometimes inserts a space while the Pencil pauses between parts of a compound word.
+      // Leave IME composition alone until it commits, then remove spaces from the visible text and saved answer.
+      if(cleanField&&input.value!==cleaned)input.value=cleaned;
+      weeklyTest.answers[id]=cleaned;saveWeeklyDraft();
+      const answered=weeklyTest.ids.filter(x=>norm(weeklyTest.answers[x])).length;
+      const n=$('#weeklyAnswered');if(n)n.textContent=`${answered} / ${weeklyTest.ids.length} answered`;
+      try{navigator.virtualKeyboard?.hide?.()}catch{}
+    };
+    input.addEventListener('input',e=>storeWeeklyAnswer(!e.isComposing));
+    input.addEventListener('compositionend',()=>storeWeeklyAnswer(true));
+    input.addEventListener('change',()=>storeWeeklyAnswer(true));
   });
   $('#weeklyNextBtn').onclick=()=>setWeeklyActive((weeklyTest.active+1)%total,true);
   $('#weeklyGradeBtn').onclick=gradeWeeklyTest;
+  $('#weeklyGradeTopBtn').onclick=gradeWeeklyTest;
   syncBgm()
 }
 function gradeWeeklyTest(){
   if(!weeklyTest)return;
   // Grab the actual field contents before grading; Scribble may commit its final input on blur.
   document.activeElement?.blur?.();
-  $$('.weekly-answer').forEach(input=>weeklyTest.answers[input.dataset.id]=input.value);
+  $$('.weekly-answer').forEach(input=>weeklyTest.answers[input.dataset.id]=weeklyAnswerText(input.value));
   const blank=weeklyTest.ids.filter(id=>!norm(weeklyTest.answers[id])).length;
   if(blank&&!confirm(`${blank} ${blank===1?'answer is':'answers are'} blank. Check the test anyway?`))return;
   const items=weeklyScore(weeklyTest.ids,weeklyTest.answers,state.lib);
