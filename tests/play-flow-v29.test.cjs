@@ -40,7 +40,7 @@ fields['#stage4WordInput']={value:'LADY BUG!',blur(){}};
 let q=mk(4);ctx.checkHandwriting(w,q);
 assert.deepEqual(captures.pop(),['right',4],'Stage 4 scores the entire cleaned word');
 assert.equal(q.fullAnswer,'ladybug');
-fields['#stage4WordInput'].value='ladyb1g';q=mk(4);ctx.checkHandwriting(w,q);
+fields['#stage4WordInput'].value='1adybug';q=mk(4);ctx.checkHandwriting(w,q);
 assert.deepEqual(captures.pop(),['right',4],'Stage 4 accepts OCR digit 1 as l only when spelling fits');
 fields['#stage4WordInput'].value='ladybg';q=mk(4);ctx.checkHandwriting(w,q);
 assert.deepEqual(captures.pop(),['wrong',4,'ladybg','ladybug'],'Missing letters remain genuinely wrong');

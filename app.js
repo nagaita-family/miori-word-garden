@@ -383,7 +383,7 @@ function focusRange(w){
   const chunks=chunkRanges(w);const c=chunks[Math.min(chunks.length-1,Math.floor(chunks.length/2))]||{start:0,end:w.word.length};
   const anchor=Math.floor((c.start+c.end-1)/2);return rangeInsideChunk(w,anchor,Math.min(2,c.end-c.start));
 }
-function newQuestion(w,stage=1,range=null){range=range||focusRange(w);const n=stage===3?range.end-range.start:w.word.length;const q={id:w.id,stage,range,first:true,wrong:[],letters:stage>=3?Array(n).fill(''):[],traceLetters:stage===3?Array(w.word.length).fill(''):[],feedback:null,hint:null,mode:'write'};if(stage===1)q.choices=wholeChoices(w,range);if(stage===2)q.choices=gapChoices(w,range);return q}
+function newQuestion(w,stage=1,range=null){range=range||focusRange(w);const n=stage===3?range.end-range.start:w.word.length;const q={id:w.id,stage,range,first:true,wrong:[],letters:stage>=3?Array(n).fill(''):[],fullAnswer:'',traceLetters:stage===3?Array(w.word.length).fill(''):[],feedback:null,hint:null,mode:'write'};if(stage===1)q.choices=wholeChoices(w,range);if(stage===2)q.choices=gapChoices(w,range);return q}
 function confusions(text){if(text.length===1)return CONF[text]||['e','a'];const swap=text.replace(/ee/g,'ea').replace(/ie/g,'ei');return[swap!==text?swap:[...text].reverse().join(''),text.slice(0,-1)+(text.at(-1)==='e'?'a':'e')]}
 const SAFE_STAGE1_WORDS=['window','rocket','pencil','banana','tiger','garden','music','school','purple','cookie','ocean','rabbit'];
 function stage1DistanceScore(target,candidate){
@@ -407,7 +407,7 @@ function clueHtml(w){return`<div class="word-visual-cue audio-clue-panel"><butto
 function renderTask(){
   if(!session)return renderPlayHome();syncBgm();if(session.count>=session.goal)return finishSession();if(!session.q){const w=chooseWord();if(!w)return finishSession();session.last=w.id;session.q=newQuestion(w,session.reviewMissed?3:1)}
   const q=session.q,w=state.lib[q.id];
-  $('#playView').innerHTML=`<div class="play-view"><div class="game-topline"><button id="exitPlayBtn" class="icon-btn">×</button><div><div class="stage-labels"><span>Stage ${q.stage} · ${STAGE_NAMES[q.stage]}</span><span>${session.count+1} / ${session.goal}</span></div><div class="stage-track"><div class="stage-fill" style="width:${((q.stage-1)/4)*100}%"></div></div></div><div class="session-xp">${treasureStatusText()}</div></div><div class="game-card"><div class="word-audio-row"><button id="audioBtn" class="audio-orb word-sound-button" aria-label="Hear the spelling word"><span class="speaker-glyph">🔊</span><small>WORD</small></button><div><p class="task-prompt">${STAGE_PROMPTS[q.stage]}</p><p class="task-subprompt">${q.stage===3?'Trace the dotted letters, then write the empty boxes.':q.stage===4?'Write one letter in each box. Scratch a written box to erase.':'You can play the sound again.'}</p><span id="voicePill" class="voice-pill">${w.pronunciationUrl?'● Human recording':'○ Device voice while human audio loads'}</span></div></div>${clueHtml(w)}<div id="questionArea" class="question-area">${questionHtml(w,q)}</div><div id="feedback" class="feedback ${q.feedback?.bad?'bad':q.feedback?.good?'good':''}">${feedbackText(q)}</div><div class="help-row assist-dock"><button id="hintBtn" class="help-btn hint assist-btn"><span class="assist-icon">✦</span><span><b>Hint</b><small>Give me a clue</small></span></button><button id="peekBtn" class="help-btn peek assist-btn"><span class="assist-icon">◉</span><span><b>Peek</b><small>Show the word</small></span></button></div></div></div>`;
+  $('#playView').innerHTML=`<div class="play-view"><div class="game-topline"><button id="exitPlayBtn" class="icon-btn">×</button><div><div class="stage-labels"><span>Stage ${q.stage} · ${STAGE_NAMES[q.stage]}</span><span>${session.count+1} / ${session.goal}</span></div><div class="stage-track"><div class="stage-fill" style="width:${((q.stage-1)/4)*100}%"></div></div></div><div class="session-xp">${treasureStatusText()}</div></div><div class="game-card"><div class="word-audio-row"><button id="audioBtn" class="audio-orb word-sound-button" aria-label="Hear the spelling word"><span class="speaker-glyph">🔊</span><small>WORD</small></button><div><p class="task-prompt">${STAGE_PROMPTS[q.stage]}</p><p class="task-subprompt">${q.stage===3?'Trace the dotted letters, then write the empty boxes.':q.stage===4?'Write the whole word in one smooth motion. Tap Clear to try again.':'You can play the sound again.'}</p><span id="voicePill" class="voice-pill">${w.pronunciationUrl?'● Human recording':'○ Device voice while human audio loads'}</span></div></div>${clueHtml(w)}<div id="questionArea" class="question-area">${questionHtml(w,q)}</div><div id="feedback" class="feedback ${q.feedback?.bad?'bad':q.feedback?.good?'good':''}">${feedbackText(q)}</div><div class="help-row assist-dock"><button id="hintBtn" class="help-btn hint assist-btn"><span class="assist-icon">✦</span><span><b>Hint</b><small>Give me a clue</small></span></button><button id="peekBtn" class="help-btn peek assist-btn"><span class="assist-icon">◉</span><span><b>Peek</b><small>Show the word</small></span></button></div></div></div>`;
   $('#exitPlayBtn').onclick=renderPlayHome;$('#audioBtn').onclick=()=>playWordAudio(w,false,{userInitiated:true});$('#pictureWordAudioBtn')?.addEventListener('click',()=>playWordAudio(w,false,{userInitiated:true}));$('#meaningEnAudioBtn')?.addEventListener('click',e=>speakLearningText(w.meaningEn||w.pictureCue||'',{lang:'en-US',button:e.currentTarget}));$('#meaningJaAudioBtn')?.addEventListener('click',e=>speakLearningText(w.meaningJa||'',{lang:'ja-JP',button:e.currentTarget}));$('#exampleAudioBtn')?.addEventListener('click',e=>speakLearningText(w.example||'',{lang:'en-US',button:e.currentTarget}));$('#hintBtn').onclick=()=>showHint(w,q);$('#peekBtn').onclick=()=>showPeek(w);bindQuestion(w,q);setTimeout(()=>playWordAudio(w,false,{auto:true}),120);if(!w.pronunciationUrl&&!w.audioTried)resolveHumanAudioForWord(w).then(found=>{if(found&&session?.q?.id===w.id){const pill=$('#voicePill');if(pill)pill.textContent='● Human recording'}});
 }
 function questionHtml(w,q){
@@ -415,13 +415,28 @@ function questionHtml(w,q){
   if(q.stage===2)return`<div style="width:100%"><div class="gap-word">${esc(w.word.slice(0,r.start))}<span class="gap-slot">?</span>${esc(w.word.slice(r.end))}</div><div class="choice-grid" style="margin:20px auto 0">${q.choices.map(c=>`<button class="choice-btn ${q.wrong.includes(c)?'wrong':''}" data-choice="${esc(c)}">${esc(c)}</button>`).join('')}</div></div>`;
   return handwritingHtml(w,q);
 }
+function flowComparisonHtml(attempt,correct){
+  return window.WordGardenWeeklyDiff?.render(attempt,correct)||`<small>Correct spelling: ${esc(correct)}</small>`
+}
+function fullWordHandwritingHtml(w,q){
+  const answer=q.fullAnswer||'';
+  return `<div class="spell-wrap flow-word-wrap"><p class="flow-word-note">Listen, then write the whole word without stopping between letters.</p><label class="flow-word-label" for="stage4WordInput">MY SPELLING</label><input id="stage4WordInput" class="flow-word-input" type="text" inputmode="none" virtualkeyboardpolicy="manual" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Write the word with Apple Pencil" aria-label="Write the entire spelling word" value="${esc(answer)}"><div class="flow-word-controls"><button type="button" id="clearFlowBtn" class="secondary-btn">Clear ✎</button><button id="checkAnswerBtn" class="check-answer">Check</button></div>${q.feedback?.bad?`<div class="flow-word-diff">${flowComparisonHtml(answer,w.word)}</div>`:''}${hintHtml(q)}</div>`
+}
 function handwritingHtml(w,q){
+  if(q.stage===4)return fullWordHandwritingHtml(w,q);
   const expected=expectedText(w,q);const r=q.stage===3?q.range:{start:0,end:w.word.length};let boxes=[];
   if(q.stage===3&&!Array.isArray(q.traceLetters))q.traceLetters=Array(w.word.length).fill('');
   for(let full=0;full<w.word.length;full++){
     if(q.stage===3&&(full<r.start||full>=r.end)){
       const guide=esc(w.word[full]),traced=q.traceLetters[full]||'';
       boxes.push(`<div class="trace-cell ${traced?'traced':''}" data-guide-full="${full}"><svg class="trace-guide" viewBox="0 0 72 72" aria-hidden="true"><text x="36" y="53" text-anchor="middle">${guide}</text></svg>${traced?`<div class="trace-written" data-trace-full="${full}" aria-label="Traced letter ${guide}">${esc(traced)}</div>`:`<input class="trace-input" data-trace-full="${full}" value="" inputmode="none" virtualkeyboardpolicy="manual" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Trace letter ${guide}">`}</div>`);continue
+    }
+    if(q.stage===3&&full>=r.start&&full<r.end){
+      if(full===r.start){
+        const attempt=q.letters.join('');
+        boxes.push(`<input id="stage3GapInput" class="stage3-gap-flow ${q.feedback?.bad?'flow-needs-fix':''} ${q.hint?'hint-target':''}" style="grid-column:span ${r.end-r.start};--gap-count:${r.end-r.start}" type="text" inputmode="none" virtualkeyboardpolicy="manual" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" value="${esc(attempt)}" placeholder="Write ${r.end-r.start===1?'letter':'letters'}" aria-label="Write the missing letters together">`);
+      }
+      continue;
     }
     const local=full-r.start;const value=q.letters[local]||'';let cls=value?'filled':'';
     if(q.feedback?.bad){if(!value)cls='missing';else cls=value===expected[local]?'ok':'bad'}
@@ -433,17 +448,42 @@ function handwritingHtml(w,q){
     }
   }
   const stage3=q.stage===3;
-  const note=stage3?`<div class="stage3-bridge-note"><b>Trace → remember.</b> Follow the dotted letters from left to right, and write the empty purple boxes yourself.</div>`:`<div class="box-note">Write the whole word from memory. Scratch one written box to erase only that letter.</div>`;
-  return`<div class="spell-wrap"><div class="pencil-modebar"><button id="writeModeBtn" class="mode-btn write ${q.mode==='write'?'on':''}">✎ Write</button><button id="eraseModeBtn" class="mode-btn erase ${q.mode==='erase'?'on':''}">⌫ Eraser</button></div>${note}<div id="letterRow" class="letter-row ${stage3?'stage3-trace-row':''} ${q.mode==='erase'?'erase-mode':''}" style="--letters:${w.word.length}">${boxes.join('')}</div>${hintHtml(q)}<button id="checkAnswerBtn" class="check-answer">Check</button></div>`;
+  const note=stage3?`<div class="stage3-bridge-note"><b>Trace → remember.</b> Follow the dotted letters, then write the missing letters together in the purple area.</div>`:`<div class="box-note">Write the whole word from memory.</div>`;
+  return`<div class="spell-wrap"><div class="pencil-modebar"><button id="writeModeBtn" class="mode-btn write ${q.mode==='write'?'on':''}">✎ Write</button><button id="eraseModeBtn" class="mode-btn erase ${q.mode==='erase'?'on':''}">⌫ Eraser</button></div>${note}<div id="letterRow" class="letter-row ${stage3?'stage3-trace-row':''} ${q.mode==='erase'?'erase-mode':''}" style="--letters:${w.word.length}">${boxes.join('')}</div>${q.feedback?.bad?`<div class="flow-word-diff">${flowComparisonHtml(q.letters.join(''),expected)}</div>`:''}${hintHtml(q)}<button id="checkAnswerBtn" class="check-answer">Check</button></div>`;
 }
-function hintHtml(q){if(!q.hint)return'';return`<div class="hint-strip"><button id="hintAudioBtn" class="tiny-audio">🔊</button><span>Fix the purple box:</span>${q.hint.options.map(c=>`<button class="hint-choice" data-hint="${c}">${c}</button>`).join('')}<button id="hintCloseBtn" class="tiny-audio">×</button></div>`}
-function feedbackText(q){if(q.feedback?.good)return q.first?'Perfect — you remembered it! ✦':'Yes! You fixed it. That counts. ♡';if(q.feedback?.bad)return'Almost. Green is right. Red or dotted boxes need a fix — stay on this stage.';return''}
+function hintHtml(q){if(!q.hint)return'';if(q.hint.stage4)return`<div class="hint-strip flow-hint"><span>Remember this part: <b>${esc(q.hint.text)}</b></span><button id="hintCloseBtn" class="tiny-audio" type="button" aria-label="Close hint">×</button></div>`;return`<div class="hint-strip"><button id="hintAudioBtn" class="tiny-audio">🔊</button><span>Fix the purple box:</span>${q.hint.options.map(c=>`<button class="hint-choice" data-hint="${c}">${c}</button>`).join('')}<button id="hintCloseBtn" class="tiny-audio">×</button></div>`}
+function feedbackText(q){if(q.feedback?.good)return q.first?'Perfect — you remembered it! ✦':'Yes! You fixed it. That counts. ♡';if(q.feedback?.bad)return q.stage===4?'Almost! Compare your letters below, then change your answer.':q.stage===3?'Almost! Check the missing letters below and try again.':'Almost. Green is right. Red or dotted boxes need a fix — stay on this stage.';return''}
 function bindQuestion(w,q){
   if(q.stage<3){$$('[data-choice]').forEach(b=>b.onclick=()=>pickChoice(b,w,q));return}
+  if(q.stage===4){$('#checkAnswerBtn').onclick=()=>checkHandwriting(w,q);$('#clearFlowBtn').onclick=()=>{q.fullAnswer='';q.feedback=null;q.hint=null;renderTask()};bindFlowWriting($('#stage4WordInput'),w,q);$('#hintCloseBtn')?.addEventListener('click',()=>{q.hint=null;renderTask()});return}
   $('#writeModeBtn').onclick=()=>{q.mode='write';renderTask()};$('#eraseModeBtn').onclick=()=>{q.mode='erase';renderTask()};$('#checkAnswerBtn').onclick=()=>checkHandwriting(w,q);$('#hintAudioBtn')?.addEventListener('click',()=>playWordAudio(w,true,{userInitiated:true}));$('#hintCloseBtn')?.addEventListener('click',()=>{q.hint=null;renderTask()});$$('[data-hint]').forEach(b=>b.onclick=()=>chooseHint(b,w,q));
-  const boxes=$$('.letter-box[data-local]');boxes.forEach((box,index)=>bindLetterBox(box,index,w,q));$$('.trace-input[data-trace-full]').forEach(input=>bindTraceBox(input,Number(input.dataset.traceFull),w,q));
+  bindFlowWriting($('#stage3GapInput'),w,q);const boxes=$$('.letter-box[data-local]');boxes.forEach((box,index)=>bindLetterBox(box,index,w,q));$$('.trace-input[data-trace-full]').forEach(input=>bindTraceBox(input,Number(input.dataset.traceFull),w,q));
   // Never pre-focus a writing field. On iPad that can open the software keyboard and it also races with fast Pencil movement.
   document.activeElement?.blur?.();
+}
+function bindFlowWriting(input,w,q){
+  if(!input)return;
+  const update=(finishComposition=true)=>{
+    if(!finishComposition)return;
+    const cleaned=weeklyAnswerText(input.value,expectedText(w,q));
+    if(input.value!==cleaned)input.value=cleaned;
+    if(q.stage===4)q.fullAnswer=cleaned;else q.letters=[...cleaned];
+    q.feedback=null;q.hint=null;
+    const fb=$('#feedback');if(fb){fb.textContent='';fb.className='feedback'}
+    $('.flow-word-diff')?.remove();$('.hint-strip')?.remove();
+    try{navigator.virtualKeyboard?.hide?.()}catch{}
+  };
+  input.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='touch'){e.preventDefault();input.blur();return}
+    if(e.pointerType==='pen'){
+      try{if(document.activeElement!==input)input.focus({preventScroll:true})}catch{}
+      try{navigator.virtualKeyboard?.hide?.()}catch{}
+    }
+  },true);
+  input.addEventListener('input',e=>update(!e.isComposing));
+  input.addEventListener('compositionend',()=>update(true));
+  input.addEventListener('change',()=>update(true));
+  input.addEventListener('focus',()=>{try{navigator.virtualKeyboard?.hide?.()}catch{}});
 }
 function bindTraceBox(input,full,w,q){
   const expected=w.word[full]||'';
@@ -559,7 +599,7 @@ function clearOneBox(index,w,q,fromEraser){
 function firstEmptyIndex(q){const i=q.letters.findIndex(x=>!x);return i<0?q.letters.length-1:i}
 function firstWrongIndex(w,q){const exp=expectedText(w,q);let i=q.letters.findIndex((x,n)=>x!==exp[n]);return i<0?0:i}
 function pickChoice(button,w,q){const val=button.dataset.choice;const correct=q.stage===1?w.word:w.word.slice(q.range.start,q.range.end);if(norm(val)===norm(correct)){button.classList.add('correct');right(w,q)}else{if(!q.wrong.includes(val))q.wrong.push(val);button.classList.add('wrong');wrong(w,q,val,correct);q.feedback={bad:true};renderTask();playSfx('wrong')}}
-function checkHandwriting(w,q){const attempt=q.letters.join(''),correct=expectedText(w,q);if(attempt===correct)right(w,q);else{wrong(w,q,attempt,correct);q.feedback={bad:true};q.hint=null;renderTask();playSfx('wrong')}}
+function checkHandwriting(w,q){const field=q.stage===4?$('#stage4WordInput'):q.stage===3?$('#stage3GapInput'):null;if(field){field.blur?.();const clean=weeklyAnswerText(field.value,expectedText(w,q));if(q.stage===4)q.fullAnswer=clean;else q.letters=[...clean]}const attempt=q.stage===4?q.fullAnswer:q.letters.join(''),correct=expectedText(w,q);if(attempt===correct)right(w,q);else{wrong(w,q,attempt,correct);q.feedback={bad:true};q.hint=null;renderTask();playSfx('wrong')}}
 function wrong(w,q,attempt,correct){const l=w.learn;l.attempts++;l.mistakes++;l.stageMist[q.stage]=(l.stageMist[q.stage]||0)+1;l.lastWrong=q.stage===3?w.word.slice(0,q.range.start)+attempt+w.word.slice(q.range.end):attempt;l.last=today();q.first=false;state.stats.answers=(state.stats.answers||0)+1;if(q.stage>1){const aligned=alignChars(correct,attempt);aligned.slots.forEach((slot,i)=>{if(!slot||slot.state!=='ok'){const full=(q.stage===3?q.range.start:0)+i;l.weak[full]=(l.weak[full]||0)+2}})}save()}
 function right(w,q){
   const l=w.learn;l.attempts++;l.correct++;if(q.first)l.first++;l.last=today();state.stats.answers=(state.stats.answers||0)+1;for(let i=q.range.start;i<q.range.end;i++)l.weak[i]=Math.max(0,(l.weak[i]||0)-1);playSfx(q.stage===4?'finish':'correct');q.feedback={good:true};
@@ -572,7 +612,7 @@ function right(w,q){
 }
 function renderReward(w,gain){const finished=session.count>=session.goal;$('#playView').innerHTML=`<div class="play-view"><div class="reward-screen"><div class="reward-card"><div class="big">${esc(w.pictureEmoji||'🌱')}</div><p class="eyebrow">WORD COMPLETE ✦</p><h1>${esc(w.word)}</h1><p class="muted">You finished Stage 1 → 2 → 3 → 4.</p><div class="reward-chips"><span>🎁 Treasure progress +1</span><span>🌱 Garden grew</span><span>✎ Pencil practice saved</span></div><button id="nextWordBtn" class="primary-btn">${finished?'Finish & see Garden':'Next word →'}</button></div></div></div>`;$('#nextWordBtn').onclick=()=>{if(finished)finishSession();else{session.q=null;helpKind='';renderTask()}}}
 function finishSession(){const doneCount=session?.count||0,earned=session?.xp||0;state.stats.sessions=(state.stats.sessions||0)+1;save();session=null;gardenCelebration=null;$('#playView').innerHTML=`<div class="play-view"><div class="reward-screen"><div class="reward-card"><div class="big">🌷</div><p class="eyebrow">PLAY COMPLETE</p><h1>You made the garden grow!</h1><p class="muted">${doneCount} finished words made your garden grow.</p><div class="reward-chips"><span>${doneCount} words complete</span><span>🎁 Every 3 words unlocks a treasure</span></div><button id="seeGardenBtn" class="primary-btn">See Garden</button></div></div></div>`;$('#seeGardenBtn').onclick=()=>setView('garden')}
-function showHint(w,q){playSfx('hint');if(q.stage<3){playWordAudio(w,true);toast('Listen slowly, then try again.');return}w.learn.hints++;save();const exp=expectedText(w,q);let local=q.letters.findIndex((x,i)=>x!==exp[i]);if(local<0)local=firstEmptyIndex(q);const correct=exp[local];let alts=[...(CONF[correct]||['a','e','i'])].filter(x=>x!==correct);while(alts.length<2){const c='abcdefghijklmnopqrstuvwxyz'[(local+alts.length*7)%26];if(c!==correct&&!alts.includes(c))alts.push(c)}q.hint={local,correct,options:shuffle([correct,...alts.slice(0,2)])};q.mode='write';renderTask();setTimeout(()=>playWordAudio(w,true),70)}
+function showHint(w,q){playSfx('hint');if(q.stage<3){playWordAudio(w,true);toast('Listen slowly, then try again.');return}w.learn.hints++;save();if(q.stage===4){q.hint={stage4:true,text:w.word.slice(q.range.start,q.range.end)};renderTask();setTimeout(()=>playWordAudio(w,true),70);return}const exp=expectedText(w,q);let local=q.letters.findIndex((x,i)=>x!==exp[i]);if(local<0)local=firstEmptyIndex(q);const correct=exp[local];let alts=[...(CONF[correct]||['a','e','i'])].filter(x=>x!==correct);while(alts.length<2){const c='abcdefghijklmnopqrstuvwxyz'[(local+alts.length*7)%26];if(c!==correct&&!alts.includes(c))alts.push(c)}q.hint={local,correct,options:shuffle([correct,...alts.slice(0,2)])};q.mode='write';renderTask();setTimeout(()=>playWordAudio(w,true),70)}
 function chooseHint(button,w,q){if(button.dataset.hint!==q.hint?.correct){button.classList.add('nope');setTimeout(()=>button.classList.remove('nope'),380);playSfx('wrong');return}button.classList.add('yes');q.letters[q.hint.local]=q.hint.correct;q.hint=null;q.feedback=null;playSfx('correct');setTimeout(()=>renderTask(),240)}
 function showPeek(w){playSfx('peek');w.learn.peeks++;save();playWordAudio(w);const el=document.createElement('div');el.className='peek-overlay';el.innerHTML=`<b>${esc(w.word)}</b>`;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}
 function toggleHelp(kind,w){helpKind=helpKind===kind?'':kind;const panel=$('#helpPanel');if(panel){panel.classList.toggle('hidden',!helpKind);panel.innerHTML=helpPanelHtml(w)}}
@@ -705,19 +745,19 @@ function playSfx(type){
   }catch{}
 }
 function scheduleBgmBar(){
-  if(!audioUnlocked||!state.settings.music||bgmTimer===null)return;const ctx=ensureAudioCtx();if(!ctx||!musicGain)return;const now=ctx.currentTime+.05,isPlay=currentView==='play';
+  if(currentView!=='garden'||!audioUnlocked||!state.settings.music||bgmTimer===null)return;const ctx=ensureAudioCtx();if(!ctx||!musicGain)return;const now=ctx.currentTime+.05,isPlay=currentView==='play';
   const gardenPhrases=[[[659,0],[784,.82],[880,1.78],[784,3.15]],[[587,0],[659,.9],[784,1.95],[659,3.25]],[[659,0],[880,1.05],[988,2.2],[784,3.45]]];
   const playPhrases=[[[523,0],[659,1.12],[587,2.3],[659,3.65]],[[494,0],[587,1.08],[659,2.28],[587,3.62]],[[523,0],[587,1.14],[698,2.35],[659,3.68]]];
   const phrases=isPlay?playPhrases:gardenPhrases,phrase=phrases[Math.floor(Date.now()/5600)%phrases.length];phrase.forEach(([f,t],i)=>tone(ctx,f,now+t,.58,i===0?.0065:.005,'sine',musicGain));
   tone(ctx,isPlay?261.6:329.6,now+.18,1.05,isPlay?.0018:.0025,'sine',musicGain)
 }
 function startBgm(){
-  if(!audioUnlocked||!state.settings.music||bgmTimer!==null||!['garden','play'].includes(currentView))return;const ctx=ensureAudioCtx();if(!ctx)return;musicGain=ctx.createGain();musicGain.gain.setValueAtTime(.0001,ctx.currentTime);musicGain.gain.exponentialRampToValueAtTime(.2,ctx.currentTime+.5);musicGain.connect(ctx.destination);bgmTimer=setInterval(scheduleBgmBar,5600);scheduleBgmBar();renderTopbar()
+  if(!audioUnlocked||!state.settings.music||bgmTimer!==null||currentView!=='garden')return;const ctx=ensureAudioCtx();if(!ctx)return;musicGain=ctx.createGain();musicGain.gain.setValueAtTime(.0001,ctx.currentTime);musicGain.gain.exponentialRampToValueAtTime(.2,ctx.currentTime+.5);musicGain.connect(ctx.destination);bgmTimer=setInterval(scheduleBgmBar,5600);scheduleBgmBar();renderTopbar()
 }
 function stopBgm(){
   if(bgmTimer!==null){clearInterval(bgmTimer);bgmTimer=null}if(musicGain&&audioCtx){try{musicGain.gain.cancelScheduledValues(audioCtx.currentTime);musicGain.gain.setValueAtTime(Math.max(.0001,musicGain.gain.value),audioCtx.currentTime);musicGain.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.18)}catch{};const old=musicGain;setTimeout(()=>{try{old.disconnect()}catch{}},260)}musicGain=null;renderTopbar()
 }
-function syncBgm(){const should=state.settings.music&&['garden','play'].includes(currentView);if(should)startBgm();else stopBgm()}
+function syncBgm(){const should=state.settings.music&&currentView==='garden';if(should)startBgm();else stopBgm()}
 
 
 function alignChars(target,typed){target=norm(target);typed=norm(typed);const n=target.length,m=typed.length,d=Array.from({length:n+1},()=>Array(m+1).fill(0));for(let i=0;i<=n;i++)d[i][0]=i;for(let j=0;j<=m;j++)d[0][j]=j;for(let i=1;i<=n;i++)for(let j=1;j<=m;j++)d[i][j]=Math.min(d[i-1][j-1]+(target[i-1]===typed[j-1]?0:1),d[i-1][j]+1,d[i][j-1]+1);const slots=Array(n);let i=n,j=m;while(i||j){const diag=i&&j?d[i-1][j-1]+(target[i-1]===typed[j-1]?0:1):1e9;if(i&&j&&d[i][j]===diag){slots[i-1]={expected:target[i-1],typed:typed[j-1],state:target[i-1]===typed[j-1]?'ok':'bad'};i--;j--;continue}if(i&&d[i][j]===d[i-1][j]+1){slots[i-1]={expected:target[i-1],typed:'',state:'missing'};i--;continue}j--}return{slots}}
