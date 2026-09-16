@@ -31,11 +31,11 @@ jobs:
           node tests/weekly-test-v25.test.cjs
           node tests/weekly-result-v26.test.cjs
           node tests/weekly-listen-v27.test.cjs
-      - name: Publish tested v27 files
+      - name: Publish tested v27 regression updates
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html tests/weekly-test-v25.test.cjs tests/weekly-result-v26.test.cjs
+          git add tests/weekly-test-v25.test.cjs tests/weekly-result-v26.test.cjs tests/weekly-listen-v27.test.cjs
           git diff --cached --quiet && exit 0
-          git commit -m "Fix weekly Listen blocked by grading palm guard (v27)"
+          git commit -m "Verify v27 Listen while grading stays palm protected"
           git push
