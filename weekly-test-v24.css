@@ -1,0 +1,85 @@
+/* v24: Keep grading reachable while the ten answers scroll independently. */
+.play-view.weekly-test-view{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:12px;
+}
+.weekly-test-view .weekly-sheet:not(.weekly-results){
+  display:flex;
+  flex-direction:column;
+  flex:1 1 auto;
+  height:100%;
+  min-height:0;
+  overflow:hidden;
+}
+.weekly-test-view .weekly-sheet-head,
+.weekly-test-view .weekly-instructions,
+.weekly-test-view .weekly-sheet-actions,
+.weekly-test-view .weekly-sheet-note{flex:0 0 auto}
+.weekly-test-view .weekly-answer-sheet{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  align-content:start;
+  padding:3px 3px 12px;
+}
+.weekly-test-view .weekly-sheet-actions{
+  display:flex;
+  flex-wrap:nowrap;
+  align-items:stretch;
+  gap:9px;
+  margin-top:0;
+  padding:12px 2px 5px;
+  border-top:2px solid #e8e0ed;
+  background:#fffdfa;
+  box-shadow:0 -8px 18px #fffdfacc;
+  position:relative;
+  z-index:4;
+}
+.weekly-test-view .weekly-sheet-actions #weeklyNextBtn{flex:0 1 auto;min-width:0}
+.weekly-test-view .weekly-sheet-actions #weeklyGradeBtn{
+  display:inline-flex!important;
+  flex:1 1 55%;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+  min-height:52px;
+  font-size:15px;
+  font-weight:950;
+  white-space:normal;
+  text-align:center;
+}
+.weekly-test-view .weekly-sheet:not(.weekly-results)>.weekly-sheet-note{margin:4px 0 0;font-size:9.5px;line-height:1.3}
+.weekly-header-actions{display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px}
+.weekly-header-actions button{min-height:39px;white-space:nowrap}
+.weekly-header-actions #weeklyGradeTopBtn{font-size:12px}
+/* A native text field is needed for Apple Pencil Scribble, but it must not look or behave like a keyboard exercise. */
+.weekly-test-view .weekly-answer,
+.weekly-test-view .weekly-answer:focus{
+  caret-color:transparent!important;
+  -webkit-text-fill-color:#3b3548;
+  outline:none!important;
+  text-decoration:none;
+}
+.weekly-test-view .weekly-answer::selection{background:transparent;color:inherit}
+.weekly-test-view .weekly-answer::placeholder{opacity:.78}
+.weekly-test-view .weekly-sheet.weekly-results{display:block;height:auto;flex:0 0 auto;overflow:visible}
+@media(max-width:680px){
+  .weekly-test-view .weekly-sheet-head{flex-wrap:wrap}
+  .weekly-header-actions{width:100%;justify-content:space-between}
+  .weekly-test-view .weekly-sheet-actions{flex-wrap:wrap;gap:6px;padding-top:9px}
+  .weekly-test-view .weekly-sheet-actions #weeklyGradeBtn{order:-1;flex:1 1 100%;min-height:48px}
+  .weekly-test-view .weekly-sheet-actions #weeklyNextBtn{flex:1 1 100%;min-height:38px}
+  .weekly-test-view .weekly-sheet:not(.weekly-results)>.weekly-sheet-note{font-size:9px}
+}
+@media(max-height:640px){
+  .weekly-test-view .weekly-sheet-head h1{font-size:22px}
+  .weekly-test-view .weekly-instructions{margin:6px 0;padding:7px 10px}
+  .weekly-test-view .weekly-sheet:not(.weekly-results)>.weekly-sheet-note{display:none}
+}
