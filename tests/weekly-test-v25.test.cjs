@@ -13,15 +13,15 @@ const stageTransition=section('function right(w,q){','function renderReward(');
 const grading=section('function gradeWeeklyTest(){','function renderWeeklyResult(){');
 assert(result.includes('reviewMissed:true'),'Only a missed-word review session is marked for stages 3 and 4');
 assert(result.includes('wrong.map(x=>x.id)'),'Review includes only words missed on the weekly exam');
-assert(task.includes('newQuestion(w,session.reviewMissed?3:1)'),'Missed-word review starts in stage 3; normal sessions still start in stage 1');
+assert(task.includes('const start=session.reviewMissed?3:'),'Missed-word review starts in stage 3 while normal routing chooses its own start stage');
 assert(stageTransition.includes('newQuestion(w,stage+1,q.range)'),'Stage 3 still advances to Stage 4');
 assert(stageTransition.includes('if(q.stage<4)'),'Stage 4 still completes the word');
 assert(grading.includes('if(!confirm(message))return'),'Grading always requires a deliberate confirmation even when nothing is blank');
 assert(grading.includes('state.weekTestResult=')&&grading.includes('delete state.weekTestDraft'),'Final grade still saves results and clears the draft');
 assert(result.includes('Stage 3 → 4'),'Review button explains shortened flow');
-assert(html.includes('weekly-test-palm-v25.js?v=20260917-listen-fix-v27')&&html.includes('app.js?v=20260917-flow-writing-v29')&&/v[0-9]+ · Sep 17/.test(html),'v25 guard is loaded and cache-busted');
+assert(html.includes('weekly-test-palm-v25.js?v=20260917-listen-fix-v27')&&html.includes('app.js?v=20260917-learning-groups-v32')&&/v[0-9]+ · Sep 17/.test(html),'v25 guard remains loaded with current app cache bust');
 assert(v24.includes('overflow-y:auto')&&v24.includes('display:inline-flex!important'),'Always-visible grading layout retained');
-assert(src.includes('Number(!!b.w.parentPriority)-Number(!!a.w.parentPriority)'),'Parent-starred word priority is unchanged');
+assert(src.includes("if(kind==='week'&&isCurrentFocus(id))score+=50"),'Current-week Focus replaces the old permanent parent star');
 assert(fs.readFileSync('test-mode-v21.js','utf8').includes("const TEST_KEY='mwg-v2-rebuild-test'"),'Parent Test Mode isolation retained');
 // Exercise the capture-phase palm guard rather than relying only on source-text checks.
 const handlers=new Map();let clock=10000;let exam=true;
@@ -57,4 +57,4 @@ assert.equal(fire('click',gradeButton,{detail:0}).prevented,false,'Accessible ke
 exam=false;
 fire('pointerdown',answer,{pointerType:'pen'});
 assert.equal(fire('pointerdown',gradeButton,{pointerType:'touch',width:40,height:40,isPrimary:false}).prevented,false,'Weekly guard does not affect other views');
-console.log('PASS v25: palm and synthetic-click guard, deliberate grading confirmation, missed-only stages 3→4, normal stage 1, existing v24, parent stars and Test Mode.');
+console.log('PASS v25: palm guard, deliberate grading, missed-only Stage 3→4 review, current practice routing, and Test Mode.');
