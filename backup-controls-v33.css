@@ -1,0 +1,7 @@
+/* v33: Small Parent-only clarification for independent import/export/restore actions. */
+.parent-v19 .parent-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end}
+.parent-v19 .parent-actions .secondary-btn,.parent-v19 .parent-actions .primary-btn{white-space:nowrap}
+.parent-v19 .backup-restore-btn{background:#f2e7f6;color:#72557b;box-shadow:inset 0 0 0 1px #e5d1e9}
+.parent-v19 .backup-restore-btn:focus-within{outline:2px solid #9c7aaf;outline-offset:3px}
+.parent-v19 .parent-backup-note{margin:0 0 14px;padding:9px 13px;background:#fff9ee;border:1px solid #eadfc8;border-radius:14px;color:#776653;font-size:11px;font-weight:750;line-height:1.55}
+@media(max-width:700px){.parent-v19 .parent-actions{justify-content:flex-start}.parent-v19 .parent-backup-note{font-size:10px}}
