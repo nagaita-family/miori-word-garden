@@ -1,0 +1,42 @@
+/* v32: three clear Parent collections, one calm Play plan, no change to the Garden. */
+.parent-study-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:14px 0 12px;padding:6px;background:#ffffffac;border:1px solid #e9dfed;border-radius:22px}
+.parent-study-tab{appearance:none;border:0;border-radius:17px;padding:13px 8px;min-height:65px;background:transparent;color:#756979;text-align:center;font-size:13px;font-weight:950;line-height:1.2;touch-action:manipulation}
+.parent-study-tab small{display:block;margin-top:4px;font-size:10px;font-weight:750;opacity:.72}
+.parent-study-tab[aria-selected="true"]{background:#e9f3e6;color:#446f4d;box-shadow:0 5px 15px #4e6a4b18}
+.parent-study-tab[data-study-tab="my"][aria-selected="true"]{background:#f1e8f8;color:#74558b}
+.parent-study-tab[data-study-tab="past"][aria-selected="true"]{background:#eaf0f8;color:#546e91}
+.study-group-panel{margin:12px 0 16px}
+.study-group-intro{margin:4px 0 12px;color:#786c7b;font-size:12px;line-height:1.55}
+.study-parent-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 15px}
+.study-parent-actions .primary-btn{background:linear-gradient(135deg,#9574b1,#af8dc5)}
+.study-word-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.study-word-list .word-row{min-width:0}
+.study-group-empty{padding:20px;border:1px dashed #d4bfdc;border-radius:19px;background:#fffafd;color:#756778;font-size:12px;line-height:1.5}
+.study-word-source{display:inline-block;margin:4px 0;padding:4px 7px;border-radius:999px;background:#efe8f7;color:#765b88;font-size:10px;font-weight:800}
+.study-word-context{font-size:11px!important;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.study-my-toggle{border:1px solid #dbd0e5;border-radius:12px;padding:9px 11px;background:#f4eef8;color:#6d527d;min-height:36px;font-size:11px;font-weight:850;touch-action:manipulation}
+.study-my-toggle.selected{background:#e8f2e8;color:#477650;border-color:#c6dfc5}
+.study-past-week{margin:10px 0;border-radius:19px;border:1px solid #e0e5ef;background:#fcfdff;overflow:hidden}
+.study-past-week summary{cursor:pointer;padding:15px;font-size:13px;font-weight:900;color:#59647a;touch-action:manipulation}
+.study-past-week summary small{display:block;margin:5px 0 0;font-size:10px;font-weight:700;color:#858797}
+.study-past-week .study-word-list{padding:0 12px 12px}
+.study-history-badge{display:inline-block;border-radius:999px;padding:4px 7px;background:#f3eee5;color:#7b705f;font-size:9px;font-weight:900}
+.study-status{display:inline-block;border-radius:999px;padding:5px 8px;background:#e9f3e7;color:#53795a;font-size:10px;font-weight:900}
+.study-all-library{margin:15px 0 0;border-radius:17px;background:#fffdfb;border:1px solid #e8e2eb}
+.study-all-library>summary{padding:13px 15px;cursor:pointer;font-size:12px;font-weight:850;color:#776a7b}
+.study-all-library .library-list{padding:0 12px 12px}
+.study-all-library .search-input{display:block;margin:5px 12px 12px;max-width:calc(100% - 24px)}
+.parent-v19 .word-row .study-history-badge{align-self:start}
+.play-mode-picker{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;margin:11px 0 2px;max-width:610px}
+.play-mode-picker .study-mode-btn{flex:1 1 135px;min-height:46px;text-align:left;border:1px solid #e8dce9;border-radius:16px;background:#fffdfc;padding:9px 11px;font-size:12px;font-weight:900;color:#665a68;box-shadow:0 4px 13px #493a5310;touch-action:manipulation}
+.play-mode-picker .study-mode-btn small{display:block;font-size:9.5px;font-weight:750;color:#8c7f8d;margin-top:3px}
+.play-mode-picker .study-mode-btn:disabled{opacity:.45;cursor:default}
+.play-plan-brief{margin:6px 0 2px;font-size:11px;color:#6e6373;font-weight:800}
+.play-view:has(.play-home){overflow-y:auto!important;-webkit-overflow-scrolling:touch}
+.play-view:has(.play-home) .play-home{height:auto;min-height:100%;place-items:center}
+.play-view:has(.play-home) .play-hero-card{min-height:0;padding:clamp(18px,3vw,35px);overflow:visible}
+.study-stage-badge{display:inline-block;color:#5b785e;font-weight:950}
+.study-stage-badge.my{color:#83639b}.study-stage-badge.past{color:#677c9c}
+.study-repair-btn{width:100%;border:0;border-radius:14px;padding:10px 13px;min-height:44px;font-size:12px;font-weight:950;color:#604678;background:#eee3f6;touch-action:manipulation}
+@media(max-width:820px){.study-word-list{grid-template-columns:1fr}.play-view:has(.play-home) .play-hero-card{grid-template-columns:1fr}.play-view:has(.play-home) .play-mascot{display:none}}
+@media(max-width:560px){.parent-study-tabs{gap:3px;padding:4px}.parent-study-tab{font-size:11px;padding:10px 4px;min-height:56px}.parent-study-tab small{font-size:9px}.play-mode-picker .study-mode-btn{flex:1 1 44%;min-height:43px}}
