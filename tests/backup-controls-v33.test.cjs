@@ -15,7 +15,7 @@ const vm=require('node:vm');
   assert(app.includes("toast('This is a backup. Please use Restore Backup instead.')"),'Word Pack cannot silently overwrite the whole app');
   assert(app.includes('JSON.stringify(state,null,2)'),'Export still serializes the full state');
   assert(html.includes('backup-controls-v33.css?v=20260917-v33')&&html.includes('app.js?v=20260917-auto-fill-v34'),'New assets are cache-busted');
-  assert(html.includes('v34 · Sep 17'),'Parent changes show their version');
+  assert(html.includes('v35 · Sep 17'),'Parent changes show their version');
   assert(css.includes('.backup-restore-btn')&&css.includes('.parent-backup-note'),'Parent UI provides visual separation and an explanation');
   const start=app.indexOf('async function restoreBackup(file){');
   const end=app.indexOf('function exportBackup(){',start);

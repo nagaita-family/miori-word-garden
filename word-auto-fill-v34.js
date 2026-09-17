@@ -23,7 +23,7 @@ const basicGlossary={
  mother:['a female parent','母、お母さん'],father:['a male parent','父、お父さん'],brother:['a boy or man who shares your parent','兄、弟'],sister:['a girl or woman who shares your parent','姉、妹'],
  happy:['feeling glad','うれしい、幸せな'],sad:['feeling unhappy','悲しい'],excited:['feeling very happy about something coming','わくわくした'],
  fun:['something enjoyable','楽しいこと'],good:['nice or of good quality','良い'],bad:['not good','悪い'],
- big:['large in size','大きい'],small:['little in size','小さい'],little:['small','小さい'],beautiful:['very pretty','美しい'],cute:['かわいい','かわいい'],
+ big:['large in size','大きい'],small:['little in size','小さい'],little:['small','小さい'],beautiful:['very pretty','美しい'],cute:['pleasantly pretty or sweet','かわいい'],
  kind:['caring and helpful to others','親切な'],gentle:['kind, soft, and not rough','優しい、おだやかな'],careful:['trying not to make a mistake or cause harm','注意深い'],
  help:['to make something easier for someone','助ける'],please:['a polite word used when asking','お願いします'],
  morning:['the early part of the day','朝'],night:['the dark part of the day','夜'],today:['this day','今日'],tomorrow:['the day after today','明日'],yesterday:['the day before today','昨日'],
