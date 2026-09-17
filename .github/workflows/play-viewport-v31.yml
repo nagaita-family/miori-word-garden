@@ -1,0 +1,46 @@
+name: Small iPad Play feedback v31
+
+on:
+  push:
+    paths:
+      - '.github/workflows/play-viewport-v31.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Integrate responsive handwriting CSS without rewriting app logic
+        run: python3 tools/play-viewport-v31-patch.py
+      - name: Check existing JavaScript syntax
+        run: |
+          node --check app.js
+          node --check writing-erase-v30.js
+          node --check weekly-test-palm-v25.js
+          node --check weekly-result-compare-v26.js
+      - name: Test all previous behavior and iPad correction visibility
+        run: |
+          node tests/parent-priority-v22.test.cjs
+          node tests/weekly-test-v23.test.cjs
+          node tests/weekly-test-v24.test.cjs
+          node tests/weekly-test-v25.test.cjs
+          node tests/weekly-result-v26.test.cjs
+          node tests/weekly-listen-v27.test.cjs
+          node tests/weekly-lowercase-v28.test.cjs
+          node tests/play-flow-v29.test.cjs
+          node tests/writing-erase-v30.test.cjs
+          node tests/play-viewport-v31.test.cjs
+      - name: Publish v31 only if all checks passed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html tests/writing-erase-v30.test.cjs
+          git diff --cached --quiet && exit 0
+          git commit -m "Fit and scroll Step 4 feedback on iPad mini (v31)"
+          git push
