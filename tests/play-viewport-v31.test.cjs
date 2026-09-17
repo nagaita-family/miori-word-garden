@@ -30,10 +30,10 @@ assert(css.includes('@media(max-height:760px)')&&css.includes('.flow-word-note{d
 assert(css.includes('@media(max-width:620px)'),'Narrow screen support');
 assert(rule('#playView .game-card:has(.letter-row)').includes('overflow-y:auto'),'Stage 3 corrections can scroll rather than vanish');
 assert(rule('#playView .game-card:has(.letter-row)').includes('minmax(min-content,1fr)'),'Stage 3 comparison cannot be assigned a zero-height track');
-assert(app.includes("q.feedback={bad:true};q.hint=null;renderTask();playSfx('wrong')"),'A wrong answer still triggers full comparison rerender');
+assert(app.includes('wrong(w,q,attempt,correct);q.feedback={bad:true}')&&app.includes("renderTask();playSfx('wrong')"),'A wrong answer still renders comparison feedback before any adaptive follow-up');
 assert(app.includes('flowComparisonHtml(answer,w.word)'),'Correct word comparison still exists after Stage 4 errors');
-assert(page.includes('play-viewport-v31.css?v=20260917-v31'),'Browser cache-busts new responsive CSS');
-assert(page.includes('v31 · Sep 17'),'Visible version is updated');
+assert(page.includes('play-viewport-v31.css?v=20260917-v31'),'Browser still loads the responsive v31 CSS');
+assert(page.includes('v32 · Sep 17'),'Visible version advances while v31 layout remains');
 assert(page.includes('writing-erase-v30.js?v=20260917-v30'),'Previously added two erase actions remain');
 assert(!css.includes('display:none!important')&&!css.includes('.flow-word-diff{display:none'),'Correction information is never hidden to squeeze the layout');
-console.log('PASS v31: iPad Step 4 comparison, Check/Hint/Peek and erasers fit compactly or scroll, Stage 3 feedback accessible, original learning and Test retained.');
+console.log('PASS v31: iPad Step 4 comparison and scrolling remain intact under v32 adaptive learning groups.');
