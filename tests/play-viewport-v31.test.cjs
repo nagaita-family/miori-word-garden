@@ -33,7 +33,7 @@ assert(rule('#playView .game-card:has(.letter-row)').includes('minmax(min-conten
 assert(app.includes('wrong(w,q,attempt,correct);q.feedback={bad:true}')&&app.includes("renderTask();playSfx('wrong')"),'A wrong answer still renders comparison feedback before any adaptive follow-up');
 assert(app.includes('flowComparisonHtml(answer,w.word)'),'Correct word comparison still exists after Stage 4 errors');
 assert(page.includes('play-viewport-v31.css?v=20260917-v31'),'Browser still loads the responsive v31 CSS');
-assert(page.includes('v32 · Sep 17'),'Visible version advances while v31 layout remains');
+assert(page.includes('v33 · Sep 17'),'Visible version advances while v31 layout remains');
 assert(page.includes('writing-erase-v30.js?v=20260917-v30'),'Previously added two erase actions remain');
 assert(!css.includes('display:none!important')&&!css.includes('.flow-word-diff{display:none'),'Correction information is never hidden to squeeze the layout');
 console.log('PASS v31: iPad Step 4 comparison and scrolling remain intact under v32 adaptive learning groups.');
