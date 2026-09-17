@@ -14,7 +14,7 @@ const ctx={state:{week:{ids:Object.keys(lib).filter(x=>x!=='extra')},lib},norm,S
 vm.createContext(ctx);vm.runInContext(pure,ctx);
 const ids=Array.from(ctx.weeklyTestIds());
 assert.equal(ids.length,10,'At most 10 distinct weekly words');
-assert.deepEqual(ids,ctx.state.week.ids.slice(0,10),'The test uses weekly words, not starred extra words');
+assert.deepEqual(ids,ctx.state.week.ids.slice(0,10),'The test uses weekly words, not old starred or My Words extras');
 assert.equal(Array.from(ctx.weeklyTestIds()).length,10);
 const answers={};ids.forEach(id=>answers[id]=id);answers[ids[1]]='WRONG';answers[ids[2]]='';
 const scored=Array.from(ctx.weeklyScore(ids,answers,lib));
@@ -33,10 +33,11 @@ assert(!sheet.includes('clueHtml(')&&!sheet.includes('hintHtml(')&&!sheet.includ
 assert(grade.includes('weeklyScore(')&&grade.includes('state.weekTestResult=')&&grade.includes('delete state.weekTestDraft'), 'Single final grading and draft cleanup');
 assert(grade.includes('confirm('), 'Blank answers require confirmation');
 assert(!exam.includes('.learn=')&&!exam.includes('.weak[')&&!exam.includes('state.xp+='), 'Exam never changes mastery or XP');
-assert(exam.includes('wrong.map(x=>x.id)')&&exam.includes('session={count:0,goal:ids.length,ids,'), 'Only missed words feed ordinary four-stage review');
+assert(exam.includes('wrong.map(x=>x.id)')&&exam.includes('reviewMissed:true'), 'Only missed words feed the shortened review flow');
 assert(exam.includes('state.weekTestDraft=')&&exam.includes('saveWeeklyDraft()'), 'Draft answers can be saved and resumed');
 assert(isolation.includes("const PROD_KEY='mwg-v2-rebuild'")&&isolation.includes("const TEST_KEY='mwg-v2-rebuild-test'")&&isolation.includes('routedKey(this,key)'), 'Existing isolated parent Test Mode remains active');
-assert(src.includes('Number(!!b.w.parentPriority)-Number(!!a.w.parentPriority)'), 'Existing starred-word priority retained');
-assert(index.includes('weekly-test-v23.css')&&index.includes('weekly-test-v23'), 'HTML loads versioned CSS and app');
+assert(src.includes("if(kind==='week'&&isCurrentFocus(id))score+=50"), 'This-week focus still boosts practice, but only inside the current week');
+assert(!src.includes('Number(!!b.w.parentPriority)-Number(!!a.w.parentPriority)'), 'Permanent cross-week star priority is retired');
+assert(index.includes('weekly-test-v23.css')&&index.includes('weekly-test-v23'), 'HTML loads versioned weekly CSS');
 assert.match(index,/class="app-version-badge"[^>]*>v[0-9]+ · /,"Visible version badge exists");
-console.log('PASS: weekly-only 10-word selection, grading (typo/blank/case), answer privacy, draft, wrong-only practice, Test Mode isolation, star priority and v23 assets');
+console.log('PASS: weekly-only 10-word selection, grading, privacy, drafts, shortened review, Test Mode isolation, and week-scoped focus.');
