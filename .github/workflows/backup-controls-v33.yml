@@ -18,6 +18,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Add distinct backup actions and confirmation
         run: python3 tools/backup-controls-v33-patch.py
+      - name: Refresh historical versioned asset assertions
+        run: python3 tools/backup-controls-v33-testfix.py
       - name: Check JavaScript syntax
         run: |
           node --check app.js
