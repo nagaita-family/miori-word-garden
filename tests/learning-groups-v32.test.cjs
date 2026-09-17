@@ -9,6 +9,7 @@ assert(src.includes('learningGroupsVersion:1'),'New state carries a learning-gro
 assert(src.includes('myWords:{}')&&src.includes('pastWeeks:[]'),'My Words and Past Tests are first-class state');
 assert(src.includes('focusIds:[]'),'This Week focus is stored on the week, not forever on the word');
 assert(src.includes('function ensureLearningGroups(s)'),'Old local state is migrated without resetting progress');
+assert(src.includes('seedIds.length===SCHOOL_WORDS.length&&!seedIsCurrent'),'A device already on Unit 5B can recover the pre-v32 Unit 5A list as Past Tests');
 assert(src.includes('w.focusHistory=true'),'Legacy/current stars preserve historical meaning');
 assert(src.includes('function archiveWeek(')&&src.includes('archiveWeek(state,state.week)'),'Importing a new pack archives the old current week');
 assert(src.includes("takePracticeIds(weekIds,4,'week'")&&src.includes("takePracticeIds(myIds,1,'my'"),'Today Play reserves four This Week slots and one My Words slot when available');
@@ -22,7 +23,7 @@ assert(src.includes("if(!state.week.ids.includes(word))state.week.ids.push(word)
 assert(src.includes('practiceKindLabel(q.practiceKind)'),'Play tells Miori which kind of practice she is doing');
 assert(css.includes('.word-group-tabs')&&css.includes('.group-word-card')&&css.includes('.practice-kind-badge'),'Group management and practice labels have dedicated UI');
 assert(page.includes('learning-groups-v32.css?v=20260917-v32'),'New group UI is cache-busted');
-assert(page.includes('app.js?v=20260917-learning-groups-v32'),'Updated app logic is cache-busted');
+assert(page.includes('app.js?v=20260917-learning-groups-v32a'),'Updated app logic is cache-busted');
 assert(page.includes('v32 · Sep 17'),'Visible version is v32');
 assert(page.includes('play-viewport-v31.css?v=20260917-v31')&&page.includes('writing-erase-v30.js?v=20260917-v30'),'Recent iPad layout and eraser fixes remain loaded');
 console.log('PASS v32: This Week focus expires with the week, My Words persist and start at recall, Past Tests stay explicit, Today Play is 4+1, saved progress migrates.');

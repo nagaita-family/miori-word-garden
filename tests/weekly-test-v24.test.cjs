@@ -35,6 +35,6 @@ assert(grade.includes('state.weekTestResult=')&&grade.includes('delete state.wee
 assert(css.includes('.weekly-test-view .weekly-answer-sheet')&&css.includes('overflow-y:auto')&&css.includes('flex:1 1 auto'),'Only the answer list can scroll under pinned controls');
 assert(css.includes('.weekly-sheet-actions #weeklyGradeBtn')&&css.includes('display:inline-flex!important'),'Grade control receives an always-visible button style');
 assert(css.includes('caret-color:transparent!important'),'No blinking keyboard caret');
-assert(page.includes('weekly-test-v24.css?v=20260917-v24')&&page.includes('app.js?v=20260917-learning-groups-v32')&&/v[0-9]+ · Sep 17/.test(page),'v24 assets have cache busting and a visible version');
+assert(page.includes('weekly-test-v24.css?v=20260917-v24')&&page.includes('app.js?v=20260917-learning-groups-v32a')&&/v[0-9]+ · Sep 17/.test(page),'v24 assets have cache busting and a visible version');
 assert(js.includes('const PROD_KEY=')===false,'Test Mode remains a separately loaded script, not duplicated in app.js');
 console.log('PASS v24: visible top/bottom grading, independent scroll, no caret, Pencil keyboard suppression, spaces ignored in drafts and grading, true misspellings retained.');

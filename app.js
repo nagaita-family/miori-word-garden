@@ -74,6 +74,12 @@ function ensureLearningGroups(s){
   s.pastWeeks=Array.isArray(s.pastWeeks)?s.pastWeeks.filter(Boolean).map(x=>({id:x.id||weekIdentity(x.title),title:x.title||'Past test',ids:uniqueWordIds(x.ids),focusIds:uniqueWordIds(x.focusIds),archivedAt:x.archivedAt||''})):[];
   if(!s.learningGroupsVersion){
     s.week.id=weekIdentity(s.week.title||s.week.id);
+    const seedIds=SCHOOL_WORDS.map(x=>norm(x.word)).filter(id=>s.lib?.[id]);
+    const seedIsCurrent=seedIds.length===SCHOOL_WORDS.length&&seedIds.every(id=>s.week.ids.includes(id))&&s.week.ids.every(id=>seedIds.includes(id));
+    if(seedIds.length===SCHOOL_WORDS.length&&!seedIsCurrent&&!s.pastWeeks.some(x=>x.id==='2026-09-17-unit-5a'||x.title==='Sept 17 · Unit 5A')){
+      const oldFocus=seedIds.filter(id=>!!s.lib[id]?.parentPriority);
+      s.pastWeeks.push({id:'2026-09-17-unit-5a',title:'Sept 17 · Unit 5A',ids:seedIds,focusIds:oldFocus,archivedAt:''});
+    }
     for(const w of Object.values(s.lib||{}))if(w?.parentPriority){w.focusHistory=true;if(s.week.ids.includes(w.id)&&!s.week.focusIds.includes(w.id))s.week.focusIds.push(w.id)}
     s.learningGroupsVersion=1;
   }

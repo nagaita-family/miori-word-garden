@@ -53,7 +53,7 @@ assert.deepEqual(Array.from(q.letters),['b','u']);
 fields['#stage3GapInput'].value='B';q=mk(3);ctx.checkHandwriting(w,q);
 assert.deepEqual(captures.pop(),['wrong',3,'b','bu'],'Stage 3 missing letter cannot be ignored');
 assert(css.includes('.flow-word-input')&&css.includes('.stage3-gap-flow')&&css.includes('caret-color:transparent'),'Fluent Pencil targets are spacious and have no keyboard caret');
-assert(page.includes('play-flow-v29.css?v=20260917-v29')&&page.includes('app.js?v=20260917-learning-groups-v32'),'Browser loads the current app with v29 writing CSS');
+assert(page.includes('play-flow-v29.css?v=20260917-v29')&&page.includes('app.js?v=20260917-learning-groups-v32a'),'Browser loads the current app with v29 writing CSS');
 assert(page.includes('v32 · Sep 17'),'Latest visible version keeps the v29 features');
 assert(page.includes('weekly-test-palm-v25.js?v=20260917-listen-fix-v27'),'Previously fixed Listen and grading protections remain');
 assert(src.includes('reviewMissed:true')&&src.includes('const start=session.reviewMissed?3:'),'Missed-word sessions still enter at Stage 3');
