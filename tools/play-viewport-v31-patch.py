@@ -1,4 +1,4 @@
-"""One-time guarded v31 integration. Patch only HTML asset/version and version assertion."""
+"""One-time guarded v31 integration. Patch HTML/version and legacy version assertions."""
 from pathlib import Path
 
 
@@ -22,4 +22,7 @@ replace_once('index.html',
 replace_once('tests/writing-erase-v30.test.cjs',
     "assert(page.includes('v30 · Sep 17'),'Version badge updated');",
     "assert(page.includes('v31 · Sep 17'),'Current version badge remains updated alongside v30 erasers');")
-print('v31 CSS registered, current version updated, v30 regression adjusted; Play/Test state and data unchanged.')
+replace_once('tests/play-flow-v29.test.cjs',
+    "assert(page.includes('v30 · Sep 17'),'Latest visible version keeps the v29 features');",
+    "assert(page.includes('v31 · Sep 17'),'Latest visible version keeps the v29 features');")
+print('v31 CSS registered, version updated, old regression assertions refreshed; saved data untouched.')
