@@ -20,6 +20,7 @@ jobs:
           node --check app.js
           node --check word-auto-fill-v34.js
           node --check tests/word-auto-fill-v34.test.cjs
+      # The dictionary does not have a phonics clue for every word; a blank is intentional.
       - name: Full regression suite including offline dictionary mocks
         run: node --test tests/*.test.cjs
       - name: Publish only after all tests pass
