@@ -1,0 +1,45 @@
+name: Focused handwriting erase v30
+
+on:
+  push:
+    paths:
+      - '.github/workflows/writing-erase-v30.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update local writing controls assets only
+        run: python3 tools/writing-erase-v30-patch.py
+      - name: Validate script syntax
+        run: |
+          node --check app.js
+          node --check writing-erase-v30.js
+          node --check weekly-test-palm-v25.js
+          node --check weekly-result-compare-v26.js
+      - name: Check historical learning and focused erase behavior
+        run: |
+          node tests/parent-priority-v22.test.cjs
+          node tests/weekly-test-v23.test.cjs
+          node tests/weekly-test-v24.test.cjs
+          node tests/weekly-test-v25.test.cjs
+          node tests/weekly-result-v26.test.cjs
+          node tests/weekly-listen-v27.test.cjs
+          node tests/weekly-lowercase-v28.test.cjs
+          node tests/play-flow-v29.test.cjs
+          node tests/writing-erase-v30.test.cjs
+      - name: Publish verified v30 assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html tests/play-flow-v29.test.cjs
+          git diff --cached --quiet && exit 0
+          git commit -m "Show compact erase actions only while writing in Step 4 or Test (v30)"
+          git push
