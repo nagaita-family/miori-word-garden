@@ -1,0 +1,12 @@
+/* v34 Parent autofill: controls are explicit and do not interrupt spelling play. */
+.auto-fill-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:4px 0 11px;padding:10px 12px;border-radius:15px;background:#f3f0fa;border:1px solid #e7ddec}
+.auto-fill-toolbar small{font-size:10px;line-height:1.55;color:#716579;flex:1 1 185px}
+.auto-fill-btn{border:1px solid #b7a0cb;border-radius:13px;background:#fff;color:#68517d;font-size:11px;font-weight:900;padding:10px 12px;min-height:39px;white-space:normal;text-align:center}
+.auto-fill-btn:disabled{opacity:.54;cursor:wait}
+.auto-fill-notice{margin:9px 0;padding:9px 12px;border-radius:13px;background:#f0f6ea;color:#5c7559;font-size:11px;line-height:1.5;min-height:22px}
+.auto-fill-notice:empty{display:none}
+.past-week-head .auto-fill-btn{margin-left:auto}
+.auto-fill-modal-note{font-size:11px;line-height:1.55;margin:0;background:#f3f0fa;border-radius:12px;padding:9px 11px;color:#665772}
+#autoFillModalBtn{background:#eee7f7;color:#674f7e}
+#saveWordBtn:disabled{opacity:.6;cursor:wait}
+@media(max-width:720px){.auto-fill-toolbar{align-items:stretch;flex-direction:column}.auto-fill-toolbar small{flex:initial}.past-week-head .auto-fill-btn{margin-left:0;width:100%}}
