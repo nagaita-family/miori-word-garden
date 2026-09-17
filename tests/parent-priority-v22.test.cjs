@@ -6,34 +6,32 @@ const app = fs.readFileSync('app.js', 'utf8');
 const isolated = fs.readFileSync('test-mode-v21.js', 'utf8');
 assert.match(app, /function practiceIds\(/);
 assert.match(app, /function toggleParentPriority\(/);
+assert.match(app, /function setMyWord\(/);
 
 const hook = `
 globalThis.__testPriority = function () {
   const raisin = state.lib.raisin;
-  assert.equal(!!raisin.parentPriority, false, 'old records default to no star');
-  raisin.parentPriority = true;
-  seedSchoolWords(state);
-  assert.equal(state.lib.raisin.parentPriority, true, 'school-word reseed preserves star');
+  assert.equal(isCurrentFocus('raisin'), false, 'current week starts without a focus star');
+  state.week.focusIds=['raisin'];
+  save();
+  assert.equal(isCurrentFocus('raisin'), true, 'focus star belongs to the current week');
   const extra = normalizeWord({word:'outside'}, null);
   extra.parentPriority = true;
   state.lib.outside = extra;
-  const ids = practiceIds();
-  assert.ok(ids.includes('outside'), 'starred words beyond current week are eligible');
-  assert.equal(new Set(ids).size, ids.length, 'no duplicate word ids');
-  session = {ids, doneIds:[], last:'', count:0, goal:Math.min(10,ids.length)};
-  for(let i=0;i<2;i++) {
-    const picked = chooseWord();
-    assert.ok(picked.parentPriority, 'starred words sort before adaptive scores');
-    session.doneIds.push(picked.id);
-  }
-  assert.equal(!!chooseWord().parentPriority, false, 'completed stars do not repeat in one session');
-  assert.equal(normalizeWord({word:'raisin'}, state.lib.raisin).parentPriority, true, 'edits and imports preserve parent flag');
-  save();
-  assert.equal(JSON.parse(localStorage.getItem('mwg-v2-rebuild')).lib.raisin.parentPriority, true, 'flag is saved with word data');
+  ensureLearningGroups(state);
+  assert.equal(extra.focusHistory,true,'legacy star becomes history');
+  assert.equal(extra.parentPriority,false,'legacy permanent priority flag is retired');
+  assert.equal(practiceIds().includes('outside'),false,'past/legacy focus does not leak into current practice');
+  setMyWord('outside',true,{source:'Journal',note:'I used this word'});
+  assert.equal(practiceIds().includes('outside'),true,'My Words remain eligible across weeks');
+  assert.equal(new Set(practiceIds()).size,practiceIds().length,'no duplicate word ids');
   renderParent=()=>{};toast=()=>{};
   toggleParentPriority('raisin');
-  assert.equal(state.lib.raisin.parentPriority,false,'star is reversible');
-  assert.equal(JSON.parse(localStorage.getItem('mwg-v2-rebuild')).lib.raisin.parentPriority,false,'unstar is saved');
+  assert.equal(isCurrentFocus('raisin'),false,'this-week focus is reversible');
+  save();
+  const stored=JSON.parse(localStorage.getItem('mwg-v2-rebuild'));
+  assert.equal(!!stored.myWords.outside,true,'My Words are saved');
+  assert.equal(stored.week.focusIds.includes('raisin'),false,'cleared current focus is saved');
 };
 `;
 const patchedApp = app.replace(/\}\)\(\);\s*$/, hook + '\n})();');
@@ -63,11 +61,11 @@ for (const testMode of [false, true]) {
   if(testMode) {
     assert.equal(real, production, 'TEST MODE MUST NOT mutate real data');
     const test = JSON.parse(localStorage.entries.get('mwg-v2-rebuild-test'));
-    assert.equal(test.lib.outside.parentPriority,true,'star updates test store');
-    assert.equal(test.lib.raisin.parentPriority,false,'star removal updates test store');
+    assert.equal(!!test.myWords.outside,true,'My Words update isolated test store');
+    assert.equal(test.week.focusIds.includes('raisin'),false,'focus removal updates isolated test store');
   } else {
     const realData = JSON.parse(real);
-    assert.equal(realData.lib.outside.parentPriority,true,'star stored in production when not testing');
+    assert.equal(!!realData.myWords.outside,true,'My Words stored in production when not testing');
   }
-  console.log(`v22 priority and storage test passed: ${testMode?'test mode':'normal mode'}`);
+  console.log(`v32 week-focus and storage test passed: ${testMode?'test mode':'normal mode'}`);
 }
