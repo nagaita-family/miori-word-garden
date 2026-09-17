@@ -34,3 +34,5 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m "Separate This Week, My Words, and Past Tests with 4+1 practice (v32)"
           git push
+
+# rerun after historical regression assertions were updated for week-scoped focus
