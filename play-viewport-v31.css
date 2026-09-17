@@ -1,0 +1,137 @@
+/* v31: the Step 4 comparison was clipped by the legacy overflow:hidden game card.
+   Keep every control reachable inside the real viewport; shorten chrome before
+   shrinking Pencil targets. When text or display scaling makes a fit impossible,
+   the game card itself must scroll rather than silently hiding the correction. */
+#playView .play-view:has(.flow-word-wrap){
+  height:100%;min-height:0;max-height:100%;padding:0 0 5px;
+  display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden;
+}
+#playView .play-view:has(.flow-word-wrap) .game-topline{
+  min-height:0;margin:0 4px 5px;gap:9px;
+}
+#playView .play-view:has(.flow-word-wrap) .game-topline .icon-btn{width:38px;height:38px}
+#playView .play-view:has(.flow-word-wrap) .stage-track{height:10px}
+#playView .play-view:has(.flow-word-wrap) .stage-labels{margin-bottom:3px;font-size:10.5px}
+#playView .play-view:has(.flow-word-wrap) .session-xp{padding:6px 9px;font-size:11px}
+#playView .game-card:has(.flow-word-wrap){
+  box-sizing:border-box;min-width:0;min-height:0;height:100%;max-height:100%;
+  padding:9px 17px 12px;display:flex;flex-direction:column;gap:4px;
+  overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;touch-action:pan-y;
+}
+#playView .game-card:has(.flow-word-wrap) .word-audio-row{
+  flex:0 0 auto;min-height:53px;justify-content:flex-start;gap:10px;
+}
+#playView .game-card:has(.flow-word-wrap) .audio-orb.word-sound-button{
+  width:53px;height:53px;min-width:53px;flex:0 0 53px;
+  border-radius:17px;padding:3px;
+}
+#playView .game-card:has(.flow-word-wrap) .audio-orb .speaker-glyph{font-size:23px}
+#playView .game-card:has(.flow-word-wrap) .audio-orb small{font-size:8px}
+#playView .game-card:has(.flow-word-wrap) .task-prompt{font-size:17px;line-height:1.1}
+#playView .game-card:has(.flow-word-wrap) .task-subprompt{font-size:10px;line-height:1.2;margin-top:2px}
+#playView .game-card:has(.flow-word-wrap) .voice-pill{font-size:8px;margin-top:3px;padding:3px 7px}
+#playView .game-card:has(.flow-word-wrap) .word-visual-cue.audio-clue-panel{
+  flex:0 0 auto;width:min(870px,100%);min-height:0;
+  margin:2px auto 3px;padding:5px;gap:7px;
+  grid-template-columns:57px minmax(0,1fr);border-radius:18px;
+}
+#playView .game-card:has(.flow-word-wrap) .cue-picture-tile{
+  height:53px;min-height:53px;border-radius:14px;
+}
+#playView .game-card:has(.flow-word-wrap) .cue-picture-emoji{font-size:29px}
+#playView .game-card:has(.flow-word-wrap) .cue-picture-tile:after{
+  content:'🔊 WORD';left:5px;bottom:3px;font-size:7px;padding:2px 4px;
+}
+#playView .game-card:has(.flow-word-wrap) .cue-listen-grid{gap:6px}
+#playView .game-card:has(.flow-word-wrap) .listen-card{
+  height:53px;min-height:53px;padding:5px 7px;border-radius:14px;
+  display:grid;grid-template-columns:28px minmax(0,1fr);grid-template-rows:1fr;
+  gap:5px;text-align:left;
+}
+#playView .game-card:has(.flow-word-wrap) .listen-card .listen-icon{
+  width:28px;height:28px;border-radius:9px;font-size:15px;grid-row:1;
+}
+#playView .game-card:has(.flow-word-wrap) .listen-card .listen-copy{grid-row:1}
+#playView .game-card:has(.flow-word-wrap) .listen-card small{font-size:7px;margin-bottom:2px}
+#playView .game-card:has(.flow-word-wrap) .listen-card b{font-size:11px}
+#playView .game-card:has(.flow-word-wrap) .listen-card .listen-action{display:none}
+#playView .game-card:has(.flow-word-wrap) .question-area{
+  flex:1 0 auto;min-height:0;height:auto;width:100%;padding:2px 0;
+  display:flex;align-items:center;justify-content:center;
+}
+#playView .game-card:has(.flow-word-wrap) .flow-word-wrap{
+  width:min(850px,100%);min-width:0;margin:auto;gap:5px;
+}
+#playView .game-card:has(.flow-word-wrap) .flow-word-note{
+  font-size:11px;line-height:1.25;
+}
+#playView .game-card:has(.flow-word-wrap) .flow-word-label{font-size:10px}
+#playView .game-card:has(.flow-word-wrap) .flow-word-input{
+  min-height:75px;padding:12px 16px;font-size:clamp(22px,3.9vw,32px);
+}
+#playView .game-card:has(.flow-word-wrap) .flow-word-controls{gap:7px}
+#playView .game-card:has(.flow-word-wrap) .flow-word-controls #checkAnswerBtn{
+  min-height:43px;padding:9px 20px;margin:0;
+}
+#playView .game-card:has(.flow-word-wrap) .writing-erase-tools{
+  min-height:0;margin:0;
+}
+#playView .game-card:has(.flow-word-wrap) .flow-word-diff{
+  flex:0 0 auto;min-width:0;margin:0;overflow-x:auto;
+}
+#playView .game-card:has(.flow-word-wrap) .weekly-diff{
+  padding:0 0 2px;
+}
+#playView .game-card:has(.flow-word-wrap) .weekly-diff-label{
+  font-size:8px;margin:1px 0 2px;
+}
+#playView .game-card:has(.flow-word-wrap) .weekly-diff-label:not(:first-child){margin-top:4px}
+#playView .game-card:has(.flow-word-wrap) .weekly-diff-letters{padding:1px 0 2px}
+#playView .game-card:has(.flow-word-wrap) .weekly-diff-cell{
+  height:25px;font-size:16px;
+}
+#playView .game-card:has(.flow-word-wrap) .weekly-diff-legend{font-size:9px;margin-top:3px;line-height:1.2}
+#playView .game-card:has(.flow-word-wrap) .feedback{
+  flex:0 0 auto;min-height:21px;margin:0 auto;font-size:10.5px;line-height:1.3;
+  display:grid;place-items:center;
+}
+#playView .game-card:has(.flow-word-wrap) .help-row.assist-dock{
+  flex:0 0 auto;min-height:0;margin:0 auto;gap:8px;
+}
+#playView .game-card:has(.flow-word-wrap) .assist-btn{min-height:42px;padding:6px 10px}
+#playView .game-card:has(.flow-word-wrap) .assist-icon{width:31px;height:31px;min-width:31px}
+#playView .game-card:has(.flow-word-wrap) .assist-btn b{font-size:13px}
+/* The older Stage 3 grid also adds a comparison after a wrong answer.
+   Its original overflow:hidden/zero-minimum middle track could clip that content. */
+#playView .game-card:has(.letter-row){
+  overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  grid-template-rows:auto auto minmax(min-content,1fr) auto auto;
+}
+#playView .game-card:has(.letter-row) .question-area{height:auto;min-height:0}
+@media(max-height:760px){
+  #playView .game-card:has(.flow-word-wrap){padding:6px 12px 8px;gap:2px}
+  #playView .game-card:has(.flow-word-wrap) .word-audio-row{min-height:47px}
+  #playView .game-card:has(.flow-word-wrap) .audio-orb.word-sound-button{
+    width:47px;height:47px;min-width:47px;flex-basis:47px;border-radius:14px;
+  }
+  #playView .game-card:has(.flow-word-wrap) .word-visual-cue.audio-clue-panel{
+    grid-template-columns:51px minmax(0,1fr);gap:5px;margin:1px auto 2px;padding:4px;
+  }
+  #playView .game-card:has(.flow-word-wrap) .cue-picture-tile,
+  #playView .game-card:has(.flow-word-wrap) .listen-card{height:47px;min-height:47px}
+  #playView .game-card:has(.flow-word-wrap) .task-prompt{font-size:15px}
+  #playView .game-card:has(.flow-word-wrap) .flow-word-wrap{gap:4px}
+  #playView .game-card:has(.flow-word-wrap) .flow-word-note{display:none}
+  #playView .game-card:has(.flow-word-wrap) .flow-word-input{min-height:67px;padding:8px 12px}
+  #playView .game-card:has(.flow-word-wrap) .writing-erase-action{min-height:31px}
+  #playView .game-card:has(.flow-word-wrap) .flow-word-controls #checkAnswerBtn{min-height:40px}
+  #playView .game-card:has(.flow-word-wrap) .assist-btn{min-height:39px}
+}
+@media(max-width:620px){
+  #playView .game-card:has(.flow-word-wrap){padding-left:9px;padding-right:9px}
+  #playView .game-card:has(.flow-word-wrap) .cue-listen-grid{gap:4px}
+  #playView .game-card:has(.flow-word-wrap) .listen-card{padding:4px;grid-template-columns:1fr;justify-items:center;text-align:center}
+  #playView .game-card:has(.flow-word-wrap) .listen-card .listen-icon{display:none}
+}
