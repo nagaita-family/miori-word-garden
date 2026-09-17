@@ -1,0 +1,11 @@
+/* v30: Only the currently focused whole-word writing field gets these two small buttons. */
+.writing-erase-tools{display:flex;align-items:center;justify-content:flex-end;gap:7px;width:100%;min-width:0;margin:3px 0 0;padding:0;}
+.writing-erase-action{appearance:none;-webkit-appearance:none;touch-action:manipulation;min-height:34px;padding:5px 11px;border-radius:11px;border:1px solid #e5dfeb;background:#f9f7fc;color:#635472;font:750 12px/1.2 ui-rounded,system-ui,sans-serif;white-space:nowrap;box-shadow:none;}
+.writing-erase-action:active{background:#eae2f4;transform:translateY(1px)}
+.writing-erase-action.writing-erase-clear{background:#fffaf9;color:#96616b;border-color:#f2e2e2}
+/* Keep existing Check layout; replace only its redundant always-visible Clear control. */
+.flow-word-wrap .flow-word-controls #clearFlowBtn{display:none!important}
+.flow-word-wrap .writing-erase-tools{margin:0;}
+/* Text remains editable by Pencil; suppress the iOS callout without disabling Scribble. */
+#stage4WordInput,.weekly-test-view .weekly-answer{-webkit-touch-callout:none;}
+@media(max-width:420px){.writing-erase-action{min-height:32px;padding:4px 9px;font-size:11px}}
