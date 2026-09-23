@@ -24,6 +24,6 @@ assert(src.includes('practiceKindLabel(q.practiceKind)'),'Play tells Miori which
 assert(css.includes('.word-group-tabs')&&css.includes('.group-word-card')&&css.includes('.practice-kind-badge'),'Group management and practice labels have dedicated UI');
 assert(page.includes('learning-groups-v32.css?v=20260917-v32'),'New group UI is cache-busted');
 assert(page.includes('app.js?v=20260923-trace-ink-v37'),'Updated app logic is cache-busted');
-assert(page.includes('v37 · Sep 23'),'Visible version is v32');
+assert(page.includes('v38 · Sep 23'),'Visible version is v32');
 assert(page.includes('play-viewport-v31.css?v=20260917-v31')&&page.includes('writing-erase-v30.js?v=20260917-v30'),'Recent iPad layout and eraser fixes remain loaded');
 console.log('PASS v32: This Week focus expires with the week, My Words persist and start at recall, Past Tests stay explicit, Today Play is 4+1, saved progress migrates.');

@@ -18,21 +18,18 @@
 }
 .trace-pad{position:absolute;inset:0;z-index:2;touch-action:none;user-select:none;-webkit-user-select:none}
 .trace-ink{width:100%;height:100%;display:block;pointer-events:none}
-.trace-ink path{fill:none;stroke:#5f7d61;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.trace-ink path{fill:none;stroke:#735d9b;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .trace-cell:focus-within{
   border-color:#c2a7d8;box-shadow:0 0 0 4px #b99ad51b,inset 0 -8px #faf5ee;
 }
 .trace-cell.traced{
-  border-color:#a8c79e;background:linear-gradient(180deg,#f8fff4,#eef7e9);
-  box-shadow:inset 0 -8px #e9f4e5;
+  border-color:#bca5d5;background:linear-gradient(180deg,#fcf9ff,#f4edfb);
+  box-shadow:inset 0 -8px #eee5f7;
 }
-.trace-cell.traced .trace-guide{opacity:.27}
+.trace-cell.traced .trace-guide{opacity:.55}
 .trace-written{
   position:absolute;inset:0;z-index:3;display:grid;place-items:center;padding-bottom:3px;
   font-size:clamp(24px,4vw,36px);font-weight:950;color:#5f7d61;pointer-events:none;
-}
-.trace-cell.traced:before{
-  content:"✓";position:absolute;right:7px;top:5px;z-index:4;font-size:11px;font-weight:950;color:#6f966f;
 }
 .trace-cell.trace-retry{animation:traceRetry .28s ease both}
 @keyframes traceRetry{0%,100%{transform:translateX(0)}35%{transform:translateX(-3px);border-color:#e2a7a7}70%{transform:translateX(3px);border-color:#e2a7a7}}
