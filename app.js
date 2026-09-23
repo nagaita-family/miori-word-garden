@@ -557,32 +557,58 @@ function bindFlowWriting(input,w,q){
   input.addEventListener('focus',()=>{try{navigator.virtualKeyboard?.hide?.()}catch{}});
 }
 function bindTraceBox(input,full,w,q){
-  const expected=w.word[full]||'';
+  const expected=w.word[full]||'',cell=input.closest('.trace-cell');
+  let composing=false,erased=false;
+  const current=()=>input.isConnected&&session?.q===q;
+  const clearResult=()=>{
+    if(Array.isArray(q.traceLetters))q.traceLetters[full]='';
+    cell?.classList.remove('traced','trace-retry');
+    cell?.querySelector('.trace-written')?.remove();
+  };
+  const settle=()=>{
+    if(!current()||composing||erased)return;
+    const cleaned=normalizeScribbleLetter(input.value,expected);
+    clearResult();
+    // Keep both the native field and its candidate text alive. A later Scribble
+    // result belongs to this cell even after the Pencil has moved to its neighbour.
+    if(cleaned!==expected){if(cleaned)cell?.classList.add('trace-retry');return}
+    if(!Array.isArray(q.traceLetters))q.traceLetters=Array(w.word.length).fill('');
+    q.traceLetters[full]=cleaned;
+    if(cell){
+      cell.classList.add('traced');
+      const done=document.createElement('div');done.className='trace-written';
+      done.dataset.traceFull=String(full);done.setAttribute('aria-label',`Traced letter ${expected}`);
+      done.textContent=cleaned;cell.appendChild(done);
+    }
+  };
   input.addEventListener('pointerdown',e=>{
     const pointer=e.pointerType||'';
-    if(pointer==='touch'){e.preventDefault();input.blur();return}
-    if(q.mode==='erase'){e.preventDefault();e.stopPropagation();input.value='';return}
+    if(pointer==='touch'){e.preventDefault();return}
+    if(!current())return;
+    if(q.mode==='erase'){
+      e.preventDefault();e.stopPropagation();erased=true;composing=false;
+      input.value='';clearResult();return;
+    }
     if(q.mode==='write'&&pointer==='pen'){
+      erased=false;
+      // Clear a finished attempt only on an explicit new stroke in this cell.
+      // Never clear a pending composition or focus another cell on completion.
+      if(!composing&&input.value){input.value='';clearResult()}
       input.setAttribute('inputmode','none');
       try{if(document.activeElement!==input)input.focus({preventScroll:true})}catch{}
-      setTimeout(()=>{try{navigator.virtualKeyboard?.hide?.()}catch{}},0)
+      try{navigator.virtualKeyboard?.hide?.()}catch{}
     }
   },true);
-  input.addEventListener('touchstart',e=>{e.preventDefault();input.blur()},{passive:false});
+  input.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
   input.addEventListener('contextmenu',e=>e.preventDefault());input.addEventListener('dragstart',e=>e.preventDefault());
   input.addEventListener('keydown',e=>e.preventDefault());
-  input.addEventListener('beforeinput',e=>{const t=String(e.inputType||'');if(t.startsWith('delete'))e.preventDefault()});
-  input.addEventListener('input',e=>{
-    if(q.mode==='erase'){e.target.value='';return}
-    const cleaned=normalizeScribbleLetter(e.target.value,expected);if(!cleaned){e.target.value='';return}
-    const cell=e.target.closest('.trace-cell');
-    if(cleaned!==expected){e.target.value='';cell?.classList.add('trace-retry');setTimeout(()=>cell?.classList.remove('trace-retry'),320);return}
-    if(!Array.isArray(q.traceLetters))q.traceLetters=Array(w.word.length).fill('');q.traceLetters[full]=cleaned;
-    if(cell){cell.classList.add('traced');const done=document.createElement('div');done.className='trace-written';done.dataset.traceFull=String(full);done.setAttribute('aria-label',`Traced letter ${expected}`);done.textContent=cleaned;e.target.replaceWith(done)}
-    try{navigator.virtualKeyboard?.hide?.()}catch{}
-  });
-  input.addEventListener('focus',()=>{try{input.setSelectionRange(0,0)}catch{};try{navigator.virtualKeyboard?.hide?.()}catch{}})
+  input.addEventListener('compositionstart',()=>{composing=true});
+  input.addEventListener('compositionend',()=>{composing=false;settle()});
+  input.addEventListener('input',e=>{if(!e.isComposing)settle()});
+  input.addEventListener('change',settle);
+  input.addEventListener('focus',()=>{try{navigator.virtualKeyboard?.hide?.()}catch{}});
 }
+
 function startFilledBoxScratch(e,index,w,q,input){
   const pointerId=e.pointerId,rect=input.getBoundingClientRect(),points=[];let finished=false;
   const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),line=document.createElementNS(ns,'polyline');svg.classList.add('scratch-trail');svg.setAttribute('viewBox',`0 0 ${Math.max(1,rect.width)} ${Math.max(1,rect.height)}`);svg.setAttribute('preserveAspectRatio','none');svg.appendChild(line);input.appendChild(svg);input.classList.add('scratch-active');
