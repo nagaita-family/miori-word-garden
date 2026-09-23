@@ -499,7 +499,8 @@ function handwritingHtml(w,q){
   for(let full=0;full<w.word.length;full++){
     if(q.stage===3&&(full<r.start||full>=r.end)){
       const guide=esc(w.word[full]),traced=q.traceLetters[full]||'';
-      boxes.push(`<div class="trace-cell ${traced?'traced':''}" data-guide-full="${full}"><svg class="trace-guide" viewBox="0 0 72 72" aria-hidden="true"><text x="36" y="53" text-anchor="middle">${guide}</text></svg>${traced?`<div class="trace-written" data-trace-full="${full}" aria-label="Traced letter ${guide}">${esc(traced)}</div>`:`<input class="trace-input" data-trace-full="${full}" value="" inputmode="none" virtualkeyboardpolicy="manual" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Trace letter ${guide}">`}</div>`);continue
+      const paths=(q.tracePaths?.[full]||[]).map(d=>`<path d="${esc(d)}"/>`).join('');
+      boxes.push(`<div class="trace-cell ${traced?'traced':''}" data-guide-full="${full}"><svg class="trace-guide" viewBox="0 0 72 72" aria-hidden="true"><text x="36" y="53" text-anchor="middle">${guide}</text></svg><div class="trace-pad" data-trace-full="${full}" aria-label="Trace letter ${guide} with Apple Pencil"><svg class="trace-ink" viewBox="0 0 72 72" preserveAspectRatio="none" aria-hidden="true">${paths}</svg></div></div>`);continue
     }
     if(q.stage===3&&full>=r.start&&full<r.end){
       if(full===r.start){
@@ -527,7 +528,7 @@ function bindQuestion(w,q){
   if(q.stage<3){$$('[data-choice]').forEach(b=>b.onclick=()=>pickChoice(b,w,q));return}
   if(q.stage===4){$('#checkAnswerBtn').onclick=()=>checkHandwriting(w,q);$('#clearFlowBtn').onclick=()=>{q.fullAnswer='';q.feedback=null;q.hint=null;renderTask()};bindFlowWriting($('#stage4WordInput'),w,q);$('#hintCloseBtn')?.addEventListener('click',()=>{q.hint=null;renderTask()});return}
   $('#writeModeBtn').onclick=()=>{q.mode='write';renderTask()};$('#eraseModeBtn').onclick=()=>{q.mode='erase';renderTask()};$('#checkAnswerBtn').onclick=()=>checkHandwriting(w,q);$('#hintAudioBtn')?.addEventListener('click',()=>playWordAudio(w,true,{userInitiated:true}));$('#hintCloseBtn')?.addEventListener('click',()=>{q.hint=null;renderTask()});$$('[data-hint]').forEach(b=>b.onclick=()=>chooseHint(b,w,q));
-  bindFlowWriting($('#stage3GapInput'),w,q);const boxes=$$('.letter-box[data-local]');boxes.forEach((box,index)=>bindLetterBox(box,index,w,q));$$('.trace-input[data-trace-full]').forEach(input=>bindTraceBox(input,Number(input.dataset.traceFull),w,q));
+  bindFlowWriting($('#stage3GapInput'),w,q);const boxes=$$('.letter-box[data-local]');boxes.forEach((box,index)=>bindLetterBox(box,index,w,q));$$('.trace-pad[data-trace-full]').forEach(pad=>bindTracePad(pad,Number(pad.dataset.traceFull),w,q));
   // Never pre-focus a writing field. On iPad that can open the software keyboard and it also races with fast Pencil movement.
   document.activeElement?.blur?.();
 }
@@ -556,77 +557,53 @@ function bindFlowWriting(input,w,q){
   input.addEventListener('change',()=>update(true));
   input.addEventListener('focus',()=>{try{navigator.virtualKeyboard?.hide?.()}catch{}});
 }
-function bindTraceBox(input,full,w,q){
-  const expected=w.word[full]||'',cell=input.closest('.trace-cell');
-  let composing=false,erased=false;
-  const current=()=>input.isConnected&&session?.q===q;
-  const clearResult=()=>{
-    if(Array.isArray(q.traceLetters))q.traceLetters[full]='';
-    cell?.classList.remove('traced','trace-retry');
-    cell?.querySelector('.trace-written')?.remove();
+function bindTracePad(pad,full,w,q){
+  const cell=pad.closest('.trace-cell'),ink=pad.querySelector('.trace-ink');
+  let drawing=null;
+  const current=()=>pad.isConnected&&session?.q===q;
+  const point=e=>{
+    const r=pad.getBoundingClientRect();
+    return{x:Math.round(Math.max(0,Math.min(72,(e.clientX-r.left)*72/r.width))*10)/10,
+      y:Math.round(Math.max(0,Math.min(72,(e.clientY-r.top)*72/r.height))*10)/10};
   };
-  const settle=()=>{
-    if(!current()||composing||erased)return;
-    const cleaned=normalizeScribbleLetter(input.value,expected);
-    clearResult();
-    // Keep both the native field and its candidate text alive. A later Scribble
-    // result belongs to this cell even after the Pencil has moved to its neighbour.
-    if(cleaned!==expected){if(cleaned)cell?.classList.add('trace-retry');return}
+  const clear=()=>{
     if(!Array.isArray(q.traceLetters))q.traceLetters=Array(w.word.length).fill('');
-    q.traceLetters[full]=cleaned;
-    if(cell){
-      cell.classList.add('traced');
-      const done=document.createElement('div');done.className='trace-written';
-      done.dataset.traceFull=String(full);done.setAttribute('aria-label',`Traced letter ${expected}`);
-      done.textContent=cleaned;cell.appendChild(done);
-    }
+    q.traceLetters[full]='';
+    if(!q.tracePaths)q.tracePaths={};q.tracePaths[full]=[];
+    ink.replaceChildren();cell.classList.remove('traced');
   };
-  input.addEventListener('pointerdown',e=>{
-    const pointer=e.pointerType||'';
-    if(pointer==='touch'){e.preventDefault();return}
-    if(!current())return;
-    if(q.mode==='erase'){
-      e.preventDefault();e.stopPropagation();erased=true;composing=false;
-      input.value='';clearResult();return;
-    }
-    if(q.mode==='write'&&pointer==='pen'){
-      erased=false;
-      // Clear a finished attempt only on an explicit new stroke in this cell.
-      // Never clear a pending composition or focus another cell on completion.
-      if(!composing&&input.value){input.value='';clearResult()}
-      input.setAttribute('inputmode','none');
-      try{if(document.activeElement!==input)input.focus({preventScroll:true})}catch{}
-      try{navigator.virtualKeyboard?.hide?.()}catch{}
-    }
-  },true);
-  input.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
-  input.addEventListener('contextmenu',e=>e.preventDefault());input.addEventListener('dragstart',e=>e.preventDefault());
-  input.addEventListener('keydown',e=>e.preventDefault());
-  input.addEventListener('compositionstart',()=>{composing=true});
-  input.addEventListener('compositionend',()=>{composing=false;settle()});
-  input.addEventListener('input',e=>{if(!e.isComposing)settle()});
-  input.addEventListener('change',settle);
-  input.addEventListener('focus',()=>{try{navigator.virtualKeyboard?.hide?.()}catch{}});
+  pad.addEventListener('pointerdown',e=>{
+    if(!current()||!['pen','mouse'].includes(e.pointerType))return;
+    e.preventDefault();
+    if(q.mode==='erase'){clear();return}
+    if(q.mode!=='write')return;
+    const p=point(e),path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',`M${p.x} ${p.y}`);ink.appendChild(path);
+    drawing={id:e.pointerId,path,points:[p],distance:0};
+    pad.setPointerCapture?.(e.pointerId);
+  });
+  pad.addEventListener('pointermove',e=>{
+    if(!current()||!drawing||drawing.id!==e.pointerId)return;
+    const p=point(e),last=drawing.points.at(-1),step=Math.hypot(p.x-last.x,p.y-last.y);
+    if(step<.5)return;
+    drawing.points.push(p);drawing.distance+=step;
+    drawing.path.setAttribute('d',drawing.points.map((v,i)=>`${i?'L':'M'}${v.x} ${v.y}`).join(' '));
+  });
+  const finish=e=>{
+    if(!drawing||drawing.id!==e.pointerId)return;
+    const stroke=drawing;drawing=null;
+    if(!current()||stroke.distance<5){stroke.path.remove();return}
+    if(!q.tracePaths)q.tracePaths={};
+    (q.tracePaths[full]??=[]).push(stroke.path.getAttribute('d'));
+    if(!Array.isArray(q.traceLetters))q.traceLetters=Array(w.word.length).fill('');
+    q.traceLetters[full]=w.word[full];cell.classList.add('traced');
+  };
+  pad.addEventListener('pointerup',finish);
+  pad.addEventListener('pointercancel',e=>{
+    if(drawing?.id===e.pointerId){drawing.path.remove();drawing=null}
+  });
 }
 
-function startFilledBoxScratch(e,index,w,q,input){
-  const pointerId=e.pointerId,rect=input.getBoundingClientRect(),points=[];let finished=false;
-  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),line=document.createElementNS(ns,'polyline');svg.classList.add('scratch-trail');svg.setAttribute('viewBox',`0 0 ${Math.max(1,rect.width)} ${Math.max(1,rect.height)}`);svg.setAttribute('preserveAspectRatio','none');svg.appendChild(line);input.appendChild(svg);input.classList.add('scratch-active');
-  const redraw=()=>{const visible=points.slice(-64).map(p=>`${(p.x-rect.left).toFixed(1)},${(p.y-rect.top).toFixed(1)}`).join(' ');line.setAttribute('points',visible)};
-  const add=ev=>{const list=ev.getCoalescedEvents?.()||[ev];for(const p of list)points.push({x:p.clientX,y:p.clientY,t:performance.now()});redraw()};
-  const endTrail=()=>{input.classList.remove('scratch-active');svg.style.opacity='0';setTimeout(()=>svg.remove(),120)};
-  const cleanup=()=>{window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',finish,true);window.removeEventListener('pointercancel',finish,true)};
-  const move=ev=>{if(ev.pointerId!==pointerId)return;add(ev);ev.preventDefault()};
-  const finish=ev=>{if(finished||ev.pointerId!==pointerId)return;finished=true;add(ev);cleanup();
-    if(points.length<3){endTrail();return}
-    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity,path=0,reversals=0,lastSign=0;
-    for(let i=0;i<points.length;i++){const p=points[i];minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);if(i){const dx=p.x-points[i-1].x,dy=p.y-points[i-1].y;path+=Math.hypot(dx,dy);if(Math.abs(dx)>2){const sign=Math.sign(dx);if(lastSign&&sign!==lastSign)reversals++;lastSign=sign}}}
-    const width=maxX-minX,height=maxY-minY,duration=points.at(-1).t-points[0].t;
-    const looksScratch=duration<2200&&height<=rect.height*1.65&&width>=Math.max(10,rect.width*.12)&&(reversals>=1||path>=Math.max(28,width*1.65));
-    if(looksScratch){playSfx('erase');endTrail();clearOneBox(index,w,q,false)}else endTrail()
-  };
-  input.blur();e.preventDefault();e.stopPropagation();add(e);window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',finish,true);window.addEventListener('pointercancel',finish,true)
-}
 function normalizeScribbleLetter(raw,expected=''){
   const original=String(raw??'').trim();
   let cleaned=norm(original);

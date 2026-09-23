@@ -2,10 +2,10 @@
 'use strict';
 let fingerContacts=0;
 
-const writingStage=()=>!!document.querySelector('#playView .letter-row .letter-box,#playView .letter-row .trace-input');
-const activeWritingInput=()=>document.activeElement?.matches?.('.letter-box,.trace-input')?document.activeElement:null;
+const writingStage=()=>!!document.querySelector('#playView .letter-row .letter-box,#playView .letter-row .trace-pad');
+const activeWritingInput=()=>document.activeElement?.matches?.('.letter-box,.trace-pad')?document.activeElement:null;
 const isActionTarget=target=>!!target?.closest?.('button,a,label,select,textarea,[role="button"],[data-nav],#exitPlayBtn,#checkAnswerBtn,.help-btn,.mode-btn,.hint-choice,.audio-orb,.listen-card,.cue-picture-tile');
-const isLetterSurface=target=>!!target?.closest?.('.letter-row,.letter-box,.trace-cell,.trace-input');
+const isLetterSurface=target=>!!target?.closest?.('.letter-row,.letter-box,.trace-cell,.trace-pad');
 const isPalmZone=target=>!!target?.closest?.('.game-card,.question-area,.spell-wrap');
 
 function collapseNativeSelection(){
@@ -88,13 +88,13 @@ document.addEventListener('selectionchange',()=>{
 });
 
 document.addEventListener('select',e=>{
-  if(!writingStage()||!e.target.matches?.('.letter-box,.trace-input')) return;
+  if(!writingStage()||!e.target.matches?.('.letter-box,.trace-pad')) return;
   if(fingerContacts>0) collapseNativeSelection();
 },true);
 
 for(const type of ['copy','cut','paste']){
   document.addEventListener(type,e=>{
-    if(writingStage()&&e.target.matches?.('.letter-box,.trace-input')) e.preventDefault();
+    if(writingStage()&&e.target.matches?.('.letter-box,.trace-pad')) e.preventDefault();
   },true);
 }
 
