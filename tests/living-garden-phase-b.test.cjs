@@ -55,7 +55,7 @@ test('Living Garden renders a painted arch with a clear passage and illustrated 
  assert.match(css,/\.living-arch\{[^}]*z-index:10;[^}]*pointer-events:none/);
  assert.match(css,/\.living-arch-art\{[^}]*pointer-events:none/);
  assert.match(css,/\.living-arch-art path,\.living-arch-art use\{pointer-events:visiblePainted/);
- assert(fs.readFileSync('index.html','utf8').includes('living-garden.css?v=20260924-c5a'));
+ assert(fs.readFileSync('index.html','utf8').includes('living-garden.css?v=20260924-c5b'));
 });
 test('Wandering respects manual commands and indoors state',()=>{
  const {api,state,callbacks}=setup();state.garden.locations.bunny='main_house';state.garden.commands.cat={until:Date.now()+10000,target:'arch'};
