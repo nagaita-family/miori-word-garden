@@ -29,7 +29,7 @@ assert(result.includes('window.WordGardenWeeklyDiff?.render(item.answer,word)'),
 assert(result.includes('item.correct?')&&result.includes('reviewMissed:true'),'Correct words and missed-only short review remain in place');
 assert(page.includes('weekly-result-compare-v26.js?v=20260917-v26')&&page.includes('weekly-result-compare-v26.css?v=20260917-v26'),'Versioned comparison assets loaded');
 assert(page.indexOf('weekly-result-compare-v26.js')<page.indexOf('app.js?v='),'Comparison helper is loaded before app.js');
-assert(/v[0-9]+ · Sep 24/.test(page),'Visible version remains displayed');
+assert(/v[0-9]+ · Sep 25/.test(page),'Visible version remains displayed');
 assert(styles.includes('.weekly-diff-letters')&&styles.includes('overflow-x:auto'),'Long comparisons scroll within their own row');
 assert(!app.slice(app.indexOf('function gradeWeeklyTest(){'),app.indexOf('function renderWeeklyResult(){')).includes('WordGardenWeeklyDiff'),'Grading is not modified');
 console.log('PASS v26: substitution, omission, repeated letters, extra letters, compound spaces, blank, HTML escaping, result-only integration, v25 review preserved.');

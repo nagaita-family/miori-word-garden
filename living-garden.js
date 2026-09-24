@@ -158,22 +158,28 @@ function dragActor(el,id,scene,ctx){
  let start=null,moved=false;
  el.addEventListener('pointerdown',e=>{
    if(e.button!==0&&e.pointerType==='mouse')return;
-   start={id:e.pointerId,x:e.clientX,y:e.clientY};moved=false;actionTokens[id]=(actionTokens[id]||0)+1;ctx.state.garden.commands[id]={target:'dragging',until:Date.now()+20000};el.classList.remove('pose-sit','reacting','arch-behind','house-entering','house-behind','house-emerging','reaction-sit','reaction-eat','reaction-inspect','reaction-drink','reaction-bathe','reaction-perch','reaction-play','reaction-walkThrough');el.setPointerCapture(e.pointerId);
+   const rect=el.getBoundingClientRect();
+   start={id:e.pointerId,x:e.clientX,y:e.clientY,dx:rect.left+rect.width/2-e.clientX,dy:rect.top+rect.height/2-e.clientY};moved=false;actionTokens[id]=(actionTokens[id]||0)+1;ctx.state.garden.commands[id]={target:'dragging',until:Date.now()+20000};el.classList.remove('pose-sit','reacting','arch-behind','house-entering','house-behind','house-emerging','reaction-sit','reaction-eat','reaction-inspect','reaction-drink','reaction-bathe','reaction-perch','reaction-play','reaction-walkThrough');el.setPointerCapture(e.pointerId);
  });
- el.addEventListener('pointermove',e=>{
-   if(!start||e.pointerId!==start.id)return;
-   if(!moved&&Math.hypot(e.clientX-start.x,e.clientY-start.y)<6)return;
+ function update(e){
    moved=true;const box=scene.getBoundingClientRect();
    if(!box.width||!box.height)return;
    el.classList.add('dragging');
-   el.style.left=`${Math.max(5,Math.min(95,(e.clientX-box.left)/box.width*100))}%`;
-   el.style.top=`${Math.max(10,Math.min(90,(e.clientY-box.top)/box.height*100))}%`;
+   el.style.left=`${Math.max(5,Math.min(95,(e.clientX+start.dx-box.left)/box.width*100))}%`;
+   el.style.top=`${Math.max(10,Math.min(90,(e.clientY+start.dy-box.top)/box.height*100))}%`;
+ }
+ el.addEventListener('pointermove',e=>{
+   if(!start||e.pointerId!==start.id)return;
+   const point=e.getCoalescedEvents?.().at(-1)||e;
+   if(!moved&&Math.hypot(point.clientX-start.x,point.clientY-start.y)<6)return;
+   update(point);
    scene.querySelectorAll('.drop-target').forEach(item=>item.classList.remove('drop-target'));
-   itemAt(scene,e.clientX,e.clientY)?.classList.add('drop-target');
+   itemAt(scene,point.clientX,point.clientY)?.classList.add('drop-target');
  });
  function end(e){
    if(!start||e.pointerId!==start.id)return;
    scene.querySelectorAll('.drop-target').forEach(item=>item.classList.remove('drop-target'));
+   if(e.type==='pointerup'&&Number.isFinite(e.clientX)&&Number.isFinite(e.clientY)&&(moved||Math.hypot(e.clientX-start.x,e.clientY-start.y)>=6))update(e);
    if(moved){
      if(e.type==='pointerup'){const hit=itemAt(scene,e.clientX,e.clientY);if(!hit||!dropCharacter(id,hit.dataset.gardenItem,ctx))placeActor(id,{x:parseFloat(el.style.left),y:parseFloat(el.style.top)},ctx)}
      else {const old=ctx.state.garden.characterPos[id];el.style.left=`${old.x}%`;el.style.top=`${old.y}%`}
@@ -185,8 +191,9 @@ function dragActor(el,id,scene,ctx){
 }
 function dragItem(el,id,scene,ctx){let start=null,moved=false;
  el.addEventListener('pointerdown',e=>{if(e.target.closest('#livingFruit')||e.button!==0&&e.pointerType==='mouse')return;const r=scene.getBoundingClientRect();start={id:e.pointerId,x:e.clientX,y:e.clientY,dx:r.width*parseFloat(el.style.left)/100+r.left-e.clientX,dy:r.height*parseFloat(el.style.top)/100+r.top-e.clientY};moved=false;el.setPointerCapture(e.pointerId)});
- el.addEventListener('pointermove',e=>{if(!start||e.pointerId!==start.id)return;if(!moved&&Math.hypot(e.clientX-start.x,e.clientY-start.y)<6)return;moved=true;const r=scene.getBoundingClientRect();el.classList.add('dragging');el.style.left=`${Math.max(8,Math.min(92,(e.clientX+start.dx-r.left)/r.width*100))}%`;el.style.top=`${Math.max(40,Math.min(93,(e.clientY+start.dy-r.top)/r.height*100))}%`});
- const end=e=>{if(!start||e.pointerId!==start.id)return;if(moved){if(e.type==='pointerup')moveItem(id,{x:parseFloat(el.style.left),y:parseFloat(el.style.top)},ctx);else{const p=itemPosition(ctx.state.garden,id);el.style.left=`${p.x}%`;el.style.top=`${p.y}%`}el.dataset.dragged='true';setTimeout(()=>delete el.dataset.dragged,0)}el.classList.remove('dragging');start=null};
+ const update=e=>{moved=true;const r=scene.getBoundingClientRect();if(!r.width||!r.height)return;el.classList.add('dragging');el.style.left=`${Math.max(8,Math.min(92,(e.clientX+start.dx-r.left)/r.width*100))}%`;el.style.top=`${Math.max(40,Math.min(93,(e.clientY+start.dy-r.top)/r.height*100))}%`};
+ el.addEventListener('pointermove',e=>{if(!start||e.pointerId!==start.id)return;const point=e.getCoalescedEvents?.().at(-1)||e;if(!moved&&Math.hypot(point.clientX-start.x,point.clientY-start.y)<6)return;update(point)});
+ const end=e=>{if(!start||e.pointerId!==start.id)return;if(e.type==='pointerup'&&Number.isFinite(e.clientX)&&Number.isFinite(e.clientY)&&(moved||Math.hypot(e.clientX-start.x,e.clientY-start.y)>=6))update(e);if(moved){if(e.type==='pointerup')moveItem(id,{x:parseFloat(el.style.left),y:parseFloat(el.style.top)},ctx);else{const p=itemPosition(ctx.state.garden,id);el.style.left=`${p.x}%`;el.style.top=`${p.y}%`}el.dataset.dragged='true';setTimeout(()=>delete el.dataset.dragged,0)}el.classList.remove('dragging');start=null};
  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
 }
 function gentleWander(){

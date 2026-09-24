@@ -46,5 +46,5 @@ const sheet=app.slice(app.indexOf('function renderWeeklyTest(){'),app.indexOf('f
 assert(active.includes('if(readAloud)playWordAudio(')&&active.includes('userInitiated:true'),'Listen invokes word audio as a user-initiated action');
 assert(sheet.includes("$$('.weekly-hear').forEach(button=>button.onclick=()=>setWeeklyActive(Number(button.dataset.index),true))"),'All ten Listen buttons are wired');
 assert(page.includes('weekly-test-palm-v25.js?v=20260917-listen-fix-v27'),'Browser gets cache-busted corrected palm guard');
-assert(/v[0-9]+ · Sep 24/.test(page),'A visible current version remains');
+assert(/v[0-9]+ · Sep 25/.test(page),'A visible current version remains');
 console.log('PASS v27: all Listen buttons wired, Listen works during and after Pencil and after blocked grade, grading remains protected, browser loads fresh script.');

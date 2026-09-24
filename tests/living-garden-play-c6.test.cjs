@@ -77,7 +77,7 @@ test('Cat remains locked below 360 XP and all seven items are absent in a new Ga
 test('Pointer drop on a bench triggers sitting; dragging interrupts autonomous motion',()=>{
  assert(styles.includes('.living-fruit:disabled{pointer-events:none}'),'the invisible unripe fruit cannot intercept Tree drags');
  const timers=[],handlers=()=>({});
- function element(dataset,box){const events=handlers(),classes=new Set();return{dataset,style:{left:'46%',top:'73%'},events,box,classList:{add:x=>classes.add(x),remove:(...xs)=>xs.forEach(x=>classes.delete(x)),toggle:(x,on)=>on?classes.add(x):classes.delete(x)},addEventListener:(type,fn)=>events[type]=fn,setPointerCapture(){},getBoundingClientRect(){return box}}}
+ function element(dataset,box){const events=handlers(),classes=new Set();return{dataset,style:{left:'46%',top:'73%'},events,box,classList:{add:x=>classes.add(x),remove:(...xs)=>xs.forEach(x=>classes.delete(x)),toggle:(x,on)=>on?classes.add(x):classes.delete(x)},addEventListener:(type,fn)=>events[type]=fn,setPointerCapture(){},getBoundingClientRect(){if(dataset.livingActor){const x=parseFloat(this.style.left)*10,y=parseFloat(this.style.top)*5;return{left:x-box.width/2,right:x+box.width/2,top:y-box.height/2,bottom:y+box.height/2,width:box.width,height:box.height}}return box}}}
  const bench=element({gardenItem:'bench'},{left:490,right:590,top:295,bottom:385,width:100,height:90});
  const arch=element({gardenItem:'arch'},{left:600,right:700,top:260,bottom:390,width:100,height:130});
  const actor=element({livingActor:'bunny'},{left:420,right:480,top:340,bottom:405,width:60,height:65});
@@ -95,13 +95,17 @@ test('Pointer drop on a bench triggers sitting; dragging interrupts autonomous m
  assert.equal(state.garden.commands.bunny.kind,'sit');assert.equal(state.garden.commands.bunny.target,'bench');
  assert.equal(state.garden.locations.bunny,'garden');
  actor.events.pointerdown({pointerId:3,button:0,pointerType:'mouse',clientX:530,clientY:350});
- actor.events.pointermove({pointerId:3,clientX:596,clientY:350});
+ actor.events.pointermove({pointerId:3,clientX:580,clientY:350});
  actor.events.pointerup({pointerId:3,clientX:596,clientY:350,type:'pointerup'});
  assert.equal(state.garden.commands.bunny.target,'placed','a release outside both item bounds stays exactly where placed');
- assert(Math.abs(state.garden.characterPos.bunny.x-59.6)<.001);
+ assert(Math.abs(state.garden.characterPos.bunny.x-58.6)<.001,'the final pointerup position, with the original grab offset, is saved');
+ actor.events.pointerdown({pointerId:4,button:0,pointerType:'mouse',clientX:576,clientY:365});
+ actor.events.pointermove({pointerId:4,clientX:730,clientY:430});
+ actor.events.pointerup({pointerId:4,clientX:740,clientY:430,type:'pointerup'});
+ assert(Math.abs(state.garden.characterPos.bunny.x-75)<.001,'grabbing away from center retains the original grip point');
  bench.style.left='52%';bench.style.top='80%';
  bench.events.pointerdown({pointerId:2,button:0,pointerType:'mouse',clientX:530,clientY:350,target:{closest:()=>null}});
  bench.events.pointermove({pointerId:2,clientX:630,clientY:360});
- bench.events.pointerup({pointerId:2,type:'pointerup'});
- assert.deepEqual(JSON.parse(JSON.stringify(state.garden.itemPos.bench)),{x:62,y:82});
+ bench.events.pointerup({pointerId:2,clientX:640,clientY:365,type:'pointerup'});
+ assert.deepEqual(JSON.parse(JSON.stringify(state.garden.itemPos.bench)),{x:63,y:83});
 });
