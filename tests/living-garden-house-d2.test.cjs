@@ -39,5 +39,5 @@ test('Entry animation and occupancy faces retain stable item scale and reduced m
  assert.match(css,/\.living-actor\.house-entering\{z-index:9/);
  assert.match(css,/\.living-house \.house-friends\{/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.living-house \.door/);
- assert(fs.readFileSync('index.html','utf8').includes('living-garden.js?v=20260924-d2'));
+ assert(fs.readFileSync('index.html','utf8').includes('living-garden.js?v=20260924-d3'));
 });

@@ -37,5 +37,5 @@ test('Garage uses a scene building with a compact inventory, including narrow la
  assert.match(css,/\.living-garage\{position:absolute/);
  assert.match(css,/\.living-garage-panel\{position:absolute/);
  assert.match(css,/@media\(max-width:700px\)\{\.living-garage/);
- assert(fs.readFileSync('index.html','utf8').includes('living-garden.js?v=20260924-d2'));
+ assert(fs.readFileSync('index.html','utf8').includes('living-garden.js?v=20260924-d3'));
 });
