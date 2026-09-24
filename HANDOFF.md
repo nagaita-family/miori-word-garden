@@ -55,3 +55,11 @@ The first successful word in each local daypart each day shows a short Morning/D
 Verification: `node --check app.js living-garden.js` (individually), targeted Phase A/B/C and full `node --test tests/*.test.cjs`: 29 passing checks. Phase A, B and C complete, Phase D not started. Confirm GitHub Pages run success and production v41 after push. iPad Safari/Pencil, layout, time changes, fruit tapping and animation remain device checks, not verified by Node tests.
 
 Next session: inspect this latest main and HANDOFF first. Phase D may implement Garage, houses, occupancy and Look Inside separately after device feedback. Do not migrate old Treasure contents or reset any top-level learning data. Existing `state.garden` is the only fresh Living Garden subtree; `state.xp` remains learning-linked.
+
+### Published phase checkpoints (2026-09-24)
+
+- Phase A: `4a70ada48d83e12eb57602463c64607d2b9fc5ce`, Pages run `35947715677` completed/success; production displayed v39.
+- Phase B: `74f298a26a0e1bafdbd766db07b4836b2d4f6bb5`, Pages run `35947985519` completed/success; production displayed v40.
+- Phase C: `698583d3212cfdd1f28f3957c0840e587f21e15c`, Pages run `35948181024` completed/success; production displayed v41 and served the matching `living-garden.js` asset.
+
+All three phases are complete and published; Phase D is untouched. Browser visual preview and iPad Safari/Pencil interaction are still unverified. The installed Playwright package had no browser executable in this workspace; no visual QA claim is made. When resuming, confirm production main and check the Garden on iPad before starting Phase D.
