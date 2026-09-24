@@ -20,3 +20,26 @@
 .living-fruit svg{display:block;width:100%;height:100%}
 .living-actor.bird{font-size:inherit}
 @media(max-width:700px){.living-arch{left:39%;top:44%;width:37%;min-width:128px;height:40%}}
+/* C.6: small movable furniture in the shared Garden play space. */
+.living-garden{display:flex;flex-direction:column;gap:10px}
+.living-scene{height:min(63vh,600px);min-height:365px;flex:none}
+.living-item{touch-action:none;user-select:none;cursor:grab}
+.living-item.dragging{z-index:11!important;cursor:grabbing;filter:drop-shadow(0 12px 8px #425b5b55)}
+.living-item.drop-target{outline:3px solid #fff2b3;outline-offset:4px;border-radius:20px;filter:drop-shadow(0 0 9px #fff4ac)}
+.living-oak.living-item{width:18%;height:49%;transform:translate(-50%,-100%);z-index:3;pointer-events:auto}
+.living-house.living-item{width:15%;height:30%;transform:translate(-50%,-100%);z-index:4}
+.living-arch.living-item{width:clamp(92px,12%,134px);height:clamp(92px,19%,130px);transform:translate(-50%,-100%);z-index:7;pointer-events:auto}
+.living-prop{width:clamp(68px,8%,106px);height:clamp(65px,14%,94px);transform:translate(-50%,-100%);z-index:6;padding:0;border:0;background:transparent;filter:drop-shadow(0 5px 4px #495b4933)}
+.living-prop svg{width:100%;height:100%}
+.living-prop.shed{width:clamp(85px,10%,120px);height:clamp(79px,17%,115px)}
+.living-actor{width:58px;height:65px}.living-actor.cat{width:52px;height:60px}.living-actor.bird{width:39px;height:42px}
+.living-actor.pose-sit{transform:translate(-50%,-58%) scale(.88)}
+.living-reaction{white-space:nowrap;max-width:85%;text-align:center}
+.living-shelf{border-radius:20px;background:#f8f2e9;padding:9px 13px;color:#685865}
+.living-shelf>strong{font-size:12px}.living-shelf-list{display:flex;gap:8px;overflow-x:auto;padding:7px 0 2px;scrollbar-width:thin}
+.living-shelf-list>p{font-size:12px;margin:3px 0 6px}
+.living-shelf-card{flex:0 0 148px;display:flex;align-items:center;gap:5px;background:#fffdf8;border:1px solid #eaded6;border-radius:13px;padding:5px}
+.living-shelf-art{width:34px;height:34px;flex:none}.living-shelf-art svg{width:100%;height:100%}
+.living-shelf-name{font-size:10px;line-height:1.2;flex:1;min-width:0}
+.living-shelf-card button{border:0;border-radius:10px;background:#eed6e9;color:#644d66;font-size:10px;font-weight:800;padding:5px;cursor:pointer}
+@media(max-width:700px){.living-scene{height:58vh;min-height:355px}.living-oak.living-item{width:29%;height:40%}.living-house.living-item{width:20%;height:25%}.living-arch.living-item{width:92px;height:95px;min-width:0}.living-prop{width:65px;height:65px}.living-prop.shed{width:74px;height:74px}.living-actor{width:45px;height:54px}.living-actor.cat{width:43px;height:50px}.living-actor.bird{width:32px;height:35px}.living-reaction{font-size:11px;white-space:normal}}

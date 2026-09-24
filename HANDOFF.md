@@ -77,3 +77,37 @@ Visual quality pass after observing v42 production: Flower Arch was only a 🌸 
 Visual language for Phase D: small California garden cottages with rounded silhouette, tactile wood/plaster and warm windows; doors large enough to admit their resident, flowers/greenery scaled beside the doorway, and a subtle resident motif (Bunny in carved door trim/flower pots, Cat and Bird each with their own material/detail) rather than oversized ears or a generic emoji. Carry this same soft, warm, hand-drawn treatment to Garage and furnishings. The current Main House remains the Phase B placeholder; House interiors, occupancy and Garage are still Phase D work.
 
 Verification: `node --check living-garden.js`, `git diff --check`, full Node suite 32/32 passing before final presentation-only refinement; targeted A/B/C plus Play/Weekly suite 15/15 passing after it. Phase C.5 latest implementation commit `2bfbe07c0216bb18349d36b7d573870caa374ffc`, Pages run `35957610012` completed/success. Live browser loaded v43 and fresh JS/CSS assets; the Flower Arch visibly has an open center, Bunny receives center taps, painted frame handles Arch taps, and the Bunny passage reaction appears. Browser inspection caught the SVG root consuming touches in the open center; only painted SVG paths now receive input. The visible plaque overlapped Bunny even when moved near the post, so remove it; the trellis remains a button with `aria-label="Visit Flower Arch"`. Actual iPad Safari/Pencil performance, small viewport and device touch behavior are not verified. Phase D remains untouched.
+
+## Living Garden Phase C.6 — v44, 2026-09-24
+
+Restore the miniature Garden play loop: pick up a resident, drag it onto any placed item, release and see the item's reaction. The seven previously drawn treasure SVGs in `app.js` now appear through the Living Garden shelf at their original XP thresholds; all start stored when unlocked, and each can be placed, moved and put away. The Fruit Tree and Main House are movable baseline pieces, but remain available as part of the landscape. Flower Arch is a small, movable XP630 item instead of the giant free starting structure. v1 Garden migration removes only that old unearned fixed arch, preserves character locations, positions, growth, fruit and all learning fields, and creates a fresh item-position map. Stored/locked objects never render or react. Cat follows its existing XP360 reward threshold; Bunny and Bird remain available at the start.
+
+Shared reactions: sit, walkThrough, inspect, eat, drink, bathe, perch, play and enter. The same Garden drop path handles all placed items; Bird bath and the arch retain personality-specific reactions. Autonomous walking is background only; grabbing a character immediately cancels its current command. An empty-ground drop saves the chosen position. Tap House to let an indoor resident return to the Garden. House interiors and Garage remain Phase D.
+
+### Item Matrix — 9 current / target about 10
+
+All seven earned items share `locked` (XP below threshold) → `unlocked + stored` (shelf only) → `placed` (Garden only, draggable) → stored; XP is never spent. Stored items cannot react. The two baseline pieces are always placed and draggable, with no storage action.
+
+| Item | Unlock / placement | Movable | Character drop | Visual / remaining work |
+| --- | --- | --- | --- | --- |
+| Cozy Garden Bench | 90 XP, starts stored | Yes | Sit / Bird perch | Existing rounded pink SVG; seat scale matches residents. |
+| Strawberry Picnic | 180 XP, starts stored | Yes | Eat / Cat inspect | Existing blanket and strawberries SVG. |
+| Heart Mailbox | 270 XP, starts stored | Yes | Inspect letter | Existing pink post and envelope SVG. |
+| Bird Bath | 450 XP, starts stored | Yes | Bird bathe / others drink | Existing basin SVG; bowl reads as usable at miniature scale. |
+| Seed Crate | 540 XP, starts stored | Yes | Play / Cat inspect / Bird perch | Existing wooden crate and seed packets SVG. |
+| Flower Arch | 630 XP, starts stored; v1 free arch withdrawn | Yes | Walk through / Bird perch | C.5 floral trellis rescaled to resident size; its opening is the interaction space. |
+| Little Garden Shed | 720 XP, starts stored | Yes | Inspect tools | Existing small cottage SVG; detailed building/interior remains Phase D. |
+| Fruit Tree | Start, always placed | Yes | Inspect / eat ripe fruit | Rounded illustrated tree; growth and eating unchanged. |
+| Main House | Start, always placed | Yes | Enter; tap to call back | Phase B facade; cottage identity and interior remain Phase D. |
+
+### Character Matrix — 3 current / target about 6
+
+| Character | Unlock / location | Draggable | Reactions and individuality | Remaining work |
+| --- | --- | --- | --- | --- |
+| Bunny | Start; Garden or Main House | Yes when outside | Sits, hops through arch, plays, eats | Phase D cottage/inside scene. |
+| Cat | Original 360 XP; Garden or Main House | Yes when unlocked and outside | Sits, inspects, strolls through flowers, drinks | Phase D dedicated home/interior. |
+| Bird | Start; Garden or Main House | Yes when outside | Perches, splashes, short gentle wander | Phase D nesting/home style. |
+
+Future content gap: 1 more item and 3 more distinct residents to reach the approximate targets; do not add them just to fill counts. Phase D should extend the same drag-to-destination interaction to cottages, Garage and interiors, while retaining existing learning state and Garden placements.
+
+Verification/deployment checkpoint: targeted Garden, Play and Weekly tests plus one full regression run; live visual and gesture check, commit, Pages and production asset checks to be recorded after publication. Actual iPad Safari / Pencil and narrow viewport are device checks.

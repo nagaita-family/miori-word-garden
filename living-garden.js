@@ -1,9 +1,14 @@
 (()=>{
 'use strict';
-const VERSION=1;
-function fresh(){return{livingGardenVersion:VERSION,growth:0,pos:{},stored:[],bunnySeated:false,locations:{bunny:'garden',cat:'garden',bird:'garden'},characterPos:{bunny:{x:46,y:73},cat:{x:68,y:78},bird:{x:31,y:35}},commands:{},fruit:{progress:0,eaten:0},houses:{main_house:{owned:true}},garage:[],placed:['arch'],moments:{}}}
+const VERSION=2;
+const DEFAULT_ITEMS={tree:{x:18,y:90},main_house:{x:84,y:72},bench:{x:52,y:80},picnic:{x:73,y:94},mail:{x:42,y:70},birdbath:{x:82,y:91},seedcrate:{x:36,y:91},arch:{x:62,y:84},shed:{x:92,y:93}};
+function fresh(){return{livingGardenVersion:VERSION,growth:0,pos:{},stored:[],bunnySeated:false,locations:{bunny:'garden',cat:'garden',bird:'garden'},characterPos:{bunny:{x:46,y:73},cat:{x:68,y:78},bird:{x:31,y:35}},commands:{},fruit:{progress:0,eaten:0},houses:{main_house:{owned:true}},garage:[],placed:[],itemPos:{},moments:{}}}
 function migrate(state){
- if(state.garden?.livingGardenVersion===VERSION){const g=state.garden;g.locations=g.locations||{};g.characterPos=g.characterPos||{};g.commands=g.commands||{};for(const id of ['bunny','cat','bird']){if(!g.locations[id])g.locations[id]='garden';if(!g.characterPos[id])g.characterPos[id]=({bunny:{x:46,y:73},cat:{x:68,y:78},bird:{x:31,y:35}})[id]}if(!Array.isArray(g.placed))g.placed=['arch'];if(!Number.isFinite(g.fruit?.progress))g.fruit={progress:Math.max(0,g.growth||0),eaten:0};g.moments=g.moments||{};return state;}
+ if(state.garden?.livingGardenVersion===VERSION||state.garden?.livingGardenVersion===1){const g=state.garden;
+  if(g.livingGardenVersion===1){g.placed=[];g.livingGardenVersion=VERSION} // v1's arch was a free, fixed decoration, never an earned placement.
+  g.locations=g.locations||{};g.characterPos=g.characterPos||{};g.commands=g.commands||{};g.itemPos=g.itemPos||{};
+  for(const id of ['bunny','cat','bird']){if(!g.locations[id])g.locations[id]='garden';if(!g.characterPos[id])g.characterPos[id]=({bunny:{x:46,y:73},cat:{x:68,y:78},bird:{x:31,y:35}})[id]}
+  if(!Array.isArray(g.placed))g.placed=[];if(!Number.isFinite(g.fruit?.progress))g.fruit={progress:Math.max(0,g.growth||0),eaten:0};g.moments=g.moments||{};return state;}
  // Replace only the Garden subtree. XP, learning history, words and test state remain untouched.
  state.garden=fresh();return state;
 }
@@ -12,6 +17,7 @@ function daypart(date=new Date()){
 }
 const CHARACTERS=['bunny','cat','bird'];
 const OBJECT_REACTIONS={arch:{bunny:'Bunny hops through the flower arch! ♡',cat:'Cat strolls through the flowers ✿',bird:'Bird rests on top of the arch ♫'}};
+const ITEM_REACTIONS={bench:'sit',picnic:'eat',mail:'inspect',birdbath:'drink',seedcrate:'play',arch:'walkThrough',shed:'inspect',tree:'inspect',main_house:'enter'};
 const DAY_MOMENTS={morning:'Good morning! The flowers open in the soft light 🌼',day:'A sunny little growing moment ☀️',evening:'The garden glows at sunset 🌅',night:'The patio lights welcome you home ✨'};
 // Illustrated, open-centered trellis: the arch sits in front of residents while its opening remains touchable.
 const FLOWER_ARCH=`<svg class="living-arch-art" viewBox="0 0 240 220" aria-hidden="true" focusable="false"><path d="M22 207V98C22 44 63 17 120 17s98 27 98 81v109" fill="none" stroke="#708f69" stroke-width="23" stroke-linecap="round"/><path d="M22 207V98C22 44 63 17 120 17s98 27 98 81v109" fill="none" stroke="#e1c7a0" stroke-width="14" stroke-linecap="round"/><path d="M22 207V98C22 44 63 17 120 17s98 27 98 81v109" fill="none" stroke="#74a672" stroke-width="5" stroke-linecap="round"/><path d="M32 107l-20 12m24 28-26 12m200-52 20 12m-24 28 26 12" stroke="#91785c" stroke-width="4" stroke-linecap="round"/><g fill="#6eaa72"><ellipse cx="30" cy="82" rx="8" ry="16" transform="rotate(-40 30 82)"/><ellipse cx="55" cy="46" rx="8" ry="15" transform="rotate(-55 55 46)"/><ellipse cx="88" cy="24" rx="8" ry="16" transform="rotate(-25 88 24)"/><ellipse cx="153" cy="24" rx="8" ry="16" transform="rotate(25 153 24)"/><ellipse cx="185" cy="46" rx="8" ry="15" transform="rotate(55 185 46)"/><ellipse cx="210" cy="82" rx="8" ry="16" transform="rotate(40 210 82)"/><ellipse cx="13" cy="164" rx="7" ry="14" transform="rotate(-44 13 164)"/><ellipse cx="227" cy="164" rx="7" ry="14" transform="rotate(44 227 164)"/></g><defs><g id="livingBlossom"><g fill="#f4a8ad" stroke="#e68ba0" stroke-width=".8"><circle cx="0" cy="-7" r="5"/><circle cx="7" cy="-2" r="5"/><circle cx="4" cy="6" r="5"/><circle cx="-4" cy="6" r="5"/><circle cx="-7" cy="-2" r="5"/></g><circle r="3.8" fill="#ffe2a0"/></g></defs><use href="#livingBlossom" transform="translate(35 70) scale(1)"/><use href="#livingBlossom" transform="translate(67 34) scale(0.95)"/><use href="#livingBlossom" transform="translate(119 16) scale(1.1)"/><use href="#livingBlossom" transform="translate(171 34) scale(0.95)"/><use href="#livingBlossom" transform="translate(205 71) scale(1)"/><use href="#livingBlossom" transform="translate(20 140) scale(0.8)"/><use href="#livingBlossom" transform="translate(220 140) scale(0.8)"/><path d="M6 210q16-8 34 0m160 0q17-8 34 0" fill="none" stroke="#acc186" stroke-width="7" stroke-linecap="round"/></svg>`;
@@ -32,26 +38,36 @@ function eatFruit(g){
 }
 
 let active=null;const actionTokens={};
-function characterAction(id,target,ctx=active){
- if(!ctx||!CHARACTERS.includes(id))return;
- const {state,save}=ctx,g=state.garden;
- if(target==='main_house'&&g.locations[id]!=='garden')return;
- if(target==='arch'&&(g.locations[id]!=='garden'||!g.placed.includes('arch')))return;
- g.commands[id]={until:Date.now()+20000,target};const token=actionTokens[id]=(actionTokens[id]||0)+1;
- if(target==='main_house'){
-   if(g.locations[id]!=='garden')return;
-   moveActor(id,{x:81,y:59},ctx);
-   setTimeout(()=>{if(token!==actionTokens[id]||g.commands[id]?.target!==target)return;g.locations[id]='main_house';save();if(document.querySelector('#gardenView.active-view'))render(ctx)},950);
- }else if(target==='garden'){
-   g.locations[id]='garden';moveActor(id,{x:76,y:66},ctx);if(document.querySelector('#gardenView.active-view'))render(ctx);
- }else if(OBJECT_REACTIONS[target]?.[id]&&g.locations[id]==='garden'&&g.placed.includes(target)){
-   if(target==='arch'&&id!=='bird'){
-     moveActor(id,{x:55,y:74},ctx);
-     setTimeout(()=>{if(token!==actionTokens[id]||g.locations[id]!=='garden')return;moveActor(id,{x:64,y:74},ctx)},1100);
-   }else moveActor(id,target==='arch'?{x:63,y:43}:{x:50,y:65},ctx);
-   setTimeout(()=>{if(token!==actionTokens[id]||g.commands[id]?.target!==target||g.locations[id]!=='garden')return;const reaction=document.querySelector('#livingReaction');if(reaction)reaction.textContent=OBJECT_REACTIONS[target][id]},target==='arch'&&id!=='bird'?2100:850);
+function itemPosition(g,id){return g.itemPos?.[id]||DEFAULT_ITEMS[id]||{x:50,y:75}}
+function itemUnlocked(id,ctx){return id==='tree'||id==='main_house'||!!ctx?.items?.find(item=>item.id===id&&ctx.state.xp>=item.xp)}
+function itemPlaced(id,ctx){return itemUnlocked(id,ctx)&&(id==='tree'||id==='main_house'||ctx.state.garden.placed.includes(id))}
+function placeItem(id,ctx=active){if(!ctx||!itemUnlocked(id,ctx)||itemPlaced(id,ctx)||!DEFAULT_ITEMS[id]||id==='tree'||id==='main_house')return false;ctx.state.garden.placed.push(id);ctx.state.garden.itemPos[id]??={...DEFAULT_ITEMS[id]};ctx.save();render(ctx);return true}
+function storeItem(id,ctx=active){if(!ctx||!ctx.state.garden.placed.includes(id)||id==='tree'||id==='main_house')return false;ctx.state.garden.placed=ctx.state.garden.placed.filter(x=>x!==id);ctx.save();render(ctx);return true}
+function moveItem(id,pos,ctx=active){if(!ctx||!itemPlaced(id,ctx))return false;ctx.state.garden.itemPos[id]={x:Math.max(8,Math.min(92,pos.x)),y:Math.max(40,Math.min(93,pos.y))};ctx.save();return true}
+function reactionKind(id,item,g){if(!CHARACTERS.includes(id)||!ITEM_REACTIONS[item])return null;if(item==='arch'&&id==='bird')return'perch';if(item==='bench'&&id==='bird')return'perch';if(item==='birdbath')return id==='bird'?'bathe':'drink';if(item==='seedcrate')return id==='cat'?'inspect':id==='bird'?'perch':'play';if(item==='picnic'&&id==='cat')return'inspect';if(item==='tree')return(g.fruit?.progress||0)>=4?'eat':'inspect';return ITEM_REACTIONS[item]}
+function reactionText(id,item,kind){if(item==='arch')return OBJECT_REACTIONS.arch[id];const who={bunny:'Bunny',cat:'Cat',bird:'Bird'}[id],what={bench:'the bench',picnic:'the strawberry picnic',mail:'the heart mailbox',birdbath:'the bird bath',seedcrate:'the seed crate',shed:'the little shed',tree:'the fruit tree',main_house:'home'}[item];return `${who} ${({sit:'settles on',perch:'perches on',eat:'enjoys',inspect:'looks at',drink:'takes a sip at',bathe:'splashes in',play:'plays by',enter:'goes into'})[kind]} ${what}!`}
+function showReaction(id,item,kind,ctx){const el=document.querySelector('#livingReaction');if(!el)return;const p=itemPosition(ctx.state.garden,item);el.style.left=`${p.x}%`;el.style.top=`${Math.max(12,p.y-(item==='tree'?46:23))}%`;el.textContent=reactionText(id,item,kind)}
+function dropCharacter(id,item,ctx=active){
+ if(!ctx||!CHARACTERS.includes(id)||id==='cat'&&ctx.state.xp<360||ctx.state.garden.locations[id]!=='garden'||!itemPlaced(item,ctx))return false;
+ const g=ctx.state.garden,p=itemPosition(g,item),kind=reactionKind(id,item,g),token=actionTokens[id]=(actionTokens[id]||0)+1;
+ g.commands[id]={target:item,kind,until:Date.now()+20000};
+ const stillHere=()=>token===actionTokens[id]&&g.locations[id]==='garden'&&itemPlaced(item,ctx);
+ if(item==='arch'&&kind==='walkThrough'){
+   moveActor(id,{x:p.x-4,y:p.y-6},ctx);
+   setTimeout(()=>{if(stillHere())moveActor(id,{x:p.x+4,y:p.y-6},ctx)},850);
+   setTimeout(()=>{if(stillHere())showReaction(id,item,kind,ctx)},1600);
+ }else if(item==='main_house'){
+   moveActor(id,{x:p.x+3,y:p.y-8},ctx);
+   setTimeout(()=>{if(!stillHere())return;g.locations[id]='main_house';ctx.save();if(document.querySelector('#gardenView.active-view'))render(ctx)},950);
+ }else{
+   const pos=item==='tree'?{x:p.x+9,y:id==='bird'?p.y-37:p.y-14}:item==='arch'?{x:p.x,y:p.y-19}:{x:p.x,y:p.y-(kind==='perch'?13:7)};
+   moveActor(id,pos,ctx);
+   const el=document.querySelector(`[data-living-actor="${id}"]`);el?.classList.toggle('pose-sit',kind==='sit');
+   setTimeout(()=>{if(!stillHere())return;showReaction(id,item,kind,ctx);if(item==='tree'&&kind==='eat'&&eatFruit(g)){ctx.save();if(document.querySelector('#gardenView.active-view'))render(ctx)}},650);
  }
+ return true;
 }
+function characterAction(id,target,ctx=active){if(!ctx||!CHARACTERS.includes(id))return false;if(target==='garden'){ctx.state.garden.locations[id]='garden';moveActor(id,{x:76,y:66},ctx);if(document.querySelector('#gardenView.active-view'))render(ctx);return true}return dropCharacter(id,target,ctx)}
 function moveActor(id,pos,ctx){
  const g=ctx.state.garden;g.characterPos[id]=pos;
  const el=document.querySelector(`[data-living-actor="${id}"]`);
@@ -64,11 +80,12 @@ function placeActor(id,pos,ctx){
  ctx.state.garden.commands[id]={target:'placed',until:Date.now()+20000};
  moveActor(id,{x:Math.max(5,Math.min(95,pos.x)),y:Math.max(10,Math.min(90,pos.y))},ctx);
 }
+function itemAt(scene,x,y){let found=null,best=Infinity;for(const el of scene.querySelectorAll('[data-garden-item]')){const r=el.getBoundingClientRect(),gap=12;if(x<r.left-gap||x>r.right+gap||y<r.top-gap||y>r.bottom+gap)continue;const d=Math.hypot(x-(r.left+r.width/2),y-(r.top+r.height/2));if(d<best){best=d;found=el}}return found}
 function dragActor(el,id,scene,ctx){
  let start=null,moved=false;
  el.addEventListener('pointerdown',e=>{
    if(e.button!==0&&e.pointerType==='mouse')return;
-   start={id:e.pointerId,x:e.clientX,y:e.clientY};moved=false;el.setPointerCapture(e.pointerId);
+   start={id:e.pointerId,x:e.clientX,y:e.clientY};moved=false;actionTokens[id]=(actionTokens[id]||0)+1;ctx.state.garden.commands[id]={target:'dragging',until:Date.now()+20000};el.classList.remove('pose-sit');el.setPointerCapture(e.pointerId);
  });
  el.addEventListener('pointermove',e=>{
    if(!start||e.pointerId!==start.id)return;
@@ -78,11 +95,14 @@ function dragActor(el,id,scene,ctx){
    el.classList.add('dragging');
    el.style.left=`${Math.max(5,Math.min(95,(e.clientX-box.left)/box.width*100))}%`;
    el.style.top=`${Math.max(10,Math.min(90,(e.clientY-box.top)/box.height*100))}%`;
+   scene.querySelectorAll('.drop-target').forEach(item=>item.classList.remove('drop-target'));
+   itemAt(scene,e.clientX,e.clientY)?.classList.add('drop-target');
  });
  function end(e){
    if(!start||e.pointerId!==start.id)return;
+   scene.querySelectorAll('.drop-target').forEach(item=>item.classList.remove('drop-target'));
    if(moved){
-     if(e.type==='pointerup')placeActor(id,{x:parseFloat(el.style.left),y:parseFloat(el.style.top)},ctx);
+     if(e.type==='pointerup'){const hit=itemAt(scene,e.clientX,e.clientY);if(!hit||!dropCharacter(id,hit.dataset.gardenItem,ctx))placeActor(id,{x:parseFloat(el.style.left),y:parseFloat(el.style.top)},ctx)}
      else {const old=ctx.state.garden.characterPos[id];el.style.left=`${old.x}%`;el.style.top=`${old.y}%`}
      el.dataset.dragged='true';setTimeout(()=>delete el.dataset.dragged,0);
    }
@@ -90,14 +110,29 @@ function dragActor(el,id,scene,ctx){
  }
  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
 }
+function dragItem(el,id,scene,ctx){let start=null,moved=false;
+ el.addEventListener('pointerdown',e=>{if(e.target.closest('#livingFruit')||e.button!==0&&e.pointerType==='mouse')return;start={id:e.pointerId,x:e.clientX,y:e.clientY};moved=false;el.setPointerCapture(e.pointerId)});
+ el.addEventListener('pointermove',e=>{if(!start||e.pointerId!==start.id)return;if(!moved&&Math.hypot(e.clientX-start.x,e.clientY-start.y)<6)return;moved=true;const r=scene.getBoundingClientRect();el.classList.add('dragging');el.style.left=`${Math.max(8,Math.min(92,(e.clientX-r.left)/r.width*100))}%`;el.style.top=`${Math.max(40,Math.min(93,(e.clientY-r.top)/r.height*100))}%`});
+ const end=e=>{if(!start||e.pointerId!==start.id)return;if(moved){if(e.type==='pointerup')moveItem(id,{x:parseFloat(el.style.left),y:parseFloat(el.style.top)},ctx);else{const p=itemPosition(ctx.state.garden,id);el.style.left=`${p.x}%`;el.style.top=`${p.y}%`}el.dataset.dragged='true';setTimeout(()=>delete el.dataset.dragged,0)}el.classList.remove('dragging');start=null};
+ el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+}
 function gentleWander(){
  const ctx=active,scene=document.querySelector('#gardenView.active-view .living-scene');if(!ctx||!scene)return;
  const g=ctx.state.garden;for(const id of CHARACTERS){
-   if(g.locations[id]!=='garden'||g.commands[id]?.until>Date.now())continue;
+   if(g.locations[id]!=='garden'||id==='cat'&&ctx.state.xp<360||g.commands[id]?.until>Date.now())continue;
    if(Math.random()<.48)continue; // Characters often rest instead of always moving.
    const old=g.characterPos[id]||{x:50,y:72};
-   moveActor(id,{x:Math.max(30,Math.min(84,old.x+(Math.random()-.5)*12)),y:Math.max(48,Math.min(83,old.y+(Math.random()-.5)*9))},ctx);
+   document.querySelector(`[data-living-actor="${id}"]`)?.classList.remove('pose-sit');
+   moveActor(id,{x:Math.max(22,Math.min(83,old.x+(Math.random()-.5)*10)),y:Math.max(id==='bird'?34:53,Math.min(id==='bird'?71:84,old.y+(Math.random()-.5)*8))},ctx);
  }
+}
+function itemHtml(id,ctx,fruitStage,fruitLabel){
+ const p=itemPosition(ctx.state.garden,id),style=`left:${p.x}%;top:${p.y}%`;
+ if(id==='tree')return `<div class="living-oak living-item" data-garden-item="tree" style="${style}" aria-label="Fruit tree"><i class="trunk"></i><i class="canopy"></i><button id="livingFruit" class="living-fruit stage-${fruitStage}" aria-label="${fruitStage===4?'Eat ripe fruit':fruitLabel}" ${fruitStage===4?'':'disabled'}>${fruitArt(fruitStage)}</button></div>`;
+ if(id==='main_house')return `<button class="living-house living-item" id="livingHouse" data-garden-item="main_house" style="${style}" aria-label="Main House"><i class="roof"></i><i class="window"></i><i class="door"></i></button>`;
+ if(id==='arch')return `<button class="living-arch living-item" id="livingArch" data-garden-item="arch" style="${style}" aria-label="Flower Arch">${FLOWER_ARCH}</button>`;
+ const label=ctx.items?.find(item=>item.id===id)?.label||id;
+ return `<button class="living-item living-prop ${id}" data-garden-item="${id}" style="${style}" aria-label="${escapeText(label)}">${ctx.art?.(id)||escapeText(label)}</button>`;
 }
 function render(ctx){
  active=ctx;const {state,celebration,play,art}=ctx;
@@ -105,32 +140,30 @@ function render(ctx){
  const titles={morning:'A gentle morning',day:'A sunny afternoon',evening:'A glowing evening',night:'A peaceful night'};
  const note=celebration?`<div class="living-moment">🌱 ${escapeText(celebration.word)} helped your garden grow!${celebration.moment?`<small>${escapeText(celebration.moment)}</small>`:''}</div>`:'';
  const fruitStage=Math.min(4,g.fruit?.progress||0),fruitLabel=['Resting branch','Flower','Tiny fruit','Growing fruit','Ripe fruit'][fruitStage];
- view.innerHTML=`<div class="living-garden garden-view"><header class="living-head"><div><p class="eyebrow">YOUR LIVING GARDEN</p><h1>Miori’s little world ✦</h1><p>${titles[part]} · ${g.growth} words grown</p></div><button id="livingPlay" class="primary-btn">${celebration?'Next word →':'Play! ✦'}</button></header><div class="living-scene ${part}" id="livingScene"><div class="living-sky"><i class="living-cloud first"></i><i class="living-cloud second"></i><i class="living-sun"></i><i class="living-moon"></i><i class="living-stars">✦　✧　✦</i></div><div class="living-hill far"></div><div class="living-hill near"></div><div class="living-shrub left"></div><div class="living-shrub right"></div><div class="living-oak"><i class="trunk"></i><i class="canopy"></i><button id="livingFruit" class="living-fruit stage-${fruitStage}" aria-label="${fruitStage===4?'Eat ripe fruit':fruitLabel}" ${fruitStage===4?'':'disabled'}>${fruitArt(fruitStage)}</button></div><button class="living-house" id="livingHouse" aria-label="Main House"><i class="roof"></i><i class="window"></i><i class="door"></i></button><div class="living-path"></div><div class="living-lawn"></div><button class="living-arch" id="livingArch" aria-label="Visit Flower Arch">${FLOWER_ARCH}</button><div class="living-patio-lights">✦　✦　✦　✦</div><div id="livingActors">${CHARACTERS.filter(id=>g.locations[id]==='garden').map(id=>{const p=g.characterPos[id]||{x:50,y:70};return `<button class="living-actor ${id}" data-living-actor="${id}" style="left:${p.x}%;top:${p.y}%" aria-label="${id} options">${id==='bird'?BIRD_ART:art?.(id)||escapeText(id)}</button>`}).join('')}</div>${note}<div id="livingReaction" class="living-reaction" aria-live="polite"></div><div class="living-scene-label">${titles[part]} · ${fruitLabel}</div></div><div id="livingActions" class="living-actions" aria-live="polite">Tap a friend or the flower arch ✦</div></div>`;
+ const available=(ctx.items||[]).filter(item=>state.xp>=item.xp);
+ const onGround=['tree','main_house',...available.filter(item=>itemPlaced(item.id,ctx)).map(item=>item.id)];
+ const shelf=available.length?available.map(item=>`<div class="living-shelf-card"><span class="living-shelf-art">${art?.(item.id)||''}</span><span class="living-shelf-name">${escapeText(item.label)}</span><button data-${itemPlaced(item.id,ctx)?'store':'place'}="${item.id}">${itemPlaced(item.id,ctx)?'Put away':'Place'}</button></div>`).join(''):'<p>Grow three words to unlock your first Garden item ✦</p>';
+ view.innerHTML=`<div class="living-garden garden-view"><header class="living-head"><div><p class="eyebrow">YOUR LIVING GARDEN</p><h1>Miori’s little world ✦</h1><p>${titles[part]} · ${g.growth} words grown</p></div><button id="livingPlay" class="primary-btn">${celebration?'Next word →':'Play! ✦'}</button></header><div class="living-scene ${part}" id="livingScene"><div class="living-sky"><i class="living-cloud first"></i><i class="living-cloud second"></i><i class="living-sun"></i><i class="living-moon"></i><i class="living-stars">✦　✧　✦</i></div><div class="living-hill far"></div><div class="living-hill near"></div><div class="living-shrub left"></div><div class="living-shrub right"></div><div class="living-path"></div><div class="living-lawn"></div>${onGround.map(id=>itemHtml(id,ctx,fruitStage,fruitLabel)).join('')}<div class="living-patio-lights">✦　✦　✦　✦</div><div id="livingActors">${CHARACTERS.filter(id=>g.locations[id]==='garden'&&(id!=='cat'||state.xp>=360)).map(id=>{const p=g.characterPos[id]||{x:50,y:70};return `<button class="living-actor ${id}${g.commands[id]?.kind==='sit'&&g.commands[id].until>Date.now()?' pose-sit':''}" data-living-actor="${id}" style="left:${p.x}%;top:${p.y}%" aria-label="${id} options">${id==='bird'?BIRD_ART:art?.(id)||escapeText(id)}</button>`}).join('')}</div>${note}<div id="livingReaction" class="living-reaction" aria-live="polite"></div><div class="living-scene-label">${titles[part]} · ${fruitLabel}</div></div><div id="livingActions" class="living-actions" aria-live="polite">Drag a friend onto something ✦</div><section class="living-shelf" aria-label="Garden collection"><strong>Garden shelf · ${available.length} unlocked</strong><div class="living-shelf-list">${shelf}</div></section></div>`;
  view.querySelector('#livingPlay').addEventListener('click',play);
- view.querySelector('#livingFruit')?.addEventListener('click',e=>{
-   const fruit=e.currentTarget;if(fruit.disabled||!g.fruit||g.fruit.progress<4)return;fruit.disabled=true;
-   const eater=CHARACTERS.find(c=>g.locations[c]==='garden');
-   if(eater)moveActor(eater,{x:31,y:eater==='bird'?37:60},ctx);
-   const reaction=view.querySelector('#livingReaction');if(reaction)reaction.textContent=eater?`${eater==='bunny'?'Bunny':eater==='cat'?'Cat':'Bird'} enjoys the fruit! 🍊`:'A little snack is waiting for your friends 🍊';
-   setTimeout(()=>{if(!eatFruit(g))return;ctx.save();if(document.querySelector('#gardenView.active-view'))render(ctx)},1250);
+ view.querySelector('#livingFruit').addEventListener('click',e=>{if(e.currentTarget.disabled)return;const eater=CHARACTERS.find(id=>g.locations[id]==='garden'&&(id!=='cat'||state.xp>=360));if(eater)dropCharacter(eater,'tree',ctx)});
+ const scene=view.querySelector('#livingScene');
+ view.querySelectorAll('[data-garden-item]').forEach(el=>{
+   const id=el.dataset.gardenItem;dragItem(el,id,scene,ctx);
+   el.addEventListener('click',()=>{if(el.dataset.dragged)return;
+     const menu=view.querySelector('#livingActions');
+     if(id==='main_house'){
+       const inside=CHARACTERS.filter(c=>g.locations[c]==='main_house'&&(c!=='cat'||state.xp>=360));
+       menu.innerHTML=`<strong>Main House · ${inside.length} inside</strong>${inside.map(c=>`<button data-out="${c}">${c==='bunny'?'Bunny':c==='cat'?'Cat':'Bird'} come outside</button>`).join('')||'<span>Drag a friend to the door</span>'}`;
+       menu.querySelectorAll('[data-out]').forEach(btn=>btn.addEventListener('click',()=>characterAction(btn.dataset.out,'garden',ctx)));
+     }else menu.textContent=`Drag a friend onto ${id==='tree'?'the fruit tree':ctx.items?.find(item=>item.id===id)?.label||id} ✦`;
+   });
  });
- view.querySelectorAll('[data-living-actor]').forEach(el=>{dragActor(el,el.dataset.livingActor,view.querySelector('#livingScene'),ctx);el.addEventListener('click',()=>{
-   if(el.dataset.dragged)return;
-   const id=el.dataset.livingActor,menu=view.querySelector('#livingActions');
-   menu.innerHTML=`<strong>${id==='bunny'?'Bunny':id==='cat'?'Cat':'Bird'}</strong><button data-action="arch">Visit arch</button><button data-action="main_house">Go home</button>`;
-   menu.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>characterAction(id,btn.dataset.action,{...ctx})));
- });});
- view.querySelector('#livingArch').addEventListener('click',()=>{
-   const id=CHARACTERS.find(c=>g.locations[c]==='garden');if(id)characterAction(id,'arch',ctx);
- });
- view.querySelector('#livingHouse').addEventListener('click',()=>{
-   const inside=CHARACTERS.filter(c=>g.locations[c]==='main_house');const menu=view.querySelector('#livingActions');
-   menu.innerHTML=`<strong>Main House · ${inside.length} inside</strong>${inside.map(id=>`<button data-out="${id}">${id==='bunny'?'Bunny':id==='cat'?'Cat':'Bird'} come outside</button>`).join('')||'<span>Everyone is outside</span>'}`;
-   menu.querySelectorAll('[data-out]').forEach(btn=>btn.addEventListener('click',()=>characterAction(btn.dataset.out,'garden',ctx)));
- });
+ view.querySelectorAll('[data-living-actor]').forEach(el=>{dragActor(el,el.dataset.livingActor,scene,ctx);el.addEventListener('click',()=>{if(el.dataset.dragged)return;view.querySelector('#livingActions').textContent=`Drag ${el.dataset.livingActor==='bird'?'Bird':el.dataset.livingActor==='cat'?'Cat':'Bunny'} onto a Garden item ✦`})});
+ view.querySelectorAll('[data-place]').forEach(el=>el.addEventListener('click',()=>placeItem(el.dataset.place,ctx)));
+ view.querySelectorAll('[data-store]').forEach(el=>el.addEventListener('click',()=>storeItem(el.dataset.store,ctx)));
 }
 function escapeText(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-window.LivingGarden={VERSION,fresh,migrate,daypart,render,characterAction,placeActor,gentleWander,onWordComplete,eatFruit,OBJECT_REACTIONS};
+window.LivingGarden={VERSION,fresh,migrate,daypart,render,characterAction,placeActor,placeItem,storeItem,moveItem,itemPlaced,dropCharacter,reactionKind,gentleWander,onWordComplete,eatFruit,OBJECT_REACTIONS};
 setInterval(gentleWander,9500);
 let lastPart=daypart();setInterval(()=>{const next=daypart();if(next!==lastPart){lastPart=next;if(document.querySelector('#gardenView.active-view .living-scene'))document.querySelector('[data-nav="garden"]')?.click()}},60000);
 })();

@@ -180,7 +180,7 @@ function gardenReactionHtml(){
 }
 function growthJourneyHtml(target){if(!target)return'';return`<div class="growth-journey ${target}"><i class="journey-stem"></i><i class="journey-leaf l"></i><i class="journey-leaf r"></i><i class="journey-bud"></i><i class="journey-bloom"></i></div>`}
 function renderGarden(){
-  if(window.LivingGarden){window.LivingGarden.render({state,celebration:gardenCelebration,save,play:()=>{gardenCelebration=null;setView('play')},art:id=>gardenObjectArt(rewards.find(r=>r.id===id))});return}
+  if(window.LivingGarden){window.LivingGarden.render({state,celebration:gardenCelebration,save,play:()=>{gardenCelebration=null;setView('play')},items:rewards.filter(r=>r.type==='treasure').map(({id,xp,label})=>({id,xp,label})),art:id=>gardenObjectArt(rewards.find(r=>r.id===id))});return}
   const a=Math.min(5,Math.max(0,state.garden.growth));const b=Math.min(5,Math.max(0,state.garden.growth-5));
   const next=rewards.find(r=>state.xp<r.xp);const wordsAway=next?Math.max(1,Math.ceil((next.xp-state.xp)/30)):0;const nextText=next?`${next.icon||'✦'} Next: ${next.label} · ${wordsAway} ${wordsAway===1?'word':'words'} away`:'✨ All current garden surprises unlocked!';
   const seatText=state.xp<90?'Keep growing — Bunny’s cozy bench is coming!':state.garden.bunnySeated?'🐰 Bunny is cozy on the bench ♡':'Drag Bunny around the backyard — every special spot has its own little reaction.';
@@ -846,7 +846,7 @@ function alignChars(target,typed){target=norm(target);typed=norm(typed);const n=
 
 function resetOneLearning(id){const w=state.lib[id];if(!w)return;if(confirm(`Reset learning data for “${w.word}” only?`)){w.learn=learning(w.word);save();renderParent();toast(`${w.word}: learning data reset.`)}}
 function resetAllLearning(){if(!confirm('Reset learning data for ALL words? Garden items and XP will stay.'))return;Object.values(state.lib).forEach(w=>w.learn=learning(w.word));save();renderParent();toast('All learning data reset.')}
-function resetGardenLayout(){if(!confirm('Reset Living Garden positions? Word learning stays.'))return;state.garden.characterPos={};state.garden.placed=[];save();renderParent();toast('Garden positions reset.')}
+function resetGardenLayout(){if(!confirm('Reset Living Garden positions? Word learning stays.'))return;state.garden.characterPos=window.LivingGarden.fresh().characterPos;state.garden.itemPos={};state.garden.commands={};save();renderParent();toast('Garden positions reset.')}
 function resetGardenProgress(){if(!confirm('Start Living Garden fresh? Words and learning history stay.'))return;state.garden=window.LivingGarden.fresh();save();renderParent();toast('Living Garden started fresh. Learning kept.')}
 function masteryInfo(w){
   const l=w.learn||learning(w.word),vals=l.weak||[],maxWeak=Math.max(0,...vals),wi=maxWeak?vals.indexOf(maxWeak):-1,loops=l.loops||0,stage4=l.stageMist?.[4]||0,practiced=loops>0||(l.correct||0)>0||(l.mistakes||0)>0,feeling=l.feeling||'';
