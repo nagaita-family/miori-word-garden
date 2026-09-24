@@ -31,9 +31,11 @@ test('A direct arch request moves a garden character, while another character co
 test('A resident crosses the open arch, while house or stored-arch requests do nothing',()=>{
  const {api,state,timers,callbacks}=setup();
  api.characterAction('bunny','arch',callbacks);
- assert.deepEqual(JSON.parse(JSON.stringify(state.garden.characterPos.bunny)),{x:58,y:78});
+ assert.deepEqual(JSON.parse(JSON.stringify(state.garden.characterPos.bunny)),{x:62,y:89});
  timers.shift()();
- assert.deepEqual(JSON.parse(JSON.stringify(state.garden.characterPos.bunny)),{x:66,y:78});
+ assert.deepEqual(JSON.parse(JSON.stringify(state.garden.characterPos.bunny)),{x:62,y:75});
+ timers.shift()();
+ assert.deepEqual(JSON.parse(JSON.stringify(state.garden.characterPos.bunny)),{x:64,y:64});
  state.garden.locations.cat='main_house';
  const before=timers.length;api.characterAction('cat','arch',callbacks);assert.equal(timers.length,before);
  state.garden.placed=[];
@@ -56,7 +58,7 @@ test('Living Garden renders a painted arch with a clear passage and illustrated 
  assert.match(css,/\.living-arch\.living-item\{[^}]*z-index:7;pointer-events:auto/);
  assert.match(css,/\.living-arch-art\{[^}]*pointer-events:none/);
  assert.match(css,/\.living-arch-art path,\.living-arch-art use\{pointer-events:visiblePainted/);
- assert(fs.readFileSync('index.html','utf8').includes('living-garden.css?v=20260924-c6d'));
+ assert(fs.readFileSync('index.html','utf8').includes('living-garden.css?v=20260924-d0'));
 });
 test('Wandering respects manual commands and indoors state',()=>{
  const {api,state,callbacks}=setup();state.garden.locations.bunny='main_house';state.garden.commands.cat={until:Date.now()+10000,target:'arch'};

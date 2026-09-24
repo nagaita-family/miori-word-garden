@@ -47,23 +47,50 @@ function moveItem(id,pos,ctx=active){if(!ctx||!itemPlaced(id,ctx))return false;c
 function reactionKind(id,item,g){if(!CHARACTERS.includes(id)||!ITEM_REACTIONS[item])return null;if(item==='arch'&&id==='bird')return'perch';if(item==='bench'&&id==='bird')return'perch';if(item==='birdbath')return id==='bird'?'bathe':'drink';if(item==='seedcrate')return id==='cat'?'inspect':id==='bird'?'perch':'play';if(item==='picnic'&&id==='cat')return'inspect';if(item==='tree')return(g.fruit?.progress||0)>=4?'eat':'inspect';return ITEM_REACTIONS[item]}
 function reactionText(id,item,kind){if(item==='arch')return OBJECT_REACTIONS.arch[id];const who={bunny:'Bunny',cat:'Cat',bird:'Bird'}[id],what={bench:'the bench',picnic:'the strawberry picnic',mail:'the heart mailbox',birdbath:'the bird bath',seedcrate:'the seed crate',shed:'the little shed',tree:'the fruit tree',main_house:'the house'}[item];return `${who} ${({sit:'settles on',perch:'perches on',eat:'enjoys',inspect:'looks at',drink:'takes a sip at',bathe:'splashes in',play:'plays by',enter:'goes into'})[kind]} ${what}!`}
 function showReaction(id,item,kind,ctx){const el=document.querySelector('#livingReaction');if(!el)return;const p=itemPosition(ctx.state.garden,item);el.style.left=`${p.x}%`;el.style.top=`${Math.max(12,p.y-(item==='tree'?46:23))}%`;el.textContent=reactionText(id,item,kind)}
+function actorElement(id){return document.querySelector(`[data-living-actor="${id}"]`)}
+function finishMotion(id,item,token,ctx){
+ if(token!==actionTokens[id])return;
+ const el=actorElement(id);el?.classList.remove('reacting','arch-behind','reaction-sit','reaction-eat','reaction-inspect','reaction-drink','reaction-bathe','reaction-perch','reaction-play','reaction-walkThrough');
+ document.querySelector(`[data-garden-item="${item}"]`)?.classList.remove('item-active');
+ if(el&&ctx.state.garden.commands[id]?.kind==='sit')el.classList.add('pose-sit');
+ ctx.state.garden.commands[id].until=Date.now()+6000;
+ const message=document.querySelector('#livingReaction');
+ setTimeout(()=>{if(token===actionTokens[id]&&message)message.textContent=''},2200);
+}
+function visibleMotion(id,item,kind,token,ctx){
+ if(token!==actionTokens[id]||ctx.state.garden.locations[id]!=='garden'||!itemPlaced(item,ctx))return;
+ const el=actorElement(id);el?.classList.add('reacting',`reaction-${kind}`);
+ document.querySelector(`[data-garden-item="${item}"]`)?.classList.add('item-active');
+ const scene=document.querySelector('#gardenView.active-view .living-scene');
+ if(scene&&typeof document.createElement==='function'){
+   const fx=document.createElement('div'),p=itemPosition(ctx.state.garden,item);
+   fx.className=`living-effect ${kind==='bathe'||kind==='drink'?'splash':kind==='eat'||kind==='sit'?'heart':'sparkle'}`;
+   fx.setAttribute('aria-hidden','true');fx.style.left=`${p.x}%`;fx.style.top=`${Math.max(15,p.y-18)}%`;
+   fx.innerHTML='<i>✦</i><i>✦</i><i>✦</i>';
+   scene.appendChild(fx);setTimeout(()=>fx.remove(),1450);
+ }
+ setTimeout(()=>{if(token!==actionTokens[id])return;showReaction(id,item,kind,ctx);finishMotion(id,item,token,ctx);
+   if(item==='tree'&&kind==='eat'&&eatFruit(ctx.state.garden)){ctx.save();if(document.querySelector('#gardenView.active-view'))render(ctx)}
+ },1150);
+}
 function dropCharacter(id,item,ctx=active){
  if(!ctx||!CHARACTERS.includes(id)||id==='cat'&&ctx.state.xp<360||ctx.state.garden.locations[id]!=='garden'||!itemPlaced(item,ctx))return false;
  const g=ctx.state.garden,p=itemPosition(g,item),kind=reactionKind(id,item,g),token=actionTokens[id]=(actionTokens[id]||0)+1;
- g.commands[id]={target:item,kind,until:Date.now()+20000};
+ g.commands[id]={target:item,kind,until:Date.now()+8000};
  const stillHere=()=>token===actionTokens[id]&&g.locations[id]==='garden'&&itemPlaced(item,ctx);
+ actorElement(id)?.classList.remove('pose-sit','arch-behind','reacting','reaction-sit','reaction-eat','reaction-inspect','reaction-drink','reaction-bathe','reaction-perch','reaction-play','reaction-walkThrough');
  if(item==='arch'&&kind==='walkThrough'){
-   moveActor(id,{x:p.x-4,y:p.y-6},ctx);
-   setTimeout(()=>{if(stillHere())moveActor(id,{x:p.x+4,y:p.y-6},ctx)},850);
-   setTimeout(()=>{if(stillHere())showReaction(id,item,kind,ctx)},1600);
+   moveActor(id,{x:p.x,y:Math.min(89,p.y+5)},ctx); // near side of the trellis
+   setTimeout(()=>{if(!stillHere())return;actorElement(id)?.classList.add('arch-behind');moveActor(id,{x:p.x,y:p.y-9},ctx)},650);
+   setTimeout(()=>{if(stillHere())moveActor(id,{x:p.x+2,y:p.y-20},ctx)},1300);
+   setTimeout(()=>{if(!stillHere())return;actorElement(id)?.classList.remove('arch-behind');visibleMotion(id,item,kind,token,ctx)},1920);
  }else if(item==='main_house'){
    moveActor(id,{x:p.x+3,y:p.y-8},ctx);
    setTimeout(()=>{if(!stillHere())return;g.locations[id]='main_house';ctx.save();if(document.querySelector('#gardenView.active-view')){render(ctx);showReaction(id,item,kind,ctx);const actions=document.querySelector('#livingActions');if(actions){actions.innerHTML=`${id[0].toUpperCase()+id.slice(1)} is inside <button data-out="${id}">Come outside</button>`;actions.querySelector('[data-out]')?.addEventListener('click',()=>characterAction(id,'garden',ctx))}}},950);
  }else{
    const pos=item==='tree'?{x:p.x+9,y:id==='bird'?p.y-37:p.y-14}:item==='arch'?{x:p.x,y:p.y-19}:{x:p.x,y:p.y-(kind==='perch'?13:7)};
    moveActor(id,pos,ctx);
-   const el=document.querySelector(`[data-living-actor="${id}"]`);el?.classList.toggle('pose-sit',kind==='sit');
-   setTimeout(()=>{if(!stillHere())return;showReaction(id,item,kind,ctx);if(item==='tree'&&kind==='eat'&&eatFruit(g)){ctx.save();if(document.querySelector('#gardenView.active-view'))render(ctx)}},650);
+   setTimeout(()=>{if(stillHere())visibleMotion(id,item,kind,token,ctx)},650);
  }
  return true;
 }
@@ -85,7 +112,7 @@ function dragActor(el,id,scene,ctx){
  let start=null,moved=false;
  el.addEventListener('pointerdown',e=>{
    if(e.button!==0&&e.pointerType==='mouse')return;
-   start={id:e.pointerId,x:e.clientX,y:e.clientY};moved=false;actionTokens[id]=(actionTokens[id]||0)+1;ctx.state.garden.commands[id]={target:'dragging',until:Date.now()+20000};el.classList.remove('pose-sit');el.setPointerCapture(e.pointerId);
+   start={id:e.pointerId,x:e.clientX,y:e.clientY};moved=false;actionTokens[id]=(actionTokens[id]||0)+1;ctx.state.garden.commands[id]={target:'dragging',until:Date.now()+20000};el.classList.remove('pose-sit','reacting','arch-behind','reaction-sit','reaction-eat','reaction-inspect','reaction-drink','reaction-bathe','reaction-perch','reaction-play','reaction-walkThrough');el.setPointerCapture(e.pointerId);
  });
  el.addEventListener('pointermove',e=>{
    if(!start||e.pointerId!==start.id)return;
