@@ -72,3 +72,24 @@
 @keyframes livingItemRespond{0%,100%{transform:rotate(0) scale(1)}45%{transform:rotate(2deg) scale(1.04)}}
 @keyframes livingSpark{0%{opacity:0;transform:translateY(8px) scale(.55)}28%{opacity:1}100%{opacity:0;transform:translateY(-24px) scale(1.1)}}
 @media(prefers-reduced-motion:reduce){.living-actor,.living-actor.reacting{transition:none}.living-actor svg,.living-actor.cat svg,.living-actor.bird svg,.living-actor.pose-sit svg,.living-actor.reacting svg,.living-item.item-active svg,.living-item.item-active .canopy,.living-effect i{animation:none}.living-effect{display:none}}
+
+/* D.1: an actual little backyard Garage, with its inventory inside the scene. */
+.living-garage{position:absolute;left:12%;top:92%;transform:translate(-50%,-100%);width:clamp(86px,9%,110px);height:112px;z-index:5;padding:0;border:0;background:transparent;cursor:pointer;touch-action:manipulation;filter:drop-shadow(0 7px 4px #4a614037)}
+.living-garage .garage-wall{position:absolute;left:4%;right:4%;bottom:17px;height:67px;background:#f5d8ac;border:3px solid #fff1d5;border-radius:6px 6px 8px 8px;box-shadow:inset -6px 0 #d9aa80}
+.living-garage .garage-roof{position:absolute;left:-2%;right:-2%;top:10px;height:32px;z-index:2;background:#a5715b;clip-path:polygon(50% 0,100% 85%,93% 100%,7% 100%,0 85%)}
+.living-garage .garage-roof:after{content:'';position:absolute;left:11%;right:11%;bottom:4px;height:3px;background:#e8bea0aa}
+.living-garage .garage-door{position:absolute;left:21%;right:21%;bottom:17px;height:53px;z-index:2;background:repeating-linear-gradient(0deg,#b9886e 0 8px,#cf9b78 8px 13px);border:3px solid #946d58;border-radius:5px 5px 1px 1px}
+.living-garage .garage-door:after{content:'';position:absolute;right:8px;top:50%;width:5px;height:5px;border-radius:50%;background:#fff3c6}
+.living-garage span{position:absolute;left:-12px;right:-12px;bottom:-9px;z-index:3;border-radius:14px;padding:3px;background:#fff6de;color:#775343;font-size:10px;font-weight:800;white-space:nowrap;box-shadow:0 3px 7px #4a61402e}
+.living-garage.open .garage-door{transform-origin:left;transform:perspective(90px) rotateY(-30deg);background:#70564b}
+.living-garage:focus-visible,.living-garage-panel button:focus-visible{outline:3px solid #78559c;outline-offset:3px}
+.living-garage-panel{position:absolute;left:20px;bottom:20px;z-index:18;width:min(365px,calc(100% - 40px));max-height:min(67%,410px);padding:12px;background:#fff9ebf7;border:2px solid #f1d7b5;border-radius:20px;box-shadow:0 14px 32px #354e4c40;color:#594b4b;display:flex;flex-direction:column;gap:7px}
+.living-garage-panel header{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px}
+.living-garage-panel header button{border:0;border-radius:50%;width:30px;height:30px;background:#ecd8c4;color:#594b4b;font-size:20px;cursor:pointer}
+.living-garage-list{min-height:0;overflow-y:auto;display:grid;gap:6px;scrollbar-width:thin}
+.living-garage-list>p{font-size:12px;line-height:1.4;margin:3px 0}
+.living-garage-list .living-shelf-card{flex:none;width:100%;min-height:50px}
+.living-garage-list .living-shelf-name{font-size:12px}
+.living-garage-list .living-shelf-name small{display:block;color:#8b786e;font-size:10px}
+.living-garage-list .living-shelf-card button{font-size:11px;padding:7px 9px}
+@media(max-width:700px){.living-garage{left:38%;height:88px;width:76px}.living-garage .garage-wall{height:52px}.living-garage .garage-roof{top:8px;height:28px}.living-garage .garage-door{height:42px}.living-garage-panel{left:10px;bottom:14px;width:calc(100% - 20px);max-height:75%}}

@@ -71,7 +71,8 @@ test('Cat remains locked below 360 XP and all seven items are absent in a new Ga
  assert(!view.innerHTML.includes('data-garden-item="arch"'));
  assert(!view.innerHTML.includes('data-living-actor="cat"'));
  assert(view.innerHTML.includes('data-garden-item="tree"')&&view.innerHTML.includes('data-garden-item="main_house"'));
- assert(view.innerHTML.includes('0 unlocked'));
+ assert(view.innerHTML.includes('Garage · 0'));
+ assert(!view.innerHTML.includes('Garden shelf'));
 });
 test('Pointer drop on a bench triggers sitting; dragging interrupts autonomous motion',()=>{
  assert(styles.includes('.living-fruit:disabled{pointer-events:none}'),'the invisible unripe fruit cannot intercept Tree drags');
