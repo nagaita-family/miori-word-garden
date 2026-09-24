@@ -40,7 +40,7 @@ test('A cancelled stroke and a stale question do not mark completion',()=>{
 });
 const html=fs.readFileSync('index.html','utf8');
 assert(html.includes('stage3-trace-v9.css?v=20260923-v38')&&html.includes('pencil-touch-guard.js?v=20260923-v37'));
-assert(html.includes('v38 · Sep 23'));
+assert(html.includes('v39 · Sep 24'));
 
 test('A traced guide shows retained ink without a correctness check',()=>{
  const css=fs.readFileSync('stage3-trace-v9.css','utf8');

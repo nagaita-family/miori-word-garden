@@ -25,3 +25,15 @@ Validation: node --check app.js and pencil-touch-guard.js; node --test tests/*.t
 ## v38 — September 23, 2026, tracing feedback clarity
 
 The user confirmed v37 tracing felt substantially faster, but any drawn letter was shown with a green check even when it was the wrong character. The trace of a visible guide is a handwriting warm-up; its ink is not character recognition. v38 removes the green check and uses a gentle lilac border/background and purple ink to show that a stroke was captured, without claiming correct spelling. The missing-letter gap and Stage 4 remain the places where spelling is checked. Only the trace CSS, CSS cache key, visible release badge, and matching test expectations changed.
+
+## Living Garden Phase A — v39, 2026-09-24
+
+Completed: fresh versioned Garden subtree (`livingGardenVersion:1`) with idempotent migration on load, local-time Morning/Day/Evening/Night landscape, trees/shrubs instead of fence, two slow CSS clouds and reduced-motion support. New `living-garden.js` and `living-garden.css` are loaded before/after app styles respectively; the existing learning flow and Pencil code remain in `app.js`. The Garden renderer delegates to LivingGarden. Legacy Garden helpers remain unused by this new view for now, minimizing changes to mature learning code.
+
+Data protection: only `state.garden` is replaced once. Top-level XP, stats, week/myWords/pastWeeks, lib and learning history, weekly test results, settings and Test Mode routing are retained. Parent's Garden-only reset now calls fresh() without resetting XP. `localStorage.clear()` is not used. Backup restore runs loadState migration if the restored backup predates Living Garden.
+
+Phase status: A completed. B/C/D not started. Old Treasure unlocks are suppressed for the new Garden, while XP still increments as before for learning. The new Garden's growth count continues on full Stage 4 completion; Phase C will give it visible fruit. Garage and houses are only state placeholders until Phase D.
+
+Verification: node --check app.js/living-garden.js, `node --test tests/*.test.cjs` 22 passing checks including migration, time classification, and environment. GitHub Pages success and production URL verification must be recorded after push. Local browser screenshot was unavailable because the installed Playwright package had no browser executable. iPad Safari/PWA dayparts, cloud speed, responsive layout and actual Pencil flow remain unverified on device.
+
+Next: Phase B character location / explicit actions and gentle autonomous behavior, Flower Arch reaction. Then Phase C fruit and time-of-day moments. Keep each phase self-contained, version/cache updated, tests + successful deployment before continuing. Phase D not yet started.
