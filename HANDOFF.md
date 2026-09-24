@@ -45,3 +45,13 @@ Completed: Bunny, Cat, and Bird each have persistent `garden` / `main_house` loc
 Data: Garden-only `locations`, `characterPos`, `commands`, `placed` persist through the existing localStorage save and backup. Learning, weekly test, XP and Pencil code remain untouched. `placed:['arch']` introduces the Flower Arch in this fresh Garden; Garage/storage work remains Phase D.
 
 Verification: targeted Phase A/B tests and full Node suite: 26 passing checks. No iPad Safari/PWA visual or Pencil device verification. Deployment/job/production status to be confirmed after push. Phase A/B complete; C and D not started. Next touch `living-garden.js` + `living-garden.css` for fruit and daypart moments, and the single Stage 4 completion branch in `app.js` for the event hook.
+
+## Living Garden Phase C — v41, 2026-09-24
+
+Completed: the existing successful Stage 4 word completion now calls `LivingGarden.onWordComplete` exactly once, after the existing Garden growth and XP update. Four visible fruit stages (flower, tiny fruit, growing fruit, ripe fruit) appear on the new Garden tree. A ripe fruit can be tapped; a friend still in the Garden moves toward the tree and reacts, then one fruit is eaten. If multiple words were completed before eating, progress beyond the first ripe fruit remains for the next fruit. This is optional and has no missed-fruit penalty. Fruit state persists under `garden.fruit` and upgrades from Phase A/B growth once if needed.
+
+The first successful word in each local daypart each day shows a short Morning/Day/Evening/Night message. This is presentation only: no streak, no required time slots, no extra XP or fruit increment. Weekly Test grading never calls this hook. User-controlled character commands remain higher priority than wandering, and house residents are excluded from fruit eating.
+
+Verification: `node --check app.js living-garden.js` (individually), targeted Phase A/B/C and full `node --test tests/*.test.cjs`: 29 passing checks. Phase A, B and C complete, Phase D not started. Confirm GitHub Pages run success and production v41 after push. iPad Safari/Pencil, layout, time changes, fruit tapping and animation remain device checks, not verified by Node tests.
+
+Next session: inspect this latest main and HANDOFF first. Phase D may implement Garage, houses, occupancy and Look Inside separately after device feedback. Do not migrate old Treasure contents or reset any top-level learning data. Existing `state.garden` is the only fresh Living Garden subtree; `state.xp` remains learning-linked.
