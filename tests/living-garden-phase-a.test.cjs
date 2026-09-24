@@ -18,5 +18,5 @@ test('environment is naturally bounded, lightweight and honors reduced motion',(
  const css=fs.readFileSync('living-garden.css','utf8'),page=fs.readFileSync('index.html','utf8');
  assert(!source.includes('white-fence'));assert(css.includes('.living-shrub')&&css.includes('.living-oak'));
  assert(css.includes('prefers-reduced-motion:reduce')&&css.includes('.living-scene.night'));
- assert(page.indexOf('living-garden.js?v=20260924-c5')<page.indexOf('app.js?v=20260924-living-c'));
+ assert(page.indexOf('living-garden.js?v=20260924-c5c')<page.indexOf('app.js?v=20260924-living-c'));
 });

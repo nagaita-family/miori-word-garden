@@ -50,12 +50,13 @@ test('Living Garden renders a painted arch with a clear passage and illustrated 
  assert.match(view.innerHTML,/<button class="living-arch"[^>]+id="livingArch"[^>]*><svg class="living-arch-art"/);
  assert.match(view.innerHTML,/V98C22 44 63 17 120 17s98 27 98 81v109/);
  assert(!view.innerHTML.includes('>🌸<span>Flower Arch'));
+ assert(!view.innerHTML.includes('<span>Flower Arch</span>'));
  assert.match(view.innerHTML,/<button class="living-actor bird"[^>]*><svg/);
  assert.match(view.innerHTML,/<button id="livingFruit"[^>]*><svg/);
  assert.match(css,/\.living-arch\{[^}]*z-index:10;[^}]*pointer-events:none/);
  assert.match(css,/\.living-arch-art\{[^}]*pointer-events:none/);
  assert.match(css,/\.living-arch-art path,\.living-arch-art use\{pointer-events:visiblePainted/);
- assert(fs.readFileSync('index.html','utf8').includes('living-garden.css?v=20260924-c5b'));
+ assert(fs.readFileSync('index.html','utf8').includes('living-garden.css?v=20260924-c5d'));
 });
 test('Wandering respects manual commands and indoors state',()=>{
  const {api,state,callbacks}=setup();state.garden.locations.bunny='main_house';state.garden.commands.cat={until:Date.now()+10000,target:'arch'};
