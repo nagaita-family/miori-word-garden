@@ -47,7 +47,7 @@ assert.equal(fire('copy',fakeOutside).defaultPrevented,false,'Other app areas ke
 assert(css.includes('-webkit-touch-callout:none')&&!css.includes('user-select:none'),'Avoid callout without disabling Pencil selection engine');
 assert(css.includes('.flow-word-controls #clearFlowBtn{display:none!important}'),'Old persistent clear is replaced, not duplicated');
 assert(page.includes('writing-erase-v30.css')&&page.includes('writing-erase-v30.js'),'Page loads local-only eraser assets');
-assert(page.includes('v50 · Sep 24'),'Current version badge remains updated alongside v30 erasers');
+assert(page.includes('v51 · Sep 24'),'Current version badge remains updated alongside v30 erasers');
 assert(app.includes('input.dispatchEvent')===false||app.includes('weeklyAnswerText'),'Existing answer normalization not replaced');
 assert(app.includes('weeklyTest.answers[id]=cleaned;saveWeeklyDraft()'),'Weekly test still saves after input');
 assert(app.includes('if(q.stage===4)q.fullAnswer=cleaned'),'Step 4 still updates its own answer from input');

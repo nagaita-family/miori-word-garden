@@ -42,5 +42,5 @@ test('Room positions persist independently of Garden positions and remain bounde
 test('Existing character art breathes indoors and respects reduced motion',()=>{
  const css=fs.readFileSync('living-garden.css','utf8');assert.match(css,/\.living-room-character svg\{/);
  assert.match(css,/@keyframes livingRoomBreathe/);assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.living-room-character\{animation:none\}\}/);
- assert(fs.readFileSync('index.html','utf8').includes('living-garden.js?v=20260924-d4'));
+ assert(fs.readFileSync('index.html','utf8').includes('living-garden.js?v=20260924-placement'));
 });

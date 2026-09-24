@@ -94,6 +94,11 @@ test('Pointer drop on a bench triggers sitting; dragging interrupts autonomous m
  actor.events.pointerup({pointerId:1,clientX:530,clientY:350,type:'pointerup'});
  assert.equal(state.garden.commands.bunny.kind,'sit');assert.equal(state.garden.commands.bunny.target,'bench');
  assert.equal(state.garden.locations.bunny,'garden');
+ actor.events.pointerdown({pointerId:3,button:0,pointerType:'mouse',clientX:530,clientY:350});
+ actor.events.pointermove({pointerId:3,clientX:596,clientY:350});
+ actor.events.pointerup({pointerId:3,clientX:596,clientY:350,type:'pointerup'});
+ assert.equal(state.garden.commands.bunny.target,'placed','a release outside both item bounds stays exactly where placed');
+ assert(Math.abs(state.garden.characterPos.bunny.x-59.6)<.001);
  bench.style.left='52%';bench.style.top='80%';
  bench.events.pointerdown({pointerId:2,button:0,pointerType:'mouse',clientX:530,clientY:350,target:{closest:()=>null}});
  bench.events.pointermove({pointerId:2,clientX:630,clientY:360});

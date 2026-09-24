@@ -38,7 +38,7 @@ function eatFruit(g){
  g.fruit.progress-=4;g.fruit.eaten=(g.fruit.eaten||0)+1;return true;
 }
 
-let active=null,garageOpen=false,insideOpen=false;const actionTokens={};
+let active=null,garageOpen=false,insideOpen=false,placement=null;const actionTokens={};
 const CHARACTER_NAMES={bunny:'Bunny',cat:'Cat',bird:'Bird'};
 const ROOM_DEFAULTS={bunny:{x:46,y:65},cat:{x:70,y:66},bird:{x:78,y:46}};
 function roomPosition(g,id){const p=g.roomPos?.[id];return p&&Number.isFinite(p.x)&&Number.isFinite(p.y)?p:ROOM_DEFAULTS[id]}
@@ -148,7 +148,12 @@ function placeActor(id,pos,ctx){
  ctx.state.garden.commands[id]={target:'placed',until:Date.now()+20000};
  moveActor(id,{x:Math.max(5,Math.min(95,pos.x)),y:Math.max(10,Math.min(90,pos.y))},ctx);
 }
-function itemAt(scene,x,y){let found=null,best=Infinity;for(const el of scene.querySelectorAll('[data-garden-item]')){const r=el.getBoundingClientRect(),gap=12;if(x<r.left-gap||x>r.right+gap||y<r.top-gap||y>r.bottom+gap)continue;const d=Math.hypot(x-(r.left+r.width/2),y-(r.top+r.height/2));if(d<best){best=d;found=el}}return found}
+function itemAt(scene,x,y){
+ // Prefer the visible top item; a nearby or covered item must not steal a character drop.
+ if(typeof document.elementsFromPoint==='function')for(const node of document.elementsFromPoint(x,y)){const el=node.closest?.('[data-garden-item]');if(el&&(!scene.contains||scene.contains(el)))return el;if(node.closest?.('#livingGarage,#livingGaragePanel,.living-interior'))return null}
+ let found=null,best=Infinity;for(const el of scene.querySelectorAll('[data-garden-item]')){const r=el.getBoundingClientRect();if(x<r.left||x>r.right||y<r.top||y>r.bottom)continue;const d=Math.hypot(x-(r.left+r.width/2),y-(r.top+r.height/2));if(d<best){best=d;found=el}}return found;
+}
+function armPlacement(kind,id,ctx,menu){placement={kind,id};document.querySelector('#livingScene')?.classList.add('placing');menu.innerHTML=`Tap the spot for ${escapeText(kind==='actor'?CHARACTER_NAMES[id]:HOUSES[id]||ctx.items?.find(item=>item.id===id)?.label||id)} ✦ <button data-cancel-placement>Cancel</button>`;menu.querySelector('[data-cancel-placement]')?.addEventListener('click',()=>{placement=null;document.querySelector('#livingScene')?.classList.remove('placing');menu.textContent='Drag a friend onto something ✦'})}
 function dragActor(el,id,scene,ctx){
  let start=null,moved=false;
  el.addEventListener('pointerdown',e=>{
@@ -204,7 +209,7 @@ function itemHtml(id,ctx,fruitStage,fruitLabel){
  return `<button class="living-item living-prop ${id}" data-garden-item="${id}" style="${style}" aria-label="${escapeText(label)}">${ctx.art?.(id)||escapeText(label)}</button>`;
 }
 function render(ctx){
- active=ctx;const {state,celebration,play,art}=ctx;
+ active=ctx;placement=null;const {state,celebration,play,art}=ctx;
  const part=daypart(),g=state.garden,view=document.querySelector('#gardenView');
  const titles={morning:'A gentle morning',day:'A sunny afternoon',evening:'A glowing evening',night:'A peaceful night'};
  const note=celebration?`<div class="living-moment">🌱 ${escapeText(celebration.word)} helped your garden grow!${celebration.moment?`<small>${escapeText(celebration.moment)}</small>`:''}</div>`:'';
@@ -215,7 +220,7 @@ function render(ctx){
  const garage=`<button id="livingGarage" class="living-garage${garageOpen?' open':''}" aria-label="Open Garden Garage" aria-expanded="${garageOpen}" aria-controls="livingGaragePanel"><i class="garage-roof"></i><i class="garage-wall"></i><i class="garage-door"></i><span>Garage · ${available.filter(item=>!itemPlaced(item.id,ctx)).length}</span></button>`;
  const panel=garageOpen?`<section id="livingGaragePanel" class="living-garage-panel" aria-label="Garden Garage contents"><header><strong>Garden Garage · ${available.length} owned</strong><button id="livingGarageClose" aria-label="Close Garage">×</button></header><div class="living-garage-list">${inventory}</div></section>`:'';
  view.innerHTML=`<div class="living-garden garden-view"><header class="living-head"><div><p class="eyebrow">YOUR LIVING GARDEN</p><h1>Miori’s little world ✦</h1><p>${titles[part]} · ${g.growth} words grown</p></div><button id="livingPlay" class="primary-btn">${celebration?'Next word →':'Play! ✦'}</button></header><div class="living-scene ${part}" id="livingScene"><div class="living-sky"><i class="living-cloud first"></i><i class="living-cloud second"></i><i class="living-sun"></i><i class="living-moon"></i><i class="living-stars">✦　✧　✦</i></div><div class="living-hill far"></div><div class="living-hill near"></div><div class="living-shrub left"></div><div class="living-shrub right"></div><div class="living-path"></div><div class="living-lawn"></div>${onGround.map(id=>itemHtml(id,ctx,fruitStage,fruitLabel)).join('')}${garage}<div class="living-patio-lights">✦　✦　✦　✦</div><div id="livingActors">${CHARACTERS.filter(id=>g.locations[id]==='garden'&&(id!=='cat'||state.xp>=360)).map(id=>{const p=g.characterPos[id]||{x:50,y:70};return `<button class="living-actor ${id}${g.commands[id]?.kind==='sit'&&g.commands[id].until>Date.now()?' pose-sit':''}" data-living-actor="${id}" style="left:${p.x}%;top:${p.y}%" aria-label="${id} options">${id==='bird'?BIRD_ART:art?.(id)||escapeText(id)}</button>`}).join('')}</div>${note}<div id="livingReaction" class="living-reaction" aria-live="polite"></div><div class="living-scene-label">${titles[part]} · ${fruitLabel}</div>${panel}${insideOpen?interiorHtml(ctx):''}</div><div id="livingActions" class="living-actions" aria-live="polite">Drag a friend onto something ✦</div></div>`;
- view.querySelector('#livingPlay').addEventListener('click',()=>{garageOpen=false;insideOpen=false;play()});
+ view.querySelector('#livingPlay').addEventListener('click',()=>{garageOpen=false;insideOpen=false;placement=null;play()});
  view.querySelector('#livingRoomClose')?.addEventListener('click',()=>closeInterior(ctx));
  view.querySelectorAll('[data-room-out]').forEach(el=>el.addEventListener('click',()=>comeOutsideFromInterior(el.dataset.roomOut,ctx)));
  const room=view.querySelector('.living-room');if(room)view.querySelectorAll('[data-room-actor]').forEach(el=>dragRoomActor(el.querySelector('.living-room-character'),el.dataset.roomActor,room,ctx));
@@ -223,23 +228,29 @@ function render(ctx){
  view.querySelector('#livingGarageClose')?.addEventListener('click',()=>{garageOpen=false;render(ctx);view.querySelector('#livingGarage')?.focus?.()});
  view.querySelector('#livingFruit').addEventListener('click',e=>{if(e.currentTarget.disabled)return;const eater=CHARACTERS.find(id=>g.locations[id]==='garden'&&(id!=='cat'||state.xp>=360));if(eater)dropCharacter(eater,'tree',ctx)});
  const scene=view.querySelector('#livingScene');
+ scene.addEventListener('click',e=>{if(!placement||e.target.closest?.('#livingGarage,#livingGaragePanel,#livingFruit,.living-interior'))return;
+   const r=scene.getBoundingClientRect(),p={x:(e.clientX-r.left)/r.width*100,y:(e.clientY-r.top)/r.height*100},{kind,id}=placement;placement=null;
+   if(kind==='actor')placeActor(id,p,ctx);else moveItem(id,p,ctx);render(ctx);e.preventDefault?.();e.stopPropagation?.();
+ },true);
  view.querySelectorAll('[data-garden-item]').forEach(el=>{
    const id=el.dataset.gardenItem;dragItem(el,id,scene,ctx);
    el.addEventListener('click',()=>{if(el.dataset.dragged)return;
      const menu=view.querySelector('#livingActions');
      if(HOUSES[id]){
        const inside=houseResidents(ctx,id);
-       menu.innerHTML=`<strong>${HOUSES[id]} · ${inside.length} inside</strong>${id==='main_house'?'<button id="livingLookInside">Look Inside</button>':''}${inside.map(c=>`<button data-out="${c}">${CHARACTER_NAMES[c]} come outside</button>`).join('')||'<span>Drag a friend to the door</span>'}${inside.length>1?'<button data-out-all="true">Everyone come outside</button>':''}`;
+       menu.innerHTML=`<strong>${HOUSES[id]} · ${inside.length} inside</strong><button data-move="${id}">Move house</button>${id==='main_house'?'<button id="livingLookInside">Look Inside</button>':''}${inside.map(c=>`<button data-out="${c}">${CHARACTER_NAMES[c]} come outside</button>`).join('')||'<span>Drag a friend to the door</span>'}${inside.length>1?'<button data-out-all="true">Everyone come outside</button>':''}`;
+       menu.querySelector('[data-move]')?.addEventListener('click',()=>armPlacement('item',id,ctx,menu));
        if(id==='main_house')menu.querySelector('#livingLookInside')?.addEventListener('click',()=>lookInside(ctx));
        menu.querySelectorAll('[data-out]').forEach(btn=>btn.addEventListener('click',()=>characterAction(btn.dataset.out,'garden',ctx)));
        menu.querySelector('[data-out-all]')?.addEventListener('click',()=>everyoneOutside(ctx,id));
      }else if(id!=='tree'){
-       menu.innerHTML=`<span>Drag a friend onto ${escapeText(ctx.items?.find(item=>item.id===id)?.label||id)} ✦</span> <button data-store="${id}">Put in Garage</button>`;
+       menu.innerHTML=`<span>Drag a friend onto ${escapeText(ctx.items?.find(item=>item.id===id)?.label||id)} ✦</span> <button data-move="${id}">Move</button> <button data-store="${id}">Put in Garage</button>`;
+       menu.querySelector('[data-move]')?.addEventListener('click',()=>armPlacement('item',id,ctx,menu));
        menu.querySelector('[data-store]')?.addEventListener('click',()=>storeItem(id,ctx));
-     }else menu.textContent='Drag a friend onto the fruit tree ✦';
+     }else{menu.innerHTML='Drag a friend onto the fruit tree ✦ <button data-move="tree">Move tree</button>';menu.querySelector('[data-move]')?.addEventListener('click',()=>armPlacement('item','tree',ctx,menu))}
    });
  });
- view.querySelectorAll('[data-living-actor]').forEach(el=>{dragActor(el,el.dataset.livingActor,scene,ctx);el.addEventListener('click',()=>{if(el.dataset.dragged)return;view.querySelector('#livingActions').textContent=`Drag ${el.dataset.livingActor==='bird'?'Bird':el.dataset.livingActor==='cat'?'Cat':'Bunny'} onto a Garden item ✦`})});
+ view.querySelectorAll('[data-living-actor]').forEach(el=>{dragActor(el,el.dataset.livingActor,scene,ctx);el.addEventListener('click',()=>{if(el.dataset.dragged)return;const id=el.dataset.livingActor,menu=view.querySelector('#livingActions');menu.innerHTML=`Drag ${CHARACTER_NAMES[id]} onto a Garden item ✦ <button data-move-actor="${id}">Move freely</button>`;menu.querySelector('[data-move-actor]')?.addEventListener('click',()=>armPlacement('actor',id,ctx,menu))})});
  view.querySelectorAll('[data-place]').forEach(el=>el.addEventListener('click',()=>placeItem(el.dataset.place,ctx)));
  view.querySelectorAll('[data-store]').forEach(el=>el.addEventListener('click',()=>storeItem(el.dataset.store,ctx)));
 }
