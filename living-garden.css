@@ -19,6 +19,7 @@
 .living-oak .trunk:before{content:"";position:absolute;top:21%;bottom:14%;left:25%;width:15%;border-radius:20px;background:#b78d6b66}
 .living-fruit svg{display:block;width:100%;height:100%}
 .living-actor.bird{font-size:inherit}
+.living-fruit:disabled{pointer-events:none}
 @media(max-width:700px){.living-arch{left:39%;top:44%;width:37%;min-width:128px;height:40%}}
 /* C.6: small movable furniture in the shared Garden play space. */
 .living-garden{display:flex;flex-direction:column;gap:10px}

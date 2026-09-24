@@ -1,6 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const source=fs.readFileSync('living-garden.js','utf8');
+const styles=fs.readFileSync('living-garden.css','utf8');
 const app=fs.readFileSync('app.js','utf8');
 const rewards=vm.runInNewContext(`${app.match(/const rewards=\[[\s\S]*?\n\];/)[0]};rewards`).filter(r=>r.type==='treasure').map(({id,xp,label})=>({id,xp,label}));
 function setup(xp=0){
@@ -73,6 +74,7 @@ test('Cat remains locked below 360 XP and all seven items are absent in a new Ga
  assert(view.innerHTML.includes('0 unlocked'));
 });
 test('Pointer drop on a bench triggers sitting; dragging interrupts autonomous motion',()=>{
+ assert(styles.includes('.living-fruit:disabled{pointer-events:none}'),'the invisible unripe fruit cannot intercept Tree drags');
  const timers=[],handlers=()=>({});
  function element(dataset,box){const events=handlers(),classes=new Set();return{dataset,style:{left:'46%',top:'73%'},events,box,classList:{add:x=>classes.add(x),remove:(...xs)=>xs.forEach(x=>classes.delete(x)),toggle:(x,on)=>on?classes.add(x):classes.delete(x)},addEventListener:(type,fn)=>events[type]=fn,setPointerCapture(){},getBoundingClientRect(){return box}}}
  const bench=element({gardenItem:'bench'},{left:490,right:590,top:295,bottom:385,width:100,height:90});
