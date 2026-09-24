@@ -23,7 +23,7 @@ assert(src.includes("if(!state.week.ids.includes(word))state.week.ids.push(word)
 assert(src.includes('practiceKindLabel(q.practiceKind)'),'Play tells Miori which kind of practice she is doing');
 assert(css.includes('.word-group-tabs')&&css.includes('.group-word-card')&&css.includes('.practice-kind-badge'),'Group management and practice labels have dedicated UI');
 assert(page.includes('learning-groups-v32.css?v=20260917-v32'),'New group UI is cache-busted');
-assert(page.includes('app.js?v=20260924-living-a'),'Updated app logic is cache-busted');
-assert(page.includes('v39 · Sep 24'),'Visible version is v32');
+assert(page.includes('app.js?v=20260924-living-b'),'Updated app logic is cache-busted');
+assert(page.includes('v40 · Sep 24'),'Visible version is v32');
 assert(page.includes('play-viewport-v31.css?v=20260917-v31')&&page.includes('writing-erase-v30.js?v=20260917-v30'),'Recent iPad layout and eraser fixes remain loaded');
 console.log('PASS v32: This Week focus expires with the week, My Words persist and start at recall, Past Tests stay explicit, Today Play is 4+1, saved progress migrates.');

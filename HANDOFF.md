@@ -37,3 +37,11 @@ Phase status: A completed. B/C/D not started. Old Treasure unlocks are suppresse
 Verification: node --check app.js/living-garden.js, `node --test tests/*.test.cjs` 22 passing checks including migration, time classification, and environment. GitHub Pages success and production URL verification must be recorded after push. Local browser screenshot was unavailable because the installed Playwright package had no browser executable. iPad Safari/PWA dayparts, cloud speed, responsive layout and actual Pencil flow remain unverified on device.
 
 Next: Phase B character location / explicit actions and gentle autonomous behavior, Flower Arch reaction. Then Phase C fruit and time-of-day moments. Keep each phase self-contained, version/cache updated, tests + successful deployment before continuing. Phase D not yet started.
+
+## Living Garden Phase B — v40, 2026-09-24
+
+Completed: Bunny, Cat, and Bird each have persistent `garden` / `main_house` locations and Garden positions. A v39 garden gains missing residents in place without resetting existing growth or a chosen Bunny location. The characters rest or wander gently on a 9.5-second tick only while the Garden view is active. Explicit commands set a 20-second preference over autonomous movement. Tapping a friend offers Visit Arch / Go Home; tapping the Flower Arch invites a friend; the house shows an indoor count and offers Come Outside. House residents are absent from Garden interaction. Flower Arch has a shared object reaction lookup keyed by object and character, ready for future object reactions. The house is a simple destination at this phase; detailed door and interior interactions remain Phase D.
+
+Data: Garden-only `locations`, `characterPos`, `commands`, `placed` persist through the existing localStorage save and backup. Learning, weekly test, XP and Pencil code remain untouched. `placed:['arch']` introduces the Flower Arch in this fresh Garden; Garage/storage work remains Phase D.
+
+Verification: targeted Phase A/B tests and full Node suite: 26 passing checks. No iPad Safari/PWA visual or Pencil device verification. Deployment/job/production status to be confirmed after push. Phase A/B complete; C and D not started. Next touch `living-garden.js` + `living-garden.css` for fruit and daypart moments, and the single Stage 4 completion branch in `app.js` for the event hook.

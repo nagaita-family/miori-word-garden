@@ -180,7 +180,7 @@ function gardenReactionHtml(){
 }
 function growthJourneyHtml(target){if(!target)return'';return`<div class="growth-journey ${target}"><i class="journey-stem"></i><i class="journey-leaf l"></i><i class="journey-leaf r"></i><i class="journey-bud"></i><i class="journey-bloom"></i></div>`}
 function renderGarden(){
-  if(window.LivingGarden){window.LivingGarden.render({state,celebration:gardenCelebration,save,play:()=>{gardenCelebration=null;setView('play')}});return}
+  if(window.LivingGarden){window.LivingGarden.render({state,celebration:gardenCelebration,save,play:()=>{gardenCelebration=null;setView('play')},art:id=>gardenObjectArt(rewards.find(r=>r.id===id))});return}
   const a=Math.min(5,Math.max(0,state.garden.growth));const b=Math.min(5,Math.max(0,state.garden.growth-5));
   const next=rewards.find(r=>state.xp<r.xp);const wordsAway=next?Math.max(1,Math.ceil((next.xp-state.xp)/30)):0;const nextText=next?`${next.icon||'✦'} Next: ${next.label} · ${wordsAway} ${wordsAway===1?'word':'words'} away`:'✨ All current garden surprises unlocked!';
   const seatText=state.xp<90?'Keep growing — Bunny’s cozy bench is coming!':state.garden.bunnySeated?'🐰 Bunny is cozy on the bench ♡':'Drag Bunny around the backyard — every special spot has its own little reaction.';
