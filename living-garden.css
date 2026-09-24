@@ -93,3 +93,16 @@
 .living-garage-list .living-shelf-name small{display:block;color:#8b786e;font-size:10px}
 .living-garage-list .living-shelf-card button{font-size:11px;padding:7px 9px}
 @media(max-width:700px){.living-garage{left:38%;height:88px;width:76px}.living-garage .garage-wall{height:52px}.living-garage .garage-roof{top:8px;height:28px}.living-garage .garage-door{height:42px}.living-garage-panel{left:10px;bottom:14px;width:calc(100% - 20px);max-height:75%}}
+
+/* D.2: the same little house now shows who is home and opens for arrivals. */
+.living-house .door{transform-origin:left center;transition:transform .42s ease,background .42s ease;backface-visibility:hidden}
+.living-house.door-open .door{transform:perspective(80px) rotateY(-58deg);background:#6a685e}
+.living-house.door-open{box-shadow:0 8px 0 #42664b29,0 0 17px #fff0ac9e}
+.living-actor.house-entering{z-index:9;transform:translate(-50%,-50%) scale(.48);opacity:.55;transition:left .8s ease-in,top .8s ease-in,transform .8s ease-in,opacity .8s ease-in}
+.living-actor.house-entering.house-behind{z-index:3;opacity:0}
+.living-actor.house-emerging{z-index:3;transform:translate(-50%,-50%) scale(.4);opacity:.2;transition:none}
+.living-house .house-friends{position:absolute;left:50%;top:-52px;transform:translateX(-50%);z-index:5;display:flex;gap:2px;padding:4px 5px;border:2px solid #fff8e4;border-radius:24px;background:#fff9eae8;box-shadow:0 4px 9px #4c654743;pointer-events:none}
+.living-house .house-face{display:block;width:24px;height:24px;overflow:hidden;border-radius:50%;background:#fce6d7}
+.living-house .house-face svg{display:block;width:100%;height:100%;object-fit:contain}
+@media(max-width:700px){.living-house .house-friends{top:-42px;padding:3px}.living-house .house-face{width:19px;height:19px}}
+@media(prefers-reduced-motion:reduce){.living-house .door,.living-actor.house-entering,.living-actor.house-emerging{transition:none}}

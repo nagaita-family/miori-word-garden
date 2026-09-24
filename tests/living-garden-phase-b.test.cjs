@@ -16,6 +16,8 @@ test('Phase A state adds B residents once without resetting growth or a custom l
 test('Explicit house trip persists and house residents cannot use the Garden arch',()=>{
  const {api,state,timers,callbacks,saved}=setup();api.characterAction('bunny','main_house',callbacks);
  assert.equal(state.garden.commands.bunny.target,'main_house');assert.equal(state.garden.characterPos.bunny.x,87);
+ timers.shift()();assert.equal(state.garden.locations.bunny,'garden');
+ timers.shift()();assert.equal(state.garden.locations.bunny,'garden');
  timers.shift()();assert.equal(state.garden.locations.bunny,'main_house');
  const before=timers.length;api.characterAction('bunny','arch',callbacks);assert.equal(timers.length,before);
  assert(saved.at(-1).includes('main_house'));
@@ -58,7 +60,7 @@ test('Living Garden renders a painted arch with a clear passage and illustrated 
  assert.match(css,/\.living-arch\.living-item\{[^}]*z-index:7;pointer-events:auto/);
  assert.match(css,/\.living-arch-art\{[^}]*pointer-events:none/);
  assert.match(css,/\.living-arch-art path,\.living-arch-art use\{pointer-events:visiblePainted/);
- assert(fs.readFileSync('index.html','utf8').includes('living-garden.css?v=20260924-d1b'));
+ assert(fs.readFileSync('index.html','utf8').includes('living-garden.css?v=20260924-d2'));
 });
 test('Wandering respects manual commands and indoors state',()=>{
  const {api,state,callbacks}=setup();state.garden.locations.bunny='main_house';state.garden.commands.cat={until:Date.now()+10000,target:'arch'};
