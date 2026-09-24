@@ -33,3 +33,18 @@ test('Wandering respects manual commands and indoors state',()=>{
  const css=fs.readFileSync('living-garden.css','utf8');assert(css.includes('transition:left 1.1s ease'));
  assert(api.OBJECT_REACTIONS.arch.bunny);assert(!api.OBJECT_REACTIONS.bench);
 });
+test('Dragging can place a resident across the scene and saves a bounded position',()=>{
+ const {api,state,callbacks,saved}=setup();
+ api.characterAction('bunny','arch',callbacks);
+ api.placeActor('bunny',{x:78,y:74},callbacks);
+ assert.equal(state.garden.commands.bunny.target,'placed');
+ assert.deepEqual(JSON.parse(JSON.stringify(state.garden.characterPos.bunny)),{x:78,y:74});
+ api.placeActor('cat',{x:170,y:-30},callbacks);
+ assert.deepEqual(JSON.parse(JSON.stringify(state.garden.characterPos.cat)),{x:95,y:10});
+ assert(saved.at(-1).includes('"x":95'));
+ const css=fs.readFileSync('living-garden.css','utf8');
+ assert.match(css,/#livingActors\{position:absolute;inset:0;z-index:8;pointer-events:none\}/);
+ assert.match(css,/\.living-actor\{pointer-events:auto;touch-action:none\}/);
+ assert.match(css,/animation-duration:38s/);
+ assert.match(css,/translateX\(190px\)/);
+});

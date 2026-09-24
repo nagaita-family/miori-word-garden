@@ -52,6 +52,38 @@ function moveActor(id,pos,ctx){
  if(el){el.style.left=`${pos.x}%`;el.style.top=`${pos.y}%`}
  ctx.save();
 }
+function placeActor(id,pos,ctx){
+ if(!ctx||ctx.state.garden.locations[id]!=='garden')return;
+ actionTokens[id]=(actionTokens[id]||0)+1;
+ ctx.state.garden.commands[id]={target:'placed',until:Date.now()+20000};
+ moveActor(id,{x:Math.max(5,Math.min(95,pos.x)),y:Math.max(10,Math.min(90,pos.y))},ctx);
+}
+function dragActor(el,id,scene,ctx){
+ let start=null,moved=false;
+ el.addEventListener('pointerdown',e=>{
+   if(e.button!==0&&e.pointerType==='mouse')return;
+   start={id:e.pointerId,x:e.clientX,y:e.clientY};moved=false;el.setPointerCapture(e.pointerId);
+ });
+ el.addEventListener('pointermove',e=>{
+   if(!start||e.pointerId!==start.id)return;
+   if(!moved&&Math.hypot(e.clientX-start.x,e.clientY-start.y)<6)return;
+   moved=true;const box=scene.getBoundingClientRect();
+   if(!box.width||!box.height)return;
+   el.classList.add('dragging');
+   el.style.left=`${Math.max(5,Math.min(95,(e.clientX-box.left)/box.width*100))}%`;
+   el.style.top=`${Math.max(10,Math.min(90,(e.clientY-box.top)/box.height*100))}%`;
+ });
+ function end(e){
+   if(!start||e.pointerId!==start.id)return;
+   if(moved){
+     if(e.type==='pointerup')placeActor(id,{x:parseFloat(el.style.left),y:parseFloat(el.style.top)},ctx);
+     else {const old=ctx.state.garden.characterPos[id];el.style.left=`${old.x}%`;el.style.top=`${old.y}%`}
+     el.dataset.dragged='true';setTimeout(()=>delete el.dataset.dragged,0);
+   }
+   el.classList.remove('dragging');start=null;
+ }
+ el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+}
 function gentleWander(){
  const ctx=active,scene=document.querySelector('#gardenView.active-view .living-scene');if(!ctx||!scene)return;
  const g=ctx.state.garden;for(const id of CHARACTERS){
@@ -76,11 +108,12 @@ function render(ctx){
    const reaction=view.querySelector('#livingReaction');if(reaction)reaction.textContent=eater?`${eater==='bunny'?'Bunny':eater==='cat'?'Cat':'Bird'} enjoys the fruit! 🍊`:'A little snack is waiting for your friends 🍊';
    setTimeout(()=>{if(!eatFruit(g))return;ctx.save();if(document.querySelector('#gardenView.active-view'))render(ctx)},1250);
  });
- view.querySelectorAll('[data-living-actor]').forEach(el=>el.addEventListener('click',()=>{
+ view.querySelectorAll('[data-living-actor]').forEach(el=>{dragActor(el,el.dataset.livingActor,view.querySelector('#livingScene'),ctx);el.addEventListener('click',()=>{
+   if(el.dataset.dragged)return;
    const id=el.dataset.livingActor,menu=view.querySelector('#livingActions');
    menu.innerHTML=`<strong>${id==='bunny'?'Bunny':id==='cat'?'Cat':'Bird'}</strong><button data-action="arch">Visit arch</button><button data-action="main_house">Go home</button>`;
    menu.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>characterAction(id,btn.dataset.action,{...ctx})));
- }));
+ });});
  view.querySelector('#livingArch').addEventListener('click',()=>{
    const id=CHARACTERS.find(c=>g.locations[c]==='garden');if(id)characterAction(id,'arch',ctx);
  });
@@ -91,7 +124,7 @@ function render(ctx){
  });
 }
 function escapeText(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-window.LivingGarden={VERSION,fresh,migrate,daypart,render,characterAction,gentleWander,onWordComplete,eatFruit,OBJECT_REACTIONS};
+window.LivingGarden={VERSION,fresh,migrate,daypart,render,characterAction,placeActor,gentleWander,onWordComplete,eatFruit,OBJECT_REACTIONS};
 setInterval(gentleWander,9500);
 let lastPart=daypart();setInterval(()=>{const next=daypart();if(next!==lastPart){lastPart=next;if(document.querySelector('#gardenView.active-view .living-scene'))document.querySelector('[data-nav="garden"]')?.click()}},60000);
 })();

@@ -63,3 +63,9 @@ Next session: inspect this latest main and HANDOFF first. Phase D may implement 
 - Phase C: `698583d3212cfdd1f28f3957c0840e587f21e15c`, Pages run `35948181024` completed/success; production displayed v41 and served the matching `living-garden.js` asset.
 
 All three phases are complete and published; Phase D is untouched. Browser visual preview and iPad Safari/Pencil interaction are still unverified. The installed Playwright package had no browser executable in this workspace; no visual QA claim is made. When resuming, confirm production main and check the Garden on iPad before starting Phase D.
+
+## Living Garden layout and interaction fix — v42, 2026-09-24
+
+The user reported that all characters clustered at the upper-left, could not be moved, and cloud movement was imperceptible. Cause: `#livingActors` was an absolutely positioned direct child of `.living-scene` with no bounds; its children used percentage positions relative to that collapsed layer. It now fills the scene (`inset:0`) and allows pointer interaction only on the actor buttons. Pointer drag with mouse, touch or Apple Pencil places an actor within scene bounds, saves its Garden position, and overrides wandering for 20 seconds. A tap still opens its arch/house menu. Clouds now traverse 190px over 38/52 seconds, with reduced-motion animation disabled.
+
+Verification: `node --check living-garden.js`, `git diff --check`, full Node suite 30 passing checks including bounded placement and actor-layer coverage. Production run and iPad Safari/Pencil visual verification remain to be recorded after publication. Learning state, Stage 3 writing, XP and weekly test remain untouched. Phase D has not started.
