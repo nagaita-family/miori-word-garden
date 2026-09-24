@@ -58,7 +58,7 @@ function dropCharacter(id,item,ctx=active){
    setTimeout(()=>{if(stillHere())showReaction(id,item,kind,ctx)},1600);
  }else if(item==='main_house'){
    moveActor(id,{x:p.x+3,y:p.y-8},ctx);
-   setTimeout(()=>{if(!stillHere())return;g.locations[id]='main_house';ctx.save();if(document.querySelector('#gardenView.active-view'))render(ctx)},950);
+   setTimeout(()=>{if(!stillHere())return;g.locations[id]='main_house';ctx.save();if(document.querySelector('#gardenView.active-view')){render(ctx);showReaction(id,item,kind,ctx);const actions=document.querySelector('#livingActions');if(actions){actions.innerHTML=`${reactionText(id,item,kind)} <button data-out="${id}">Come outside</button>`;actions.querySelector('[data-out]')?.addEventListener('click',()=>characterAction(id,'garden',ctx))}}},950);
  }else{
    const pos=item==='tree'?{x:p.x+9,y:id==='bird'?p.y-37:p.y-14}:item==='arch'?{x:p.x,y:p.y-19}:{x:p.x,y:p.y-(kind==='perch'?13:7)};
    moveActor(id,pos,ctx);

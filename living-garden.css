@@ -26,8 +26,8 @@
 .living-item{touch-action:none;user-select:none;cursor:grab}
 .living-item.dragging{z-index:11!important;cursor:grabbing;filter:drop-shadow(0 12px 8px #425b5b55)}
 .living-item.drop-target{outline:3px solid #fff2b3;outline-offset:4px;border-radius:20px;filter:drop-shadow(0 0 9px #fff4ac)}
-.living-oak.living-item{width:18%;height:49%;transform:translate(-50%,-100%);z-index:3;pointer-events:auto}
-.living-house.living-item{width:15%;height:30%;transform:translate(-50%,-100%);z-index:4}
+.living-oak.living-item{width:clamp(105px,12%,145px);height:clamp(150px,32%,190px);transform:translate(-50%,-100%);z-index:3;pointer-events:auto}
+.living-house.living-item{width:clamp(95px,10%,125px);height:clamp(100px,23%,140px);transform:translate(-50%,-100%);z-index:4}
 .living-arch.living-item{width:clamp(92px,12%,134px);height:clamp(92px,19%,130px);transform:translate(-50%,-100%);z-index:7;pointer-events:auto}
 .living-prop{width:clamp(68px,8%,106px);height:clamp(65px,14%,94px);transform:translate(-50%,-100%);z-index:6;padding:0;border:0;background:transparent;filter:drop-shadow(0 5px 4px #495b4933)}
 .living-prop svg{width:100%;height:100%}
@@ -42,4 +42,4 @@
 .living-shelf-art{width:34px;height:34px;flex:none}.living-shelf-art svg{width:100%;height:100%}
 .living-shelf-name{font-size:10px;line-height:1.2;flex:1;min-width:0}
 .living-shelf-card button{border:0;border-radius:10px;background:#eed6e9;color:#644d66;font-size:10px;font-weight:800;padding:5px;cursor:pointer}
-@media(max-width:700px){.living-scene{height:58vh;min-height:355px}.living-oak.living-item{width:29%;height:40%}.living-house.living-item{width:20%;height:25%}.living-arch.living-item{width:92px;height:95px;min-width:0}.living-prop{width:65px;height:65px}.living-prop.shed{width:74px;height:74px}.living-actor{width:45px;height:54px}.living-actor.cat{width:43px;height:50px}.living-actor.bird{width:32px;height:35px}.living-reaction{font-size:11px;white-space:normal}}
+@media(max-width:700px){.living-scene{height:58vh;min-height:355px}.living-oak.living-item{width:100px;height:145px}.living-house.living-item{width:88px;height:105px}.living-arch.living-item{width:92px;height:95px;min-width:0}.living-prop{width:65px;height:65px}.living-prop.shed{width:74px;height:74px}.living-actor{width:45px;height:54px}.living-actor.cat{width:43px;height:50px}.living-actor.bird{width:32px;height:35px}.living-reaction{font-size:11px;white-space:normal}}
