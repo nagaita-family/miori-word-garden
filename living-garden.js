@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const VERSION=2;
-const DEFAULT_ITEMS={tree:{x:18,y:90},main_house:{x:84,y:72},bench:{x:52,y:80},picnic:{x:73,y:94},mail:{x:42,y:70},birdbath:{x:82,y:91},seedcrate:{x:36,y:91},arch:{x:62,y:84},shed:{x:92,y:93}};
+const DEFAULT_ITEMS={tree:{x:18,y:90},main_house:{x:84,y:72},cat_house:{x:64,y:69},bird_house:{x:36,y:58},bench:{x:52,y:80},picnic:{x:73,y:94},mail:{x:42,y:70},birdbath:{x:82,y:91},seedcrate:{x:36,y:91},arch:{x:62,y:84},shed:{x:92,y:93}};
 function fresh(){return{livingGardenVersion:VERSION,growth:0,pos:{},stored:[],bunnySeated:false,locations:{bunny:'garden',cat:'garden',bird:'garden'},characterPos:{bunny:{x:46,y:73},cat:{x:68,y:78},bird:{x:31,y:35}},roomPos:{},commands:{},fruit:{progress:0,eaten:0},houses:{main_house:{owned:true}},garage:[],placed:[],itemPos:{},moments:{}}}
 function migrate(state){
  if(state.garden?.livingGardenVersion===VERSION||state.garden?.livingGardenVersion===1){const g=state.garden;
@@ -16,8 +16,9 @@ function daypart(date=new Date()){
  const hour=date.getHours();return hour<6||hour>=20?'night':hour<11?'morning':hour<17?'day':'evening';
 }
 const CHARACTERS=['bunny','cat','bird'];
+const HOUSES={main_house:'Main House',cat_house:'Cat Cottage',bird_house:'Bird Nest House'};
 const OBJECT_REACTIONS={arch:{bunny:'Bunny hops through the flower arch! ♡',cat:'Cat strolls through the flowers ✿',bird:'Bird rests on top of the arch ♫'}};
-const ITEM_REACTIONS={bench:'sit',picnic:'eat',mail:'inspect',birdbath:'drink',seedcrate:'play',arch:'walkThrough',shed:'inspect',tree:'inspect',main_house:'enter'};
+const ITEM_REACTIONS={bench:'sit',picnic:'eat',mail:'inspect',birdbath:'drink',seedcrate:'play',arch:'walkThrough',shed:'inspect',tree:'inspect',main_house:'enter',cat_house:'enter',bird_house:'enter'};
 const DAY_MOMENTS={morning:'Good morning! The flowers open in the soft light 🌼',day:'A sunny little growing moment ☀️',evening:'The garden glows at sunset 🌅',night:'The patio lights welcome you home ✨'};
 // Illustrated, open-centered trellis: the arch sits in front of residents while its opening remains touchable.
 const FLOWER_ARCH=`<svg class="living-arch-art" viewBox="0 0 240 220" aria-hidden="true" focusable="false"><path d="M22 207V98C22 44 63 17 120 17s98 27 98 81v109" fill="none" stroke="#708f69" stroke-width="23" stroke-linecap="round"/><path d="M22 207V98C22 44 63 17 120 17s98 27 98 81v109" fill="none" stroke="#e1c7a0" stroke-width="14" stroke-linecap="round"/><path d="M22 207V98C22 44 63 17 120 17s98 27 98 81v109" fill="none" stroke="#74a672" stroke-width="5" stroke-linecap="round"/><path d="M32 107l-20 12m24 28-26 12m200-52 20 12m-24 28 26 12" stroke="#91785c" stroke-width="4" stroke-linecap="round"/><g fill="#6eaa72"><ellipse cx="30" cy="82" rx="8" ry="16" transform="rotate(-40 30 82)"/><ellipse cx="55" cy="46" rx="8" ry="15" transform="rotate(-55 55 46)"/><ellipse cx="88" cy="24" rx="8" ry="16" transform="rotate(-25 88 24)"/><ellipse cx="153" cy="24" rx="8" ry="16" transform="rotate(25 153 24)"/><ellipse cx="185" cy="46" rx="8" ry="15" transform="rotate(55 185 46)"/><ellipse cx="210" cy="82" rx="8" ry="16" transform="rotate(40 210 82)"/><ellipse cx="13" cy="164" rx="7" ry="14" transform="rotate(-44 13 164)"/><ellipse cx="227" cy="164" rx="7" ry="14" transform="rotate(44 227 164)"/></g><defs><g id="livingBlossom"><g fill="#f4a8ad" stroke="#e68ba0" stroke-width=".8"><circle cx="0" cy="-7" r="5"/><circle cx="7" cy="-2" r="5"/><circle cx="4" cy="6" r="5"/><circle cx="-4" cy="6" r="5"/><circle cx="-7" cy="-2" r="5"/></g><circle r="3.8" fill="#ffe2a0"/></g></defs><use href="#livingBlossom" transform="translate(35 70) scale(1)"/><use href="#livingBlossom" transform="translate(67 34) scale(0.95)"/><use href="#livingBlossom" transform="translate(119 16) scale(1.1)"/><use href="#livingBlossom" transform="translate(171 34) scale(0.95)"/><use href="#livingBlossom" transform="translate(205 71) scale(1)"/><use href="#livingBlossom" transform="translate(20 140) scale(0.8)"/><use href="#livingBlossom" transform="translate(220 140) scale(0.8)"/><path d="M6 210q16-8 34 0m160 0q17-8 34 0" fill="none" stroke="#acc186" stroke-width="7" stroke-linecap="round"/></svg>`;
@@ -42,7 +43,7 @@ const CHARACTER_NAMES={bunny:'Bunny',cat:'Cat',bird:'Bird'};
 const ROOM_DEFAULTS={bunny:{x:46,y:65},cat:{x:70,y:66},bird:{x:78,y:46}};
 function roomPosition(g,id){const p=g.roomPos?.[id];return p&&Number.isFinite(p.x)&&Number.isFinite(p.y)?p:ROOM_DEFAULTS[id]}
 function placeRoomActor(id,pos,ctx=active){if(!ctx||!houseResidents(ctx).includes(id)||!Number.isFinite(pos.x)||!Number.isFinite(pos.y))return false;const p={x:Math.max(12,Math.min(88,pos.x)),y:Math.max(35,Math.min(77,pos.y))};ctx.state.garden.roomPos??={};ctx.state.garden.roomPos[id]=p;ctx.save();const el=document.querySelector(`[data-room-actor="${id}"]`);if(el){el.style.left=`${p.x}%`;el.style.top=`${p.y}%`}return true}
-function houseResidents(ctx){return CHARACTERS.filter(id=>ctx.state.garden.locations[id]==='main_house'&&(id!=='cat'||ctx.state.xp>=360))}
+function houseResidents(ctx,house='main_house'){return CHARACTERS.filter(id=>ctx.state.garden.locations[id]===house&&(id!=='cat'||ctx.state.xp>=360))}
 function interiorHtml(ctx){
  const residents=houseResidents(ctx);
  const places={bunny:'Sofa',cat:'Cushion',bird:'Window'};
@@ -59,15 +60,16 @@ function lookInside(ctx=active){if(!ctx)return false;insideOpen=true;render(ctx)
 function closeInterior(ctx=active){if(!ctx||!insideOpen)return false;insideOpen=false;render(ctx);document.querySelector('#livingHouse')?.focus?.();return true}
 function comeOutsideFromInterior(id,ctx=active){if(!ctx||!insideOpen||!houseResidents(ctx).includes(id))return false;insideOpen=false;render(ctx);return characterAction(id,'garden',ctx)}
 function itemPosition(g,id){return g.itemPos?.[id]||DEFAULT_ITEMS[id]||{x:50,y:75}}
-function itemUnlocked(id,ctx){return id==='tree'||id==='main_house'||!!ctx?.items?.find(item=>item.id===id&&ctx.state.xp>=item.xp)}
-function itemPlaced(id,ctx){return itemUnlocked(id,ctx)&&(id==='tree'||id==='main_house'||ctx.state.garden.placed.includes(id))}
-function placeItem(id,ctx=active){if(!ctx||!itemUnlocked(id,ctx)||itemPlaced(id,ctx)||!DEFAULT_ITEMS[id]||id==='tree'||id==='main_house')return false;ctx.state.garden.placed.push(id);ctx.state.garden.itemPos[id]??={...DEFAULT_ITEMS[id]};ctx.save();render(ctx);return true}
-function storeItem(id,ctx=active){if(!ctx||!ctx.state.garden.placed.includes(id)||id==='tree'||id==='main_house')return false;ctx.state.garden.placed=ctx.state.garden.placed.filter(x=>x!==id);for(const actor of CHARACTERS)if(ctx.state.garden.commands[actor]?.target===id){actionTokens[actor]=(actionTokens[actor]||0)+1;ctx.state.garden.commands[actor]={target:'placed',until:Date.now()+5000}}ctx.save();render(ctx);return true}
+function itemUnlocked(id,ctx){return id==='tree'||id==='main_house'||id==='bird_house'||id==='cat_house'&&ctx?.state.xp>=360||!!ctx?.items?.find(item=>item.id===id&&ctx.state.xp>=item.xp)}
+function itemPlaced(id,ctx){return itemUnlocked(id,ctx)&&(id==='tree'||!!HOUSES[id]||ctx.state.garden.placed.includes(id))}
+function placeItem(id,ctx=active){if(!ctx||!itemUnlocked(id,ctx)||itemPlaced(id,ctx)||!DEFAULT_ITEMS[id]||id==='tree'||HOUSES[id])return false;ctx.state.garden.placed.push(id);ctx.state.garden.itemPos[id]??={...DEFAULT_ITEMS[id]};ctx.save();render(ctx);return true}
+function storeItem(id,ctx=active){if(!ctx||!ctx.state.garden.placed.includes(id)||id==='tree'||HOUSES[id])return false;ctx.state.garden.placed=ctx.state.garden.placed.filter(x=>x!==id);for(const actor of CHARACTERS)if(ctx.state.garden.commands[actor]?.target===id){actionTokens[actor]=(actionTokens[actor]||0)+1;ctx.state.garden.commands[actor]={target:'placed',until:Date.now()+5000}}ctx.save();render(ctx);return true}
 function moveItem(id,pos,ctx=active){if(!ctx||!itemPlaced(id,ctx))return false;ctx.state.garden.itemPos[id]={x:Math.max(8,Math.min(92,pos.x)),y:Math.max(40,Math.min(93,pos.y))};ctx.save();return true}
 function reactionKind(id,item,g){if(!CHARACTERS.includes(id)||!ITEM_REACTIONS[item])return null;if(item==='arch'&&id==='bird')return'perch';if(item==='bench'&&id==='bird')return'perch';if(item==='birdbath')return id==='bird'?'bathe':'drink';if(item==='seedcrate')return id==='cat'?'inspect':id==='bird'?'perch':'play';if(item==='picnic'&&id==='cat')return'inspect';if(item==='tree')return(g.fruit?.progress||0)>=4?'eat':'inspect';return ITEM_REACTIONS[item]}
-function reactionText(id,item,kind){if(item==='arch')return OBJECT_REACTIONS.arch[id];const who={bunny:'Bunny',cat:'Cat',bird:'Bird'}[id],what={bench:'the bench',picnic:'the strawberry picnic',mail:'the heart mailbox',birdbath:'the bird bath',seedcrate:'the seed crate',shed:'the little shed',tree:'the fruit tree',main_house:'the house'}[item];return `${who} ${({sit:'settles on',perch:'perches on',eat:'enjoys',inspect:'looks at',drink:'takes a sip at',bathe:'splashes in',play:'plays by',enter:'goes into'})[kind]} ${what}!`}
+function reactionText(id,item,kind){if(item==='arch')return OBJECT_REACTIONS.arch[id];const who={bunny:'Bunny',cat:'Cat',bird:'Bird'}[id],what={bench:'the bench',picnic:'the strawberry picnic',mail:'the heart mailbox',birdbath:'the bird bath',seedcrate:'the seed crate',shed:'the little shed',tree:'the fruit tree',main_house:'the house',cat_house:'the sunny cat cottage',bird_house:'the bird nest house'}[item];return `${who} ${({sit:'settles on',perch:'perches on',eat:'enjoys',inspect:'looks at',drink:'takes a sip at',bathe:'splashes in',play:'plays by',enter:'goes into'})[kind]} ${what}!`}
 function showReaction(id,item,kind,ctx){const el=document.querySelector('#livingReaction');if(!el)return;const p=itemPosition(ctx.state.garden,item);el.style.left=`${p.x}%`;el.style.top=`${Math.max(12,p.y-(item==='tree'?46:23))}%`;el.textContent=reactionText(id,item,kind)}
-function openHouseDoor(duration=1100){const house=document.querySelector('#livingHouse');house?.classList.add('door-open');setTimeout(()=>house?.classList.remove('door-open'),duration)}
+function houseElement(id){return document.querySelector(id==='main_house'?'#livingHouse':`[data-garden-item="${id}"]`)}
+function openHouseDoor(duration=1100,houseId='main_house'){const house=houseElement(houseId);house?.classList.add('door-open');setTimeout(()=>house?.classList.remove('door-open'),duration)}
 function actorElement(id){return document.querySelector(`[data-living-actor="${id}"]`)}
 function finishMotion(id,item,token,ctx){
  if(token!==actionTokens[id])return;
@@ -105,11 +107,11 @@ function dropCharacter(id,item,ctx=active){
    setTimeout(()=>{if(!stillHere())return;actorElement(id)?.classList.add('arch-behind');moveActor(id,{x:p.x,y:p.y-9},ctx)},650);
    setTimeout(()=>{if(stillHere())moveActor(id,{x:p.x+2,y:p.y-20},ctx)},1300);
    setTimeout(()=>{if(!stillHere())return;actorElement(id)?.classList.remove('arch-behind');visibleMotion(id,item,kind,token,ctx)},1920);
- }else if(item==='main_house'){
+ }else if(HOUSES[item]){
    moveActor(id,{x:p.x+3,y:p.y+4},ctx);
-   setTimeout(()=>{if(!stillHere())return;openHouseDoor();const el=actorElement(id);el?.classList.add('house-entering');moveActor(id,{x:p.x+3,y:p.y-9},ctx)},580);
+   setTimeout(()=>{if(!stillHere())return;openHouseDoor(1100,item);const el=actorElement(id);el?.classList.add('house-entering');moveActor(id,{x:p.x+3,y:p.y-9},ctx)},580);
    setTimeout(()=>{if(stillHere())actorElement(id)?.classList.add('house-behind')},1120);
-   setTimeout(()=>{if(!stillHere())return;g.locations[id]='main_house';ctx.save();if(document.querySelector('#gardenView.active-view')){render(ctx);showReaction(id,item,kind,ctx);const actions=document.querySelector('#livingActions');if(actions){actions.innerHTML=`${id[0].toUpperCase()+id.slice(1)} is inside <button data-out="${id}">Come outside</button>`;actions.querySelector('[data-out]')?.addEventListener('click',()=>characterAction(id,'garden',ctx))}}},1530);
+   setTimeout(()=>{if(!stillHere())return;g.locations[id]=item;ctx.save();if(document.querySelector('#gardenView.active-view')){render(ctx);showReaction(id,item,kind,ctx);const actions=document.querySelector('#livingActions');if(actions){actions.innerHTML=`${CHARACTER_NAMES[id]} is inside ${HOUSES[item]} <button data-out="${id}">Come outside</button>`;actions.querySelector('[data-out]')?.addEventListener('click',()=>characterAction(id,'garden',ctx))}}},1530);
  }else{
    const pos=item==='tree'?{x:p.x+9,y:id==='bird'?p.y-37:p.y-14}:item==='arch'?{x:p.x,y:p.y-19}:{x:p.x,y:p.y-(kind==='perch'?13:7)};
    moveActor(id,pos,ctx);
@@ -120,20 +122,20 @@ function dropCharacter(id,item,ctx=active){
 function characterAction(id,target,ctx=active){
  if(!ctx||!CHARACTERS.includes(id))return false;
  if(target!=='garden')return dropCharacter(id,target,ctx);
- const g=ctx.state.garden;if(g.locations[id]!=='main_house')return false;
- const token=actionTokens[id]=(actionTokens[id]||0)+1,p=itemPosition(g,'main_house');
+ const g=ctx.state.garden,houseId=g.locations[id];if(!HOUSES[houseId])return false;
+ const token=actionTokens[id]=(actionTokens[id]||0)+1,p=itemPosition(g,houseId);
  g.commands[id]={target:'garden',kind:'exit',until:Date.now()+4000};
- if(!document.querySelector('#gardenView.active-view #livingHouse')){g.locations[id]='garden';moveActor(id,{x:p.x+3,y:p.y+4},ctx);if(document.querySelector('#gardenView.active-view'))render(ctx);return true}
- openHouseDoor(1450);
+ if(!document.querySelector('#gardenView.active-view')||!houseElement(houseId)){g.locations[id]='garden';moveActor(id,{x:p.x+3,y:p.y+4},ctx);if(document.querySelector('#gardenView.active-view'))render(ctx);return true}
+ openHouseDoor(1450,houseId);
  setTimeout(()=>{
-   if(token!==actionTokens[id]||g.locations[id]!=='main_house')return;
+   if(token!==actionTokens[id]||g.locations[id]!==houseId)return;
    g.locations[id]='garden';g.characterPos[id]={x:p.x+3,y:p.y-9};ctx.save();render(ctx);
-   openHouseDoor(1200);const el=actorElement(id);el?.classList.add('house-emerging');
+   openHouseDoor(1200,houseId);const el=actorElement(id);el?.classList.add('house-emerging');
    setTimeout(()=>{if(token!==actionTokens[id]||g.locations[id]!=='garden')return;el?.classList.remove('house-emerging');moveActor(id,{x:p.x-4,y:p.y+6},ctx);const message=document.querySelector('#livingActions');if(message)message.textContent=`${id[0].toUpperCase()+id.slice(1)} came outside! ✦`},80);
  },350);
  return true;
 }
-function everyoneOutside(ctx=active){if(!ctx)return false;const inside=CHARACTERS.filter(id=>ctx.state.garden.locations[id]==='main_house'&&(id!=='cat'||ctx.state.xp>=360));inside.forEach((id,index)=>setTimeout(()=>characterAction(id,'garden',ctx),index*1400));return inside.length>0}
+function everyoneOutside(ctx=active,houseId='main_house'){if(!ctx||!HOUSES[houseId])return false;const inside=houseResidents(ctx,houseId);inside.forEach((id,index)=>setTimeout(()=>characterAction(id,'garden',ctx),index*1400));return inside.length>0}
 function moveActor(id,pos,ctx){
  const g=ctx.state.garden;g.characterPos[id]=pos;
  const el=document.querySelector(`[data-living-actor="${id}"]`);
@@ -196,6 +198,7 @@ function itemHtml(id,ctx,fruitStage,fruitLabel){
  const p=itemPosition(ctx.state.garden,id),style=`left:${p.x}%;top:${p.y}%`;
  if(id==='tree')return `<div class="living-oak living-item" data-garden-item="tree" style="${style}" aria-label="Fruit tree"><i class="trunk"></i><i class="canopy"></i><button id="livingFruit" class="living-fruit stage-${fruitStage}" aria-label="${fruitStage===4?'Eat ripe fruit':fruitLabel}" ${fruitStage===4?'':'disabled'}>${fruitArt(fruitStage)}</button></div>`;
  if(id==='main_house'){const inside=CHARACTERS.filter(c=>ctx.state.garden.locations[c]==='main_house'&&(c!=='cat'||ctx.state.xp>=360));return `<button class="living-house living-item" id="livingHouse" data-garden-item="main_house" style="${style}" aria-label="Main House, ${inside.length} inside"><i class="roof"></i><i class="window"></i><i class="door"></i>${inside.length?`<span class="house-friends" aria-hidden="true">${inside.map(c=>`<span class="house-face">${c==='bird'?BIRD_ART:ctx.art?.(c)||escapeText(c)}</span>`).join('')}</span>`:''}</button>`}
+ if(id==='cat_house'||id==='bird_house'){const inside=houseResidents(ctx,id);return `<button class="living-house friend-house ${id} living-item" data-garden-item="${id}" style="${style}" aria-label="${HOUSES[id]}, ${inside.length} inside"><i class="roof"></i><i class="window"></i><i class="door"></i><i class="house-detail" aria-hidden="true">${id==='cat_house'?'☀':'✿'}</i>${inside.length?`<span class="house-friends" aria-hidden="true">${inside.map(c=>`<span class="house-face">${c==='bird'?BIRD_ART:ctx.art?.(c)||escapeText(c)}</span>`).join('')}</span>`:''}</button>`}
  if(id==='arch')return `<button class="living-arch living-item" id="livingArch" data-garden-item="arch" style="${style}" aria-label="Flower Arch">${FLOWER_ARCH}</button>`;
  const label=ctx.items?.find(item=>item.id===id)?.label||id;
  return `<button class="living-item living-prop ${id}" data-garden-item="${id}" style="${style}" aria-label="${escapeText(label)}">${ctx.art?.(id)||escapeText(label)}</button>`;
@@ -207,7 +210,7 @@ function render(ctx){
  const note=celebration?`<div class="living-moment">🌱 ${escapeText(celebration.word)} helped your garden grow!${celebration.moment?`<small>${escapeText(celebration.moment)}</small>`:''}</div>`:'';
  const fruitStage=Math.min(4,g.fruit?.progress||0),fruitLabel=['Resting branch','Flower','Tiny fruit','Growing fruit','Ripe fruit'][fruitStage];
  const available=(ctx.items||[]).filter(item=>state.xp>=item.xp);
- const onGround=['tree','main_house',...available.filter(item=>itemPlaced(item.id,ctx)).map(item=>item.id)];
+ const onGround=['tree','main_house','bird_house',...(state.xp>=360?['cat_house']:[]),...available.filter(item=>itemPlaced(item.id,ctx)).map(item=>item.id)];
  const inventory=available.length?available.map(item=>{const placed=itemPlaced(item.id,ctx);return `<div class="living-shelf-card"><span class="living-shelf-art">${art?.(item.id)||''}</span><span class="living-shelf-name">${escapeText(item.label)}<small>${placed?'In Garden':'In Garage'}</small></span><button data-${placed?'store':'place'}="${item.id}">${placed?'Put away':'Place'}</button></div>`}).join(''):'<p>Nothing here yet. Grow three words for your first Garden treasure ✦</p>';
  const garage=`<button id="livingGarage" class="living-garage${garageOpen?' open':''}" aria-label="Open Garden Garage" aria-expanded="${garageOpen}" aria-controls="livingGaragePanel"><i class="garage-roof"></i><i class="garage-wall"></i><i class="garage-door"></i><span>Garage · ${available.filter(item=>!itemPlaced(item.id,ctx)).length}</span></button>`;
  const panel=garageOpen?`<section id="livingGaragePanel" class="living-garage-panel" aria-label="Garden Garage contents"><header><strong>Garden Garage · ${available.length} owned</strong><button id="livingGarageClose" aria-label="Close Garage">×</button></header><div class="living-garage-list">${inventory}</div></section>`:'';
@@ -224,12 +227,12 @@ function render(ctx){
    const id=el.dataset.gardenItem;dragItem(el,id,scene,ctx);
    el.addEventListener('click',()=>{if(el.dataset.dragged)return;
      const menu=view.querySelector('#livingActions');
-     if(id==='main_house'){
-       const inside=CHARACTERS.filter(c=>g.locations[c]==='main_house'&&(c!=='cat'||state.xp>=360));
-       menu.innerHTML=`<strong>Main House · ${inside.length} inside</strong><button id="livingLookInside">Look Inside</button>${inside.map(c=>`<button data-out="${c}">${c==='bunny'?'Bunny':c==='cat'?'Cat':'Bird'} come outside</button>`).join('')||'<span>Drag a friend to the door</span>'}${inside.length>1?'<button data-out-all="true">Everyone come outside</button>':''}`;
-       menu.querySelector('#livingLookInside')?.addEventListener('click',()=>lookInside(ctx));
+     if(HOUSES[id]){
+       const inside=houseResidents(ctx,id);
+       menu.innerHTML=`<strong>${HOUSES[id]} · ${inside.length} inside</strong>${id==='main_house'?'<button id="livingLookInside">Look Inside</button>':''}${inside.map(c=>`<button data-out="${c}">${CHARACTER_NAMES[c]} come outside</button>`).join('')||'<span>Drag a friend to the door</span>'}${inside.length>1?'<button data-out-all="true">Everyone come outside</button>':''}`;
+       if(id==='main_house')menu.querySelector('#livingLookInside')?.addEventListener('click',()=>lookInside(ctx));
        menu.querySelectorAll('[data-out]').forEach(btn=>btn.addEventListener('click',()=>characterAction(btn.dataset.out,'garden',ctx)));
-       menu.querySelector('[data-out-all]')?.addEventListener('click',()=>everyoneOutside(ctx));
+       menu.querySelector('[data-out-all]')?.addEventListener('click',()=>everyoneOutside(ctx,id));
      }else if(id!=='tree'){
        menu.innerHTML=`<span>Drag a friend onto ${escapeText(ctx.items?.find(item=>item.id===id)?.label||id)} ✦</span> <button data-store="${id}">Put in Garage</button>`;
        menu.querySelector('[data-store]')?.addEventListener('click',()=>storeItem(id,ctx));

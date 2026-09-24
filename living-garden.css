@@ -123,3 +123,19 @@
 @keyframes livingRoomBreathe{0%,100%{transform:translateY(0) rotate(-1deg) scale(1)}50%{transform:translateY(-5px) rotate(1deg) scale(1.025)}}
 @media(max-width:700px){.living-interior{inset:5px;padding:3px;border-radius:15px}.living-room{border-width:5px}.living-room-head{padding:11px}.living-room-head button{padding:7px 9px;font-size:11px}.living-room-window{width:58px;height:72px;right:5%;top:24%;border-width:5px}.living-room-picture{top:31%;left:8%;width:36px;height:36px;line-height:31px;font-size:20px;border-width:3px}.living-room-shelf{display:none}.living-room-sofa{left:5%;width:48%;bottom:21%}.living-room-friend{min-width:0;width:80px}.living-room-character{width:55px;height:70px}.living-room-friend.bird .living-room-character{width:43px;height:57px}.living-room-friend button{font-size:10px;padding:6px 5px}}
 @media(prefers-reduced-motion:reduce){.living-room-character{animation:none}}
+
+/* D.4: two movable cottages sharing the House door and occupancy behavior. */
+.living-house.friend-house{width:clamp(76px,8%,100px);height:clamp(78px,17%,106px);border-radius:18px 18px 9px 9px}
+.friend-house .roof{height:30%;top:-19%;left:-8%;right:-8%;clip-path:polygon(12% 35%,50% 0,88% 35%,100% 100%,0 100%)}
+.friend-house .window{width:25%;height:24%;top:26%;left:13%;border-width:3px;border-radius:50% 50% 3px 3px}
+.friend-house .door{right:15%;width:30%;height:49%;border-radius:16px 16px 0 0}
+.friend-house .house-detail{position:absolute;left:8%;bottom:1%;font-size:19px;font-style:normal;color:#eb9f91;text-shadow:0 1px #fff6e9}
+.friend-house.cat_house{background:#f8ddc7;border-color:#fff2df;box-shadow:inset -7px 0 #edc5a9,0 8px 0 #58745b35}
+.friend-house.cat_house .roof{background:#bb7869;border-radius:65% 65% 0 0}.friend-house.cat_house .window{background:#ffdc8c}.friend-house.cat_house .door{background:#9e7464}
+.friend-house.cat_house:before{content:'';position:absolute;left:-5%;bottom:0;width:22%;height:28%;background:#8bb589;border-radius:50% 50% 0 0;box-shadow:-4px -6px 0 #a9ca9b}
+.friend-house.bird_house{background:#dfd1ae;border-color:#eee6ce;box-shadow:inset 8px 0 #c3a97d,0 8px 0 #58745b35}
+.friend-house.bird_house .roof{top:-24%;height:34%;background:#88a386;border-radius:55% 55% 0 0;clip-path:polygon(7% 100%,14% 30%,48% 0,88% 29%,96% 100%)}
+.friend-house.bird_house .window{left:16%;top:30%;width:31%;height:30%;border-radius:50%;background:#afdae3}.friend-house.bird_house .door{right:12%;background:#967a5b}
+.friend-house.bird_house:before{content:'';position:absolute;left:7%;top:-33%;width:16%;height:40%;background:#729b72;border-radius:60%;transform:rotate(-42deg);box-shadow:14px -12px 0 #90b388,26px -10px 0 #79a57b}
+.friend-house.bird_house:after{content:'';position:absolute;right:-12%;bottom:4%;width:23%;height:13%;border-bottom:5px solid #8e7356;border-radius:50%}
+@media(max-width:700px){.living-house.friend-house{width:68px;height:75px}.friend-house .house-detail{font-size:14px}}
