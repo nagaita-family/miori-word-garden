@@ -29,8 +29,18 @@ test('Come outside closes room, then uses the existing visible House door exit',
  f.run(80);assert.deepEqual(JSON.parse(JSON.stringify(f.state.garden.characterPos.bunny)),{x:80,y:78});
  assert.equal(f.api.comeOutsideFromInterior('bunny',f.ctx),false);
 });
+test('Room positions persist independently of Garden positions and remain bounded',()=>{
+ const f=fixture(),outside=JSON.parse(JSON.stringify(f.state.garden.characterPos.bunny));
+ f.state.garden.locations.bunny='main_house';f.api.lookInside(f.ctx);
+ assert(f.api.placeRoomActor('bunny',{x:80,y:56},f.ctx));assert.match(f.view.innerHTML,/data-room-actor="bunny"/);
+ f.api.closeInterior(f.ctx);f.api.lookInside(f.ctx);assert.match(f.view.innerHTML,/style="left:80%;top:56%"/);
+ assert.deepEqual(JSON.parse(JSON.stringify(f.state.garden.characterPos.bunny)),outside);
+ assert.equal(f.api.placeRoomActor('bird',{x:40,y:50},f.ctx),false);
+ assert(f.api.placeRoomActor('bunny',{x:999,y:-100},f.ctx));assert.deepEqual(JSON.parse(JSON.stringify(f.state.garden.roomPos.bunny)),{x:88,y:35});
+ const reloaded=JSON.parse(JSON.stringify(f.state));f.api.migrate(reloaded);assert.deepEqual(reloaded.garden.roomPos.bunny,{x:88,y:35});
+});
 test('Existing character art breathes indoors and respects reduced motion',()=>{
  const css=fs.readFileSync('living-garden.css','utf8');assert.match(css,/\.living-room-character svg\{/);
  assert.match(css,/@keyframes livingRoomBreathe/);assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.living-room-character\{animation:none\}\}/);
- assert(fs.readFileSync('index.html','utf8').includes('living-garden.js?v=20260924-d3'));
+ assert(fs.readFileSync('index.html','utf8').includes('living-garden.js?v=20260924-d3b'));
 });

@@ -2,11 +2,11 @@
 'use strict';
 const VERSION=2;
 const DEFAULT_ITEMS={tree:{x:18,y:90},main_house:{x:84,y:72},bench:{x:52,y:80},picnic:{x:73,y:94},mail:{x:42,y:70},birdbath:{x:82,y:91},seedcrate:{x:36,y:91},arch:{x:62,y:84},shed:{x:92,y:93}};
-function fresh(){return{livingGardenVersion:VERSION,growth:0,pos:{},stored:[],bunnySeated:false,locations:{bunny:'garden',cat:'garden',bird:'garden'},characterPos:{bunny:{x:46,y:73},cat:{x:68,y:78},bird:{x:31,y:35}},commands:{},fruit:{progress:0,eaten:0},houses:{main_house:{owned:true}},garage:[],placed:[],itemPos:{},moments:{}}}
+function fresh(){return{livingGardenVersion:VERSION,growth:0,pos:{},stored:[],bunnySeated:false,locations:{bunny:'garden',cat:'garden',bird:'garden'},characterPos:{bunny:{x:46,y:73},cat:{x:68,y:78},bird:{x:31,y:35}},roomPos:{},commands:{},fruit:{progress:0,eaten:0},houses:{main_house:{owned:true}},garage:[],placed:[],itemPos:{},moments:{}}}
 function migrate(state){
  if(state.garden?.livingGardenVersion===VERSION||state.garden?.livingGardenVersion===1){const g=state.garden;
   if(g.livingGardenVersion===1){g.placed=[];g.livingGardenVersion=VERSION} // v1's arch was a free, fixed decoration, never an earned placement.
-  g.locations=g.locations||{};g.characterPos=g.characterPos||{};g.commands=g.commands||{};g.itemPos=g.itemPos||{};
+  g.locations=g.locations||{};g.characterPos=g.characterPos||{};g.roomPos=g.roomPos||{};g.commands=g.commands||{};g.itemPos=g.itemPos||{};
   for(const id of ['bunny','cat','bird']){if(!g.locations[id])g.locations[id]='garden';if(!g.characterPos[id])g.characterPos[id]=({bunny:{x:46,y:73},cat:{x:68,y:78},bird:{x:31,y:35}})[id]}
   if(!Array.isArray(g.placed))g.placed=[];if(!Number.isFinite(g.fruit?.progress))g.fruit={progress:Math.max(0,g.growth||0),eaten:0};g.moments=g.moments||{};return state;}
  // Replace only the Garden subtree. XP, learning history, words and test state remain untouched.
@@ -39,11 +39,21 @@ function eatFruit(g){
 
 let active=null,garageOpen=false,insideOpen=false;const actionTokens={};
 const CHARACTER_NAMES={bunny:'Bunny',cat:'Cat',bird:'Bird'};
+const ROOM_DEFAULTS={bunny:{x:46,y:65},cat:{x:70,y:66},bird:{x:78,y:46}};
+function roomPosition(g,id){const p=g.roomPos?.[id];return p&&Number.isFinite(p.x)&&Number.isFinite(p.y)?p:ROOM_DEFAULTS[id]}
+function placeRoomActor(id,pos,ctx=active){if(!ctx||!houseResidents(ctx).includes(id)||!Number.isFinite(pos.x)||!Number.isFinite(pos.y))return false;const p={x:Math.max(12,Math.min(88,pos.x)),y:Math.max(35,Math.min(77,pos.y))};ctx.state.garden.roomPos??={};ctx.state.garden.roomPos[id]=p;ctx.save();const el=document.querySelector(`[data-room-actor="${id}"]`);if(el){el.style.left=`${p.x}%`;el.style.top=`${p.y}%`}return true}
 function houseResidents(ctx){return CHARACTERS.filter(id=>ctx.state.garden.locations[id]==='main_house'&&(id!=='cat'||ctx.state.xp>=360))}
 function interiorHtml(ctx){
  const residents=houseResidents(ctx);
  const places={bunny:'Sofa',cat:'Cushion',bird:'Window'};
- return `<section class="living-interior" aria-label="Inside Main House"><div class="living-room"><header class="living-room-head"><div><small>MAIN HOUSE</small><h2>Look inside ✦</h2></div><button id="livingRoomClose" aria-label="Back to Garden">← Garden</button></header><div class="living-room-window" aria-hidden="true"><i></i></div><div class="living-room-picture" aria-hidden="true">✿</div><div class="living-room-shelf" aria-hidden="true"><i>✦</i><i>✿</i></div><div class="living-room-sofa" aria-hidden="true"></div><div class="living-room-rug" aria-hidden="true"></div><div class="living-room-friends">${residents.map(id=>`<div class="living-room-friend ${id}"><span class="living-room-character">${id==='bird'?BIRD_ART:ctx.art?.(id)||escapeText(id)}</span><strong>${CHARACTER_NAMES[id]}</strong><small>${places[id]}</small><button data-room-out="${id}" aria-label="${CHARACTER_NAMES[id]} come outside">Come outside</button></div>`).join('')||'<p class="living-room-empty">Nobody is home yet. Drag a friend to the House door ✦</p>'}</div></div></section>`;
+ return `<section class="living-interior" aria-label="Inside Main House"><div class="living-room"><header class="living-room-head"><div><small>MAIN HOUSE</small><h2>Look inside ✦</h2><p>Move your friends around the room</p></div><button id="livingRoomClose" aria-label="Back to Garden">← Garden</button></header><div class="living-room-window" aria-hidden="true"><i></i></div><div class="living-room-picture" aria-hidden="true">✿</div><div class="living-room-shelf" aria-hidden="true"><i>✦</i><i>✿</i></div><div class="living-room-sofa" aria-hidden="true"></div><div class="living-room-rug" aria-hidden="true"></div><div class="living-room-friends">${residents.map(id=>{const p=roomPosition(ctx.state.garden,id);return `<div class="living-room-friend ${id}" data-room-actor="${id}" style="left:${p.x}%;top:${p.y}%"><span class="living-room-character" role="button" tabindex="0" aria-label="Move ${CHARACTER_NAMES[id]} in the room">${id==='bird'?BIRD_ART:ctx.art?.(id)||escapeText(id)}</span><strong>${CHARACTER_NAMES[id]}</strong><small>${places[id]}</small><button data-room-out="${id}" aria-label="${CHARACTER_NAMES[id]} come outside">Come outside</button></div>`}).join('')||'<p class="living-room-empty">Nobody is home yet. Drag a friend to the House door ✦</p>'}</div></div></section>`;
+}
+function dragRoomActor(handle,id,room,ctx){let start=null,moved=false;const el=handle.parentElement;
+ handle.addEventListener('pointerdown',e=>{if(e.button!==0&&e.pointerType==='mouse')return;start={id:e.pointerId,pos:{...roomPosition(ctx.state.garden,id)},x:e.clientX,y:e.clientY};moved=false;handle.setPointerCapture(e.pointerId)});
+ handle.addEventListener('pointermove',e=>{if(!start||e.pointerId!==start.id)return;if(!moved&&Math.hypot(e.clientX-start.x,e.clientY-start.y)<5)return;moved=true;const r=room.getBoundingClientRect();if(!r.width||!r.height)return;el.classList.add('dragging');el.style.left=`${Math.max(12,Math.min(88,(e.clientX-r.left)/r.width*100))}%`;el.style.top=`${Math.max(35,Math.min(77,(e.clientY-r.top)/r.height*100))}%`});
+ function end(e){if(!start||e.pointerId!==start.id)return;if(moved&&e.type==='pointerup')placeRoomActor(id,{x:parseFloat(el.style.left),y:parseFloat(el.style.top)},ctx);else if(moved){el.style.left=`${start.pos.x}%`;el.style.top=`${start.pos.y}%`}el.classList.remove('dragging');start=null}
+ handle.addEventListener('pointerup',end);handle.addEventListener('pointercancel',end);
+ handle.addEventListener('keydown',e=>{const step={ArrowLeft:{x:-5,y:0},ArrowRight:{x:5,y:0},ArrowUp:{x:0,y:-5},ArrowDown:{x:0,y:5}}[e.key];if(!step)return;e.preventDefault();const p=roomPosition(ctx.state.garden,id);placeRoomActor(id,{x:p.x+step.x,y:p.y+step.y},ctx)});
 }
 function lookInside(ctx=active){if(!ctx)return false;insideOpen=true;render(ctx);document.querySelector('#livingRoomClose')?.focus?.();return true}
 function closeInterior(ctx=active){if(!ctx||!insideOpen)return false;insideOpen=false;render(ctx);document.querySelector('#livingHouse')?.focus?.();return true}
@@ -205,6 +215,7 @@ function render(ctx){
  view.querySelector('#livingPlay').addEventListener('click',()=>{garageOpen=false;insideOpen=false;play()});
  view.querySelector('#livingRoomClose')?.addEventListener('click',()=>closeInterior(ctx));
  view.querySelectorAll('[data-room-out]').forEach(el=>el.addEventListener('click',()=>comeOutsideFromInterior(el.dataset.roomOut,ctx)));
+ const room=view.querySelector('.living-room');if(room)view.querySelectorAll('[data-room-actor]').forEach(el=>dragRoomActor(el.querySelector('.living-room-character'),el.dataset.roomActor,room,ctx));
  view.querySelector('#livingGarage').addEventListener('click',()=>{garageOpen=!garageOpen;render(ctx);if(garageOpen)view.querySelector('#livingGarageClose')?.focus?.()});
  view.querySelector('#livingGarageClose')?.addEventListener('click',()=>{garageOpen=false;render(ctx);view.querySelector('#livingGarage')?.focus?.()});
  view.querySelector('#livingFruit').addEventListener('click',e=>{if(e.currentTarget.disabled)return;const eater=CHARACTERS.find(id=>g.locations[id]==='garden'&&(id!=='cat'||state.xp>=360));if(eater)dropCharacter(eater,'tree',ctx)});
@@ -230,7 +241,7 @@ function render(ctx){
  view.querySelectorAll('[data-store]').forEach(el=>el.addEventListener('click',()=>storeItem(el.dataset.store,ctx)));
 }
 function escapeText(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-window.LivingGarden={VERSION,fresh,migrate,daypart,render,characterAction,everyoneOutside,lookInside,closeInterior,comeOutsideFromInterior,placeActor,placeItem,storeItem,moveItem,itemPlaced,dropCharacter,reactionKind,gentleWander,onWordComplete,eatFruit,OBJECT_REACTIONS};
+window.LivingGarden={VERSION,fresh,migrate,daypart,render,characterAction,everyoneOutside,lookInside,closeInterior,comeOutsideFromInterior,placeRoomActor,placeActor,placeItem,storeItem,moveItem,itemPlaced,dropCharacter,reactionKind,gentleWander,onWordComplete,eatFruit,OBJECT_REACTIONS};
 setInterval(gentleWander,9500);
 let lastPart=daypart();setInterval(()=>{const next=daypart();if(next!==lastPart){lastPart=next;if(document.querySelector('#gardenView.active-view .living-scene'))document.querySelector('[data-nav="garden"]')?.click()}},60000);
 })();
