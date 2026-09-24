@@ -97,8 +97,8 @@ All seven earned items share `locked` (XP below threshold) → `unlocked + store
 | Seed Crate | 540 XP, starts stored | Yes | Play / Cat inspect / Bird perch | Existing wooden crate and seed packets SVG. |
 | Flower Arch | 630 XP, starts stored; v1 free arch withdrawn | Yes | Walk through / Bird perch | C.5 floral trellis rescaled to resident size; its opening is the interaction space. |
 | Little Garden Shed | 720 XP, starts stored | Yes | Inspect tools | Existing small cottage SVG; detailed building/interior remains Phase D. |
-| Fruit Tree | Start, always placed | Yes | Inspect / eat ripe fruit | Rounded illustrated tree; growth and eating unchanged. |
-| Main House | Start, always placed | Yes | Enter; tap to call back | Phase B facade; cottage identity and interior remain Phase D. |
+| Fruit Tree | Start, always placed | Yes | Inspect / eat ripe fruit | Compact rounded tree; growth and eating unchanged. |
+| Main House | Start, always placed | Yes | Enter; tap to call back | Compact facade; entry feedback and return control; interior remains Phase D. |
 
 ### Character Matrix — 3 current / target about 6
 
@@ -110,4 +110,4 @@ All seven earned items share `locked` (XP below threshold) → `unlocked + store
 
 Future content gap: 1 more item and 3 more distinct residents to reach the approximate targets; do not add them just to fill counts. Phase D should extend the same drag-to-destination interaction to cottages, Garage and interiors, while retaining existing learning state and Garden placements.
 
-Verification/deployment checkpoint: targeted Garden, Play and Weekly tests plus one full regression run; live visual and gesture check, commit, Pages and production asset checks to be recorded after publication. Actual iPad Safari / Pencil and narrow viewport are device checks.
+Verification/deployment checkpoint: full regression 37/37 on the initial C.6 implementation; targeted Garden suite 19/19 after the visual and drag fixes. Browser QA on the published desktop Garden confirmed v44 assets, only Tree/House and Bunny/Bird at 0 XP, smaller landmark proportions, Bunny drag into House, visible reaction/return control, and moved Tree position surviving reload. The item drag now preserves the pointer's grab offset; a targeted pointer test covers this. The seven XP items and Cat were checked through state/render/reaction tests, not an earned-content browser session. Actual iPad Safari / Pencil and narrow viewport remain device checks. Initial C.6 run 35965622110 and visual fix run 35966851519 both deployed successfully. Final pointer-offset patch awaits its Pages check.

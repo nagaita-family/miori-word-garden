@@ -91,4 +91,9 @@ test('Pointer drop on a bench triggers sitting; dragging interrupts autonomous m
  actor.events.pointerup({pointerId:1,clientX:530,clientY:350,type:'pointerup'});
  assert.equal(state.garden.commands.bunny.kind,'sit');assert.equal(state.garden.commands.bunny.target,'bench');
  assert.equal(state.garden.locations.bunny,'garden');
+ bench.style.left='52%';bench.style.top='80%';
+ bench.events.pointerdown({pointerId:2,button:0,pointerType:'mouse',clientX:530,clientY:350,target:{closest:()=>null}});
+ bench.events.pointermove({pointerId:2,clientX:630,clientY:360});
+ bench.events.pointerup({pointerId:2,type:'pointerup'});
+ assert.deepEqual(JSON.parse(JSON.stringify(state.garden.itemPos.bench)),{x:62,y:82});
 });
