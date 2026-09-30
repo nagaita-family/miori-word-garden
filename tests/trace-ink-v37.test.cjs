@@ -39,8 +39,8 @@ test('A cancelled stroke and a stale question do not mark completion',()=>{
  a.emit('pointerdown');a.emit('pointermove',30,30);ctx.session={q:{}};a.emit('pointerup');assert.equal(q.traceLetters[0],undefined);
 });
 const html=fs.readFileSync('index.html','utf8');
-assert(html.includes('stage3-trace-v9.css?v=20260923-v38')&&html.includes('pencil-touch-guard.js?v=20260923-v37'));
-assert(html.includes('v56 · Sep 30'));
+assert(html.includes('stage3-trace-v9.css?v=20260923-v38')&&html.includes('pencil-touch-guard.js?v=20261001-v57'));
+assert(html.includes('v57 · Oct 1'));
 
 test('A traced guide shows retained ink without a correctness check',()=>{
  const css=fs.readFileSync('stage3-trace-v9.css','utf8');

@@ -1,4 +1,7 @@
-/* Apple Pencil writing guard — keep iPad finger/palm touches from turning a letter box into a text selection. */
+/* v57 Apple Pencil palm/selection guard.
+   Keep iPad finger/palm contact from becoming text selection while preserving
+   native Apple Scribble on real text inputs and finger scrolling around them. */
+
 .letter-box{
   -webkit-user-select:none!important;
   user-select:none!important;
@@ -6,18 +9,34 @@
   -webkit-user-drag:none!important;
   caret-color:transparent!important;
 }
-.letter-box::selection{
+
+.letter-box::selection,
+.stage3-gap-flow::selection,
+.flow-word-input::selection,
+.weekly-answer::selection{
   background:transparent!important;
   color:inherit!important;
 }
-.letter-row,
-.spell-wrap{
+
+#playView .letter-row,
+#playView .spell-wrap,
+#playView .five-card,
+#playView .weekly-sheet{
   -webkit-user-select:none!important;
   user-select:none!important;
   -webkit-touch-callout:none!important;
 }
-/* Do not set touch-action:none here: native Apple Scribble still needs the real input surface. */
 
+.stage3-gap-flow,
+.flow-word-input,
+.weekly-answer,
+.five-trace-pad,
+.trace-pad{
+  -webkit-touch-callout:none!important;
+}
+
+/* Do not set touch-action:none on native Scribble inputs.
+   Trace pads define their own touch-action because they draw raw Pencil ink. */
 
 /* Pencil scratch v3: written letters are display-like scratch targets, not editable text. */
 .letter-box[readonly]{
@@ -30,7 +49,6 @@
 .letter-box[readonly]:focus{
   caret-color:transparent!important;
 }
-
 
 /* Pencil flow v4: every Stage 3/4 position stays visibly boxed. */
 .written-box{
