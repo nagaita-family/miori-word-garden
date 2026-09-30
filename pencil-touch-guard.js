@@ -2,11 +2,22 @@
 'use strict';
 let fingerContacts=0;
 
-const writingStage=()=>!!document.querySelector('#playView .letter-row .letter-box,#playView .letter-row .trace-pad');
-const activeWritingInput=()=>document.activeElement?.matches?.('.letter-box,.trace-pad')?document.activeElement:null;
+const writingStage=()=>!!document.querySelector([
+  '#playView .letter-row .letter-box',
+  '#playView .letter-row .trace-pad',
+  '#playView .stage3-gap-flow',
+  '#playView #stage4WordInput',
+  '#playView .five-words-view .flow-word-input',
+  '#playView .five-words-view .five-trace-pad',
+  '#playView .weekly-test-view .weekly-answer'
+].join(','));
+
+const writingInputSelector='input.letter-box,.stage3-gap-flow,#stage4WordInput,.five-words-view .flow-word-input,.weekly-test-view .weekly-answer';
+const activeWritingInput=()=>document.activeElement?.matches?.(writingInputSelector)?document.activeElement:null;
 const isActionTarget=target=>!!target?.closest?.('button,a,label,select,textarea,[role="button"],[data-nav],#exitPlayBtn,#checkAnswerBtn,.help-btn,.mode-btn,.hint-choice,.audio-orb,.listen-card,.cue-picture-tile');
-const isLetterSurface=target=>!!target?.closest?.('.letter-row,.letter-box,.trace-cell,.trace-pad');
-const isPalmZone=target=>!!target?.closest?.('.game-card,.question-area,.spell-wrap');
+const isWritingSurface=target=>!!target?.closest?.('.letter-row,.letter-box,.trace-cell,.trace-pad,.stage3-gap-flow,#stage4WordInput,.five-writing .flow-word-input,.five-trace-pad,.weekly-answer');
+const isLegacyPalmZone=target=>!!target?.closest?.('.game-card,.question-area,.spell-wrap');
+const isSelectionZone=target=>!!target?.closest?.('.game-card,.question-area,.spell-wrap,.five-card,.five-writing,.five-trace-pad,.weekly-sheet,.weekly-answer-sheet,.weekly-question');
 
 function collapseNativeSelection(){
   const input=activeWritingInput();
@@ -25,12 +36,14 @@ function collapseNativeSelection(){
 function shouldBlockFinger(target){
   if(!writingStage()) return false;
   if(isActionTarget(target)) return false;
-  return isLetterSurface(target) || (!!activeWritingInput() && isPalmZone(target));
+  // Finger/palm contact on the actual Pencil surface must never become an edit
+  // gesture. Keep the broader preventDefault behavior only on the legacy
+  // Stage 3/4 card; newer 5 Words / Weekly Test cards still need finger scroll.
+  return isWritingSurface(target) || (!!activeWritingInput() && isLegacyPalmZone(target));
 }
 
-// Suppress only accidental palm/finger editing on the handwriting surface.
-// We deliberately do not pin or force the viewport: Stage 3/4 layout is sized
-// so the writing row is already in the comfortable Scribble area before focus.
+// Suppress accidental palm/finger editing on every current Apple Pencil surface.
+// Do not pin the viewport or set touch-action:none on native Scribble inputs.
 for(const type of ['touchstart','touchmove','touchend','touchcancel']){
   document.addEventListener(type,e=>{
     if(!writingStage()) return;
@@ -74,13 +87,15 @@ document.addEventListener('pointercancel',e=>{
   if(e.pointerType==='touch') fingerContacts=0;
 },true);
 
+// Native text-selection handles/callouts are never useful inside a spelling
+// writing card. Blocking selection here does not block finger scrolling.
 document.addEventListener('contextmenu',e=>{
-  if(writingStage()&&isLetterSurface(e.target)) e.preventDefault();
+  if(writingStage()&&!isActionTarget(e.target)&&isSelectionZone(e.target)) e.preventDefault();
 },true);
 
 document.addEventListener('selectstart',e=>{
-  if(!writingStage()) return;
-  if(isLetterSurface(e.target) || (fingerContacts>0&&!isActionTarget(e.target)&&isPalmZone(e.target))) e.preventDefault();
+  if(!writingStage()||isActionTarget(e.target)) return;
+  if(isSelectionZone(e.target)) e.preventDefault();
 },true);
 
 document.addEventListener('selectionchange',()=>{
@@ -88,19 +103,19 @@ document.addEventListener('selectionchange',()=>{
 });
 
 document.addEventListener('select',e=>{
-  if(!writingStage()||!e.target.matches?.('.letter-box,.trace-pad')) return;
+  if(!writingStage()||!e.target.matches?.(writingInputSelector)) return;
   if(fingerContacts>0) collapseNativeSelection();
 },true);
 
-for(const type of ['copy','cut','paste']){
+for(const type of ['copy','cut','paste','dragstart']){
   document.addEventListener(type,e=>{
-    if(writingStage()&&e.target.matches?.('.letter-box,.trace-pad')) e.preventDefault();
+    if(writingStage()&&e.target.matches?.(writingInputSelector)) e.preventDefault();
   },true);
 }
 
 for(const type of ['gesturestart','gesturechange','gestureend']){
   document.addEventListener(type,e=>{
-    if(writingStage()&&!isActionTarget(e.target)&&isPalmZone(e.target)) e.preventDefault();
+    if(writingStage()&&!isActionTarget(e.target)&&isSelectionZone(e.target)) e.preventDefault();
   },{capture:true,passive:false});
 }
 })();
