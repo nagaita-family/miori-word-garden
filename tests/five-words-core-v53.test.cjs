@@ -47,12 +47,16 @@ test('New-word mistake becomes an audio-only recall on a later loop; lanes recei
  assert(page.includes('five-words-core.js?v=20260930-focus')&&page.includes('five-words-core.css?v=20260930-core'));
 });
 test('Play entry gives This Week and My Words their own exact pool, even for an overlapping word',()=>{
- const app=fs.readFileSync('app.js','utf8'),start=app.indexOf('function startFiveWords(lane){'),end=app.indexOf('// A weekly exam',start);
+ const app=fs.readFileSync('app.js','utf8'),start=app.indexOf('function fiveManual(lane){'),end=app.indexOf('// A weekly exam',start);
  assert(start>=0&&end>start);
- const seen=[],state={week:{ids:['alpha','beta','gamma','delta','epsilon','zeta']},myWords:{journal:{},alpha:{}},lib:Object.fromEntries(['alpha','beta','gamma','delta','epsilon','zeta','journal'].map(id=>[id,{id}]))};
- const ctx={state,session:{},fiveWords:null,window:{FiveWordsCore:{create:args=>{seen.push(args);return{render(){}}}},FiveWordsSelection:{select:args=>args.ids.filter(id=>state.lib[id]).slice(0,5),markResult(){}},FiveWordsFocus:{}},playSfx(){},syncBgm(){},helpKind:'',toast(){},$:()=>({}),save(){},playWordAudio(){},resolveHumanAudioForWord(){},weeklyAnswerText(){},flowComparisonHtml(){},esc(){},renderPlayHome(){},rewards:[]};
+ const seen=[],state={week:{id:'current',ids:['alpha','beta','gamma','delta','epsilon','zeta'],focusIds:[]},myWords:{journal:{},alpha:{}},lib:Object.fromEntries(['alpha','beta','gamma','delta','epsilon','zeta','journal'].map(id=>[id,{id}]))};
+ const ctx={state,session:{},fiveWords:null,window:{FiveWordsCore:{create:args=>{seen.push(args);return{render(){}}}},FiveWordsSelection:{select:args=>[...new Set([...(args.manual||[]),...args.ids])].filter(id=>state.lib[id]).slice(0,5),markResult(){}},FiveWordsFocus:{}},playSfx(){},syncBgm(){},helpKind:'',toast(){},$:()=>({}),save(){},playWordAudio(){},resolveHumanAudioForWord(){},weeklyAnswerText(){},flowComparisonHtml(){},esc(){},renderPlayHome(){},rewards:[]};
  vm.createContext(ctx);vm.runInContext(app.slice(start,end),ctx);ctx.startFiveWords('week');ctx.startFiveWords('my');
  assert.deepEqual(Array.from(seen[0].ids),['alpha','beta','gamma','delta','epsilon']);
  assert.deepEqual(Array.from(seen[1].ids),['journal','alpha']);
  assert.equal(seen[0].lane,'week');assert.equal(seen[1].lane,'my');
+ const queued=ctx.fiveManual('week');queued.ids=['zeta','gamma'];queued.pending=true;
+ assert.deepEqual(JSON.parse(JSON.stringify(state.fiveWordManual.week.ids)),['zeta','gamma'],'Next 5 is serializable before a session');
+ ctx.startFiveWords('week');assert.deepEqual(Array.from(seen[2].ids).slice(0,2),['zeta','gamma']);
+ assert.equal(queued.pending,false);assert.deepEqual(Array.from(queued.ids),[],'one-off selection is consumed after starting');
 });
