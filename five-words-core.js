@@ -3,12 +3,12 @@
 'use strict';
 function create(d){
  const {state,root}=d;
- const run={lane:d.lane,ids:[...d.ids],index:0,phase:'',answer:'',attempt:'',tracePaths:[],traced:false,audioPhase:'',finished:false};
+ const run={lane:d.lane,ids:[...d.ids],index:0,phase:'',answer:'',attempt:'',tempFocus:null,tracePaths:[],traced:false,audioPhase:'',finished:false};
  const word=()=>state.lib[run.ids[run.index]];
  function record(w){const l=w.learn;if(!l.five)l.five={introduced:!!((l.loops||0)>0||(l.stageMist?.[4]||0)>0),recallSuccess:0,needsRecall:false};return l.five}
  function message(s){const el=root.querySelector('#fiveMessage');if(el)el.textContent=s}
  function enter(phase){run.phase=phase;run.answer='';run.audioPhase='';render()}
- function startWord(){const w=word();if(!w)return finish();run.tracePaths=[];run.traced=false;enter(record(w).introduced?'hidden':'look')}
+ function startWord(){const w=word();if(!w)return finish();run.tracePaths=[];run.traced=false;run.tempFocus=null;enter(record(w).introduced?'hidden':'look')}
  function finish(){if(!run.finished){state.stats.sessions=(state.stats.sessions||0)+1;d.save();run.finished=true}run.phase='done';render()}
  function next(){run.index++;if(run.index>=run.ids.length)finish();else startWord()}
  function advance(){
@@ -26,7 +26,7 @@ function create(d){
   const l=w.learn,f=record(w),correct=attempt===w.word,firstTry=run.phase==='hidden';
   l.attempts++;state.stats.answers=(state.stats.answers||0)+1;l.last=new Date().toISOString().slice(0,10);
   if(correct){l.correct++;if(firstTry){l.first++;l.loops=(l.loops||0)+1;f.recallSuccess++;f.needsRecall=false;state.recentWords=[{id:w.id,date:l.last},...(state.recentWords||[]).filter(x=>x.id!==w.id)].slice(0,8);d.onRemembered(w);d.sfx('finish')}else d.sfx('correct')}
-  else{l.mistakes++;l.stageMist[4]=(l.stageMist[4]||0)+1;l.lastWrong=attempt;f.needsRecall=true;d.sfx('wrong')}
+  else{l.mistakes++;l.stageMist[4]=(l.stageMist[4]||0)+1;l.lastWrong=attempt;f.needsRecall=true;if(firstTry){run.tempFocus=d.focus.mistake(w.word,raw,attempt);d.focus.remember(f,run.tempFocus)}d.sfx('wrong')}
   d.markResult(f,{correct,firstTry});d.save();
   if(firstTry&&!correct)run.phase='mistake';else{run.phase='result';run.padCorrect=!firstTry&&correct;run.resultCorrect=correct}
   run.audioPhase='';render()
@@ -58,7 +58,7 @@ function create(d){
   const phase=run.phase,visible=['look','guided','padTrace','padCopy','mistake','result'].includes(phase);
   const title=({look:'Look & Listen',guided:'Look & Write',hidden:'Listen & Write',mistake:'Let’s practice',padTrace:'Trace',padCopy:'Copy',padHidden:'Listen & Write',result:run.resultCorrect?'Nice work!':'Keep growing ✦'})[phase];
   const write=['guided','hidden','padCopy','padHidden'].includes(phase),trace=phase==='padTrace';
-  const guide=visible?'<div class="five-guide"><strong class="five-target">'+e(w.word)+'</strong></div>':'';
+  const guide=visible?'<div class="five-guide"><strong class="five-target">'+d.focus.display(w,run.tempFocus,e)+'</strong></div>':'';
   const writing=write?'<div class="five-writing"><label for="fiveInput">'+(phase==='guided'||phase==='padCopy'?'Write it here':'Write what you hear')+'</label><input id="fiveInput" class="flow-word-input" type="text" inputmode="none" virtualkeyboardpolicy="manual" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Write with Apple Pencil" aria-label="Write the whole word" value="'+e(run.answer)+'"><div class="five-actions"><button id="fiveClear" class="secondary-btn" type="button">Clear ✎</button><button id="fiveAction" class="primary-btn" type="button">'+(phase==='guided'||phase==='padCopy'?'Next':'Check')+'</button></div></div>':'';
   const font=Math.min(74,Math.max(29,620/(w.word.length*.74)));
   const tracing=trace?'<div class="five-trace-pad" id="fiveTracePad" aria-label="Trace '+e(w.word)+' with Apple Pencil"><svg class="five-trace-guide" viewBox="0 0 600 120" preserveAspectRatio="none" aria-hidden="true"><text x="300" y="85" text-anchor="middle" style="font-size:'+font+'px">'+e(w.word)+'</text></svg><svg class="five-trace-ink" viewBox="0 0 600 120" preserveAspectRatio="none" aria-hidden="true">'+run.tracePaths.map(path=>'<path d="'+e(path)+'"/>').join('')+'</svg></div><div class="five-actions"><button id="fiveAction" class="primary-btn" type="button">Copy →</button></div>':'';

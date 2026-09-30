@@ -2,12 +2,13 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const src=fs.readFileSync('five-words-core.js','utf8');
 const selection=fs.readFileSync('five-words-selection.js','utf8');
+const focusSource=fs.readFileSync('five-words-focus.js','utf8');
 const page=fs.readFileSync('index.html','utf8');
 function fixture(ids=['butterfly','cricket','insect','raisin','ladybug'],lane='week',prior=[]){
  const state={lib:Object.fromEntries(ids.map(id=>[id,{id,word:id,learn:{attempts:0,correct:0,first:0,mistakes:0,loops:prior.includes(id)?1:0,stageMist:{4:0},last:''}}])),stats:{answers:0,sessions:0},recentWords:[]};
  const nodes=new Map(),root={innerHTML:'',querySelector(id){if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',onclick:null,addEventListener(){},querySelector(){return{}}});return nodes.get(id)}};
- const saved=[],reward=[];const ctx={window:{},setTimeout(){},navigator:{}};vm.createContext(ctx);vm.runInContext(selection,ctx);vm.runInContext(src,ctx);
- const core=ctx.window.FiveWordsCore.create({lane,ids,state,root,save:()=>saved.push(JSON.stringify(state)),audio(){},resolveAudio:async()=>{},normalize:s=>String(s||'').toLowerCase().replace(/[^a-z]/g,''),escape:s=>s,diff:(a,b)=>a+' → '+b,sfx(){},markResult:ctx.window.FiveWordsSelection.markResult,home(){},more(){},onRemembered:w=>reward.push(w.id)});
+ const saved=[],reward=[];const ctx={window:{},setTimeout(){},navigator:{}};vm.createContext(ctx);vm.runInContext(selection,ctx);vm.runInContext(focusSource,ctx);vm.runInContext(src,ctx);
+ const core=ctx.window.FiveWordsCore.create({lane,ids,state,root,save:()=>saved.push(JSON.stringify(state)),audio(){},resolveAudio:async()=>{},normalize:s=>String(s||'').toLowerCase().replace(/[^a-z]/g,''),escape:s=>s,diff:(a,b)=>a+' → '+b,sfx(){},markResult:ctx.window.FiveWordsSelection.markResult,focus:ctx.window.FiveWordsFocus,home(){},more(){},onRemembered:w=>reward.push(w.id)});
  return{core,state,root,saved,reward};
 }
 test('New words: look and listen, write in view, then hidden audio-only check and five-word finish',()=>{
@@ -40,16 +41,16 @@ test('New-word mistake becomes an audio-only recall on a later loop; lanes recei
  assert.equal(x.state.lib.butterfly.learn.five.needsRecall,true);
  const y=fixture(['butterfly'],'week');y.state.lib.butterfly.learn=x.state.lib.butterfly.learn;
  // Loading the saved learning record starts on Listen & Write, never LOOK again.
- const ctx={window:{},setTimeout(){},navigator:{}};vm.createContext(ctx);vm.runInContext(src,ctx);
- const resumed=ctx.window.FiveWordsCore.create({lane:'week',ids:['butterfly'],state:y.state,root:y.root,save(){},audio(){},resolveAudio:async()=>{},normalize:s=>s,escape:s=>s,diff:()=>'',sfx(){},markResult(){},home(){},more(){},onRemembered(){}});
+ const ctx={window:{},setTimeout(){},navigator:{}};vm.createContext(ctx);vm.runInContext(focusSource,ctx);vm.runInContext(src,ctx);
+ const resumed=ctx.window.FiveWordsCore.create({lane:'week',ids:['butterfly'],state:y.state,root:y.root,save(){},audio(){},resolveAudio:async()=>{},normalize:s=>s,escape:s=>s,diff:()=>'',sfx(){},focus:ctx.window.FiveWordsFocus,markResult(){},home(){},more(){},onRemembered(){}});
  assert.equal(resumed.run.phase,'hidden');assert.deepEqual(Array.from(resumed.run.ids),['butterfly']);
- assert(page.includes('five-words-core.js?v=20260930-select')&&page.includes('five-words-core.css?v=20260930-core'));
+ assert(page.includes('five-words-core.js?v=20260930-focus')&&page.includes('five-words-core.css?v=20260930-core'));
 });
 test('Play entry gives This Week and My Words their own exact pool, even for an overlapping word',()=>{
  const app=fs.readFileSync('app.js','utf8'),start=app.indexOf('function startFiveWords(lane){'),end=app.indexOf('// A weekly exam',start);
  assert(start>=0&&end>start);
  const seen=[],state={week:{ids:['alpha','beta','gamma','delta','epsilon','zeta']},myWords:{journal:{},alpha:{}},lib:Object.fromEntries(['alpha','beta','gamma','delta','epsilon','zeta','journal'].map(id=>[id,{id}]))};
- const ctx={state,session:{},fiveWords:null,window:{FiveWordsCore:{create:args=>{seen.push(args);return{render(){}}}},FiveWordsSelection:{select:args=>args.ids.filter(id=>state.lib[id]).slice(0,5),markResult(){}}},playSfx(){},syncBgm(){},helpKind:'',toast(){},$:()=>({}),save(){},playWordAudio(){},resolveHumanAudioForWord(){},weeklyAnswerText(){},flowComparisonHtml(){},esc(){},renderPlayHome(){},rewards:[]};
+ const ctx={state,session:{},fiveWords:null,window:{FiveWordsCore:{create:args=>{seen.push(args);return{render(){}}}},FiveWordsSelection:{select:args=>args.ids.filter(id=>state.lib[id]).slice(0,5),markResult(){}},FiveWordsFocus:{}},playSfx(){},syncBgm(){},helpKind:'',toast(){},$:()=>({}),save(){},playWordAudio(){},resolveHumanAudioForWord(){},weeklyAnswerText(){},flowComparisonHtml(){},esc(){},renderPlayHome(){},rewards:[]};
  vm.createContext(ctx);vm.runInContext(app.slice(start,end),ctx);ctx.startFiveWords('week');ctx.startFiveWords('my');
  assert.deepEqual(Array.from(seen[0].ids),['alpha','beta','gamma','delta','epsilon']);
  assert.deepEqual(Array.from(seen[1].ids),['journal','alpha']);

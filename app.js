@@ -114,6 +114,8 @@ function normalizeWord(raw={},old=null){
   while(learn.weak.length<word.length)learn.weak.push(0);
   learn.hints=learn.hints||0;learn.peeks=learn.peeks||0;learn.loops=learn.loops||0;learn.feeling=learn.feeling||'';learn.feelingDate=learn.feelingDate||'';
   return{id:word,word,
+    chunks:window.FiveWordsFocus?.chunks(word,raw.chunks??old?.chunks)||null,
+    seedFocus:window.FiveWordsFocus?.focus(word,raw.seedFocus??old?.seedFocus)||null,
     meaningEn:raw.meaningEn??old?.meaningEn??'',meaningJa:raw.meaningJa??old?.meaningJa??'',example:raw.example??old?.example??'',
     phonicsFocus:norm(raw.phonicsFocus??old?.phonicsFocus??''),pictureCue:raw.pictureCue??old?.pictureCue??'',pictureEmoji:raw.pictureEmoji??old?.pictureEmoji??emojiFor(word),
     mioriSpelling:norm(raw.mioriSpelling??old?.mioriSpelling??''),pronunciationUrl:raw.pronunciationUrl??old?.pronunciationUrl??'',
@@ -295,7 +297,7 @@ function startFiveWords(lane){
   const ids=window.FiveWordsSelection.select({ids:pool,lib:state.lib,previous:plan.lastIds,stars:lane==='week'?state.week.focusIds:[]});
   if(!ids.length)return toast(lane==='my'?'Add a My Word in Parent first.':'Add this week’s words in Parent first.');
   plan.lastIds=[...ids];plan.loop++;state.fiveWordPlan[lane]=plan;save();
-  session=null;playSfx('start');fiveWords=window.FiveWordsCore.create({lane,ids,state,root:$('#playView'),save,audio:(w,initiated)=>playWordAudio(w,false,initiated?{userInitiated:true}:{auto:true}),resolveAudio:resolveHumanAudioForWord,normalize:weeklyAnswerText,diff:flowComparisonHtml,escape:esc,sfx:playSfx,markResult:window.FiveWordsSelection.markResult,home:renderPlayHome,more:()=>startFiveWords(lane),onRemembered(w){const before=state.xp;state.xp+=30;state.garden.growth++;if(!window.LivingGarden){const reward=rewards.find(r=>r.id!=='bunny'&&before<r.xp&&state.xp>=r.xp);if(reward&&!state.garden.stored.includes(reward.id))state.garden.stored.push(reward.id)}window.LivingGarden?.onWordComplete(state.garden)}});
+  session=null;playSfx('start');fiveWords=window.FiveWordsCore.create({lane,ids,state,root:$('#playView'),save,audio:(w,initiated)=>playWordAudio(w,false,initiated?{userInitiated:true}:{auto:true}),resolveAudio:resolveHumanAudioForWord,normalize:weeklyAnswerText,diff:flowComparisonHtml,escape:esc,sfx:playSfx,markResult:window.FiveWordsSelection.markResult,focus:window.FiveWordsFocus,home:renderPlayHome,more:()=>startFiveWords(lane),onRemembered(w){const before=state.xp;state.xp+=30;state.garden.growth++;if(!window.LivingGarden){const reward=rewards.find(r=>r.id!=='bunny'&&before<r.xp&&state.xp>=r.xp);if(reward&&!state.garden.stored.includes(reward.id))state.garden.stored.push(reward.id)}window.LivingGarden?.onWordComplete(state.garden)}});
   fiveWords.render()
 }
 // A weekly exam is a separate assessment, not a four-stage learning attempt.

@@ -1,0 +1,3 @@
+.five-target:has(.five-chunk){display:inline-flex;gap:.24em;align-items:baseline;flex-wrap:wrap;justify-content:center}
+.five-chunk{display:inline-block}
+.five-focus{color:inherit;background:linear-gradient(transparent 36%,#ffeda4 36%,#ffeda4 88%,transparent 88%);padding:0 .025em;border-radius:3px}
