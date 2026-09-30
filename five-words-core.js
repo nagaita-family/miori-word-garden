@@ -27,7 +27,7 @@ function create(d){
   l.attempts++;state.stats.answers=(state.stats.answers||0)+1;l.last=new Date().toISOString().slice(0,10);
   if(correct){l.correct++;if(firstTry){l.first++;l.loops=(l.loops||0)+1;f.recallSuccess++;f.needsRecall=false;state.recentWords=[{id:w.id,date:l.last},...(state.recentWords||[]).filter(x=>x.id!==w.id)].slice(0,8);d.onRemembered(w);d.sfx('finish')}else d.sfx('correct')}
   else{l.mistakes++;l.stageMist[4]=(l.stageMist[4]||0)+1;l.lastWrong=attempt;f.needsRecall=true;d.sfx('wrong')}
-  f.introduced=true;f.lastAt=new Date().toISOString();d.save();
+  d.markResult(f,{correct,firstTry});d.save();
   if(firstTry&&!correct)run.phase='mistake';else{run.phase='result';run.padCorrect=!firstTry&&correct;run.resultCorrect=correct}
   run.audioPhase='';render()
  }

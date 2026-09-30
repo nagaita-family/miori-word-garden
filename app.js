@@ -290,8 +290,12 @@ function renderPlayHome(){
 }
 function startFiveWords(lane){
   const pool=lane==='week'?state.week.ids:Object.keys(state.myWords||{});
-  const ids=takePracticeIds(pool,5,lane);if(!ids.length)return toast(lane==='my'?'Add a My Word in Parent first.':'Add this week’s words in Parent first.');
-  session=null;playSfx('start');fiveWords=window.FiveWordsCore.create({lane,ids,state,root:$('#playView'),save,audio:(w,initiated)=>playWordAudio(w,false,initiated?{userInitiated:true}:{auto:true}),resolveAudio:resolveHumanAudioForWord,normalize:weeklyAnswerText,diff:flowComparisonHtml,escape:esc,sfx:playSfx,home:renderPlayHome,more:()=>startFiveWords(lane),onRemembered(w){const before=state.xp;state.xp+=30;state.garden.growth++;if(!window.LivingGarden){const reward=rewards.find(r=>r.id!=='bunny'&&before<r.xp&&state.xp>=r.xp);if(reward&&!state.garden.stored.includes(reward.id))state.garden.stored.push(reward.id)}window.LivingGarden?.onWordComplete(state.garden)}});
+  state.fiveWordPlan=state.fiveWordPlan||{};const key=lane==='week'?state.week.id:'my';const plan=state.fiveWordPlan[lane]||{key:'',lastIds:[],loop:0};
+  if(plan.key!==key){plan.key=key;plan.lastIds=[];plan.loop=0}
+  const ids=window.FiveWordsSelection.select({ids:pool,lib:state.lib,previous:plan.lastIds,stars:lane==='week'?state.week.focusIds:[]});
+  if(!ids.length)return toast(lane==='my'?'Add a My Word in Parent first.':'Add this week’s words in Parent first.');
+  plan.lastIds=[...ids];plan.loop++;state.fiveWordPlan[lane]=plan;save();
+  session=null;playSfx('start');fiveWords=window.FiveWordsCore.create({lane,ids,state,root:$('#playView'),save,audio:(w,initiated)=>playWordAudio(w,false,initiated?{userInitiated:true}:{auto:true}),resolveAudio:resolveHumanAudioForWord,normalize:weeklyAnswerText,diff:flowComparisonHtml,escape:esc,sfx:playSfx,markResult:window.FiveWordsSelection.markResult,home:renderPlayHome,more:()=>startFiveWords(lane),onRemembered(w){const before=state.xp;state.xp+=30;state.garden.growth++;if(!window.LivingGarden){const reward=rewards.find(r=>r.id!=='bunny'&&before<r.xp&&state.xp>=r.xp);if(reward&&!state.garden.stored.includes(reward.id))state.garden.stored.push(reward.id)}window.LivingGarden?.onWordComplete(state.garden)}});
   fiveWords.render()
 }
 // A weekly exam is a separate assessment, not a four-stage learning attempt.
