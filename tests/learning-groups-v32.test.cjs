@@ -12,8 +12,8 @@ assert(src.includes('function ensureLearningGroups(s)'),'Old local state is migr
 assert(src.includes('seedIds.length===SCHOOL_WORDS.length&&!seedIsCurrent'),'A device already on Unit 5B can recover the pre-v32 Unit 5A list as Past Tests');
 assert(src.includes('w.focusHistory=true'),'Legacy/current stars preserve historical meaning');
 assert(src.includes('function archiveWeek(')&&src.includes('archiveWeek(state,state.week)'),'Importing a new pack archives the old current week');
-assert(src.includes("takePracticeIds(weekIds,4,'week'")&&src.includes("takePracticeIds(myIds,1,'my'"),'Today Play reserves four This Week slots and one My Words slot when available');
-assert(src.includes("mode==='week'")&&src.includes("mode==='my'"),'Focused This Week and My Words play modes remain available');
+assert(src.includes("lane==='week'?state.week.ids:Object.keys(state.myWords||{})"),'Practice 5 selects only the chosen lane');
+assert(src.includes("startFiveWords('week')")&&src.includes("startFiveWords('my')"),'Both Practice 5 lanes remain available');
 assert(src.includes("kind==='my'||kind==='past'")&&src.includes('startStageById'),'My Words and Past review can begin with whole-word recall');
 assert(src.includes("newQuestion(w,3,focusRange(w))")&&src.includes('q.myWordTrial'),'A missed first whole-word recall drops back to Stage 3 before returning to Stage 4');
 assert(src.includes('function startPastReview('),'Past Tests are reviewed explicitly instead of leaking into normal play');
@@ -23,7 +23,7 @@ assert(src.includes("if(!state.week.ids.includes(word))state.week.ids.push(word)
 assert(src.includes('practiceKindLabel(q.practiceKind)'),'Play tells Miori which kind of practice she is doing');
 assert(css.includes('.word-group-tabs')&&css.includes('.group-word-card')&&css.includes('.practice-kind-badge'),'Group management and practice labels have dedicated UI');
 assert(page.includes('learning-groups-v32.css?v=20260917-v32'),'New group UI is cache-busted');
-assert(page.includes('app.js?v=20260924-living-c6'),'Updated app logic is cache-busted');
-assert(page.includes('v52 · Sep 25'),'Visible version is v32');
+assert(page.includes('app.js?v=20260930-core'),'Updated app logic is cache-busted');
+assert(page.includes('v53 · Sep 30'),'Visible version is v32');
 assert(page.includes('play-viewport-v31.css?v=20260917-v31')&&page.includes('writing-erase-v30.js?v=20260917-v30'),'Recent iPad layout and eraser fixes remain loaded');
-console.log('PASS v32: This Week focus expires with the week, My Words persist and start at recall, Past Tests stay explicit, Today Play is 4+1, saved progress migrates.');
+console.log('PASS v32: This Week focus expires with the week, My Words persist and start at recall, Past Tests stay explicit, Practice 5 lanes are separate, saved progress migrates.');

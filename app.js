@@ -50,6 +50,7 @@ const today=()=>new Date().toISOString().slice(0,10);
 let voices=[];
 let currentView='garden';
 let session=null;
+let fiveWords=null;
 let weeklyTest=null;
 let helpKind='';
 let currentAudio=null;
@@ -149,7 +150,7 @@ function renderTopbar(){
   else{if(label)label.textContent=`🎁 Next: ${t.next.label}`;if(count)count.textContent=`${t.doneWords} / 3 words`;if(fill)fill.style.width=`${t.pct}%`}
   const music=$('#musicToggle'),enabled=!!(state.settings.music&&state.settings.sound);if(music){music.textContent='♫';music.classList.toggle('off',!enabled);music.setAttribute('aria-label',enabled?'Mute music and sound effects':'Turn music and sound effects on');music.title=enabled?'Music + sound effects on':'Music + sound effects off'}
 }
-function setView(name){const changing=currentView!==name;currentView=name;if(changing&&audioUnlocked)playSfx('transition');$$('.view').forEach(v=>v.classList.remove('active-view'));$(`#${name}View`).classList.add('active-view');$$('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===name));if(name==='garden')renderGarden();if(name==='play'){if(session){if(session.count>=session.goal)finishSession();else renderTask()}else renderPlayHome()}if(name==='parent')renderParent();renderTopbar();syncBgm()}
+function setView(name){const changing=currentView!==name;currentView=name;if(changing&&audioUnlocked)playSfx('transition');$$('.view').forEach(v=>v.classList.remove('active-view'));$(`#${name}View`).classList.add('active-view');$$('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===name));if(name==='garden')renderGarden();if(name==='play'){if(fiveWords)fiveWords.render();else if(session){if(session.count>=session.goal)finishSession();else renderTask()}else renderPlayHome()}if(name==='parent')renderParent();renderTopbar();syncBgm()}
 
 function rabbitSvg(){return`<svg viewBox="0 0 130 150"><ellipse cx="43" cy="38" rx="18" ry="42" fill="#f8eee9" transform="rotate(-16 43 38)"/><ellipse cx="87" cy="38" rx="18" ry="42" fill="#f8eee9" transform="rotate(16 87 38)"/><ellipse cx="43" cy="38" rx="7" ry="28" fill="#efc1cb" transform="rotate(-16 43 38)"/><ellipse cx="87" cy="38" rx="7" ry="28" fill="#efc1cb" transform="rotate(16 87 38)"/><ellipse cx="65" cy="84" rx="48" ry="43" fill="#fffaf5"/><ellipse cx="65" cy="124" rx="35" ry="23" fill="#fffaf5"/><circle cx="48" cy="80" r="5" fill="#493f3e"/><circle cx="82" cy="80" r="5" fill="#493f3e"/><ellipse cx="65" cy="94" rx="6" ry="4" fill="#db9299"/><path d="M65 98q-8 10-15 1M65 98q8 10 15 1" fill="none" stroke="#6d5750" stroke-width="3" stroke-linecap="round"/><circle cx="36" cy="96" r="8" fill="#f5d8da"/><circle cx="94" cy="96" r="8" fill="#f5d8da"/></svg>`}
 function plant(stage){return`<div class="plant p${stage}"><i class="stem"></i><i class="leaf"></i><i class="leaf r"></i><i class="bud"></i><i class="flower"></i><i class="flower mini"></i></div>`}
@@ -282,10 +283,16 @@ function makeDraggable(el){
 }
 
 function renderPlayHome(){
-  session=null;helpKind='';const draft=state.weekTestDraft?.weekId===state.week.id;const previous=state.weekTestResult?.weekId===state.week.id;
+  session=null;fiveWords=null;helpKind='';const draft=state.weekTestDraft?.weekId===state.week.id;const previous=state.weekTestResult?.weekId===state.week.id;
   const weekCount=state.week.ids.filter(id=>state.lib[id]).length,myIds=Object.keys(state.myWords||{}).filter(id=>state.lib[id]),myOutside=myIds.filter(id=>!state.week.ids.includes(id)).length;
-  $('#playView').innerHTML=`<div class="play-view"><div class="play-home"><div class="play-hero-card"><div><div class="play-new">TODAY’S SPELL ADVENTURE ✦</div><p class="eyebrow">READY WHEN YOU ARE</p><h1>Let’s make some words bloom.</h1><p>Today keeps the spelling test first, while one personal word keeps everyday writing growing too.</p><div class="today-plan"><div class="today-plan-card week"><b>📝 This Week · up to 4</b><small>School spelling-test words come first.</small></div><div class="today-plan-card mine"><b>📚 My Words · up to 1</b><small>Journal, reading, and everyday words stay with you.</small></div></div><div class="play-mode-actions"><button class="giant" id="startSessionBtn">Today’s Play ✦</button><button class="secondary-play" id="weekOnlyBtn" ${weekCount?'':'disabled'}>This Week only</button><button class="secondary-play" id="myWordsOnlyBtn" ${myIds.length?'':'disabled'}>My Words only</button></div><section class="weekly-test-entry"><span class="weekly-entry-kicker">📝 THIS WEEK TEST</span><h2>Ready for the spelling test?</h2><p>Hear each word. Write on one answer sheet. Check all your answers at the end.</p><div class="weekly-entry-actions"><button id="startWeeklyTestBtn" class="primary-btn" type="button">${draft?'Resume this week’s test':'Start this week’s test'}</button>${draft?'<button id="newWeeklyTestBtn" class="secondary-btn" type="button">Start over</button>':''}${previous?'<button id="weeklyLastResultBtn" class="secondary-btn" type="button">Last test results</button>':''}</div></section><div class="play-meta"><span>${esc(state.week.title)}</span><span>${weekCount} This Week</span><span>${myOutside} My Words outside this week</span><span>Past tests stay out unless you choose Review</span></div></div><div class="play-mascot"><div class="mascot-bubble">🐰</div></div></div></div></div>`;
-  $('#startSessionBtn').onclick=()=>startSession('today');$('#weekOnlyBtn')?.addEventListener('click',()=>startSession('week'));$('#myWordsOnlyBtn')?.addEventListener('click',()=>startSession('my'));$('#startWeeklyTestBtn').onclick=()=>startWeeklyTest();$('#newWeeklyTestBtn')?.addEventListener('click',()=>startWeeklyTest(true));$('#weeklyLastResultBtn')?.addEventListener('click',renderWeeklyResult);syncBgm()
+  $('#playView').innerHTML=`<div class="play-view"><div class="play-home"><div class="play-hero-card"><div><div class="play-new">SPELL & GROW ✦</div><p class="eyebrow">THIS WEEK</p><h1>5 words, one little adventure.</h1><p>Listen, write, and see what you remember.</p><div class="play-mode-actions"><button class="giant" id="weekOnlyBtn" ${weekCount?'':'disabled'}>Practice 5 · This Week</button><button class="secondary-play" id="myWordsOnlyBtn" ${myIds.length?'':'disabled'}>Practice 5 · My Words</button></div><p class="five-lane-note">My Words are separate, for when you have more time.</p><section class="weekly-test-entry"><span class="weekly-entry-kicker">📝 THIS WEEK TEST</span><h2>Ready for the spelling test?</h2><p>Hear each word. Write on one answer sheet. Check all your answers at the end.</p><div class="weekly-entry-actions"><button id="startWeeklyTestBtn" class="primary-btn" type="button">${draft?'Resume this week’s test':'Start this week’s test'}</button>${draft?'<button id="newWeeklyTestBtn" class="secondary-btn" type="button">Start over</button>':''}${previous?'<button id="weeklyLastResultBtn" class="secondary-btn" type="button">Last test results</button>':''}</div></section><div class="play-meta"><span>${esc(state.week.title)}</span><span>${weekCount} This Week</span><span>${myOutside} My Words outside this week</span></div></div><div class="play-mascot"><div class="mascot-bubble">🐰</div></div></div></div></div>`;
+  $('#weekOnlyBtn')?.addEventListener('click',()=>startFiveWords('week'));$('#myWordsOnlyBtn')?.addEventListener('click',()=>startFiveWords('my'));$('#startWeeklyTestBtn').onclick=()=>startWeeklyTest();$('#newWeeklyTestBtn')?.addEventListener('click',()=>startWeeklyTest(true));$('#weeklyLastResultBtn')?.addEventListener('click',renderWeeklyResult);syncBgm()
+}
+function startFiveWords(lane){
+  const pool=lane==='week'?state.week.ids:Object.keys(state.myWords||{});
+  const ids=takePracticeIds(pool,5,lane);if(!ids.length)return toast(lane==='my'?'Add a My Word in Parent first.':'Add this week’s words in Parent first.');
+  session=null;playSfx('start');fiveWords=window.FiveWordsCore.create({lane,ids,state,root:$('#playView'),save,audio:(w,initiated)=>playWordAudio(w,false,initiated?{userInitiated:true}:{auto:true}),resolveAudio:resolveHumanAudioForWord,normalize:weeklyAnswerText,diff:flowComparisonHtml,escape:esc,sfx:playSfx,home:renderPlayHome,more:()=>startFiveWords(lane),onRemembered(w){const before=state.xp;state.xp+=30;state.garden.growth++;if(!window.LivingGarden){const reward=rewards.find(r=>r.id!=='bunny'&&before<r.xp&&state.xp>=r.xp);if(reward&&!state.garden.stored.includes(reward.id))state.garden.stored.push(reward.id)}window.LivingGarden?.onWordComplete(state.garden)}});
+  fiveWords.render()
 }
 // A weekly exam is a separate assessment, not a four-stage learning attempt.
 // The same local state store is used, so the existing Parent Test Mode remains isolated.
@@ -323,7 +330,7 @@ function startWeeklyTest(fresh=false){
   const resume=!fresh&&draft?.weekId===state.week.id&&Array.isArray(draft.ids)&&draft.ids.length===current.length&&draft.ids.every(id=>current.includes(id));
   const ids=resume?[...draft.ids]:shuffle(current);
   weeklyTest={ids,answers:Object.fromEntries(ids.map(id=>[id,resume&&typeof draft.answers?.[id]==='string'?weeklyAnswerText(draft.answers[id],state.lib[id].word):''])),active:resume?Math.max(0,Math.min(ids.length-1,Number(draft.active)||0)):0,startedAt:resume?draft.startedAt:new Date().toISOString()};
-  session=null;helpKind='';saveWeeklyDraft();renderWeeklyTest();
+  session=null;fiveWords=null;helpKind='';saveWeeklyDraft();renderWeeklyTest();
   // The start button is a user gesture, so reading the first/current word can begin here.
   playWordAudio(state.lib[weeklyTest.ids[weeklyTest.active]],false,{userInitiated:true})
 }
@@ -409,18 +416,8 @@ function makeSession(items,mode='today'){
   const clean=[];const seen=new Set();for(const item of items){if(!item?.id||seen.has(item.id)||!state.lib[item.id])continue;seen.add(item.id);clean.push(item)}
   if(!clean.length)return null;return{count:0,goal:clean.length,ids:clean.map(x=>x.id),doneIds:[],last:'',q:null,xp:0,mode,kindById:Object.fromEntries(clean.map(x=>[x.id,x.kind])),startStageById:Object.fromEntries(clean.map(x=>[x.id,x.startStage||1]))}
 }
-function startSession(mode='today'){
-  const weekIds=uniqueWordIds(state.week.ids).filter(id=>state.lib[id]),myIds=uniqueWordIds(Object.keys(state.myWords||{})).filter(id=>state.lib[id]&&!weekIds.includes(id));let items=[];
-  if(mode==='week')items=takePracticeIds(weekIds,5,'week').map(id=>({id,kind:'week',startStage:1}));
-  else if(mode==='my')items=takePracticeIds(Object.keys(state.myWords||{}),5,'my').map(id=>({id,kind:'my',startStage:4}));
-  else{
-    const w=takePracticeIds(weekIds,4,'week');const m=takePracticeIds(myIds,1,'my',w);items=[...w.map(id=>({id,kind:'week',startStage:1})),...m.map(id=>({id,kind:'my',startStage:4}))];
-    let need=5-items.length;if(need>0){const used=items.map(x=>x.id);const moreWeek=takePracticeIds(weekIds,need,'week',used);items.push(...moreWeek.map(id=>({id,kind:'week',startStage:1})));need=5-items.length;if(need>0){const moreMy=takePracticeIds(myIds,need,'my',items.map(x=>x.id));items.push(...moreMy.map(id=>({id,kind:'my',startStage:4})))}}
-  }
-  session=makeSession(items,mode);if(!session)return toast(mode==='my'?'Add a My Word in Parent first.':'Add this week’s words in Parent first.');playSfx('start');syncBgm();helpKind='';renderTask()
-}
 function startPastReview(weekId){
-  const past=(state.pastWeeks||[]).find(x=>x.id===weekId);if(!past)return;const ids=takePracticeIds(past.ids,5,'past'),items=ids.map(id=>({id,kind:'past',startStage:4}));session=makeSession(items,'past');if(!session)return toast('No saved words in this past test.');playSfx('start');setView('play')
+  const past=(state.pastWeeks||[]).find(x=>x.id===weekId);if(!past)return;const ids=takePracticeIds(past.ids,5,'past'),items=ids.map(id=>({id,kind:'past',startStage:4}));fiveWords=null;session=makeSession(items,'past');if(!session)return toast('No saved words in this past test.');playSfx('start');setView('play')
 }
 function chooseWord(){
   let pool=(session.ids||practiceIds()).filter(id=>!session.doneIds.includes(id)).map(id=>state.lib[id]).filter(Boolean);if(pool.length>1)pool=pool.filter(w=>w.id!==session.last);pool.sort((a,b)=>practiceScore(b.id,session.kindById?.[b.id]||'week')-practiceScore(a.id,session.kindById?.[a.id]||'week'));return pool[0]
