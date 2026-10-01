@@ -268,3 +268,4 @@ v60 changes both letter-list lookups to the multi-element helper `$$`. A focused
 
 All 32 repository test files were syntax-scanned after current-version assertion updates; no stale v59 current-app/version assertions remain. A full Node suite is not available in the connector runtime, so physical iPad Parent picker → Save → Play highlight verification remains the next check.
 
+Publication: v60 was squash-merged to `main` as `3638cc9c28d7618f73a19ba09f6cf3db01e530a5`; GitHub Pages run `36928971199` completed successfully. The interaction harness verified the real Parent flow for `bought`: all letter buttons bind, selecting positions 1–4 previews `b<mark>ough</mark>t`, Save persists `parentFocus={start:1,length:4}`, rerenders Parent, and closes the modal.
