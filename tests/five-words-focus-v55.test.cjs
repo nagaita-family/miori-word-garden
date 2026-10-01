@@ -17,8 +17,9 @@ test('Focus highlight and quiet chunk underlines can coexist',()=>{
  f.remember(w.learn.five,spot);assert.equal(w.learn.five.mioriFocus,undefined);
  f.remember(w.learn.five,spot);assert.equal(w.learn.five.mioriFocus.start,8);
  assert.match(f.display(w,null,plain),/five-focus.*y/);
- f.setParent(w,{start:0,length:3});assert.equal(w.learn.five.parentFocus.start,0);
- assert.match(f.display(w,null,plain),/five-focus.*but/,'Parent manual Focus overrides learned and seed Focus');
+ f.setParent(w,{indices:[0,2,5]});assert.deepEqual(Array.from(w.learn.five.parentFocus.indices),[0,2,5]);
+ const sparse=f.display(w,null,plain);assert.match(sparse,/<mark class="five-focus">b<\/mark>u<mark class="five-focus">t<\/mark>/,'Parent Focus may skip letters');
+ assert.deepEqual(Array.from(f.positions(w.word,w.learn.five.parentFocus)),[0,2,5]);
  assert.match(f.display(w,{start:6,length:3},plain),/five-focus.*fly/,'the current mistake still takes priority for immediate correction');
  f.setParent(w,null);assert.equal(w.learn.five.parentFocus,undefined);assert.match(f.display(w,null,plain),/five-focus.*y/,'clearing manual Focus returns to Miori Focus');
 });
