@@ -38,6 +38,17 @@ function align(written,correct){
   }
   return cells;
 }
+function renderAttempt(written,correct){
+  const answer=compact(written),target=compact(correct);
+  if(!answer)return'<span class="five-attempt-empty">No answer</span>';
+  if(answer.length>80||target.length>80)return htmlEscape(answer);
+  return align(answer,target).map(cell=>{
+    if(cell.kind==='missing')return'<span class="five-attempt-char is-missing" aria-label="Missing letter here">＿</span>';
+    if(cell.kind==='match')return'<span class="five-attempt-char is-match">'+htmlEscape(cell.written)+'</span>';
+    if(cell.kind==='extra')return'<span class="five-attempt-char is-extra" aria-label="Extra letter '+htmlEscape(cell.written)+'">'+htmlEscape(cell.written)+'</span>';
+    return'<span class="five-attempt-char is-wrong" aria-label="Different letter '+htmlEscape(cell.written)+'">'+htmlEscape(cell.written)+'</span>';
+  }).join('');
+}
 function render(written,correct){
   const answer=compact(written),target=compact(correct);
   if(!target)return'';
@@ -57,5 +68,5 @@ function render(written,correct){
   const hasMissing=cells.some(cell=>cell.kind==='missing');
   return`<div class="weekly-diff" role="group" aria-label="Compare your spelling with the correct spelling"><span class="weekly-diff-label">YOU WROTE</span><div class="weekly-diff-letters">${top}</div><span class="weekly-diff-label">CORRECT SPELLING</span><div class="weekly-diff-letters">${bottom}</div><small class="weekly-diff-legend">Red = check this letter${hasMissing?' · + = a missing letter':''}. The highlighted letters below show what to write.</small></div>`;
 }
-window.WordGardenWeeklyDiff=Object.freeze({align,render});
+window.WordGardenWeeklyDiff=Object.freeze({align,render,renderAttempt});
 })();
