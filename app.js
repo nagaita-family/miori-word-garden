@@ -28,7 +28,19 @@ const WORD_CHUNKS={
   ladybug:['lady','bug'],
   raisin:['rai','sin'],
   riding:['rid','ing'],
-  thicket:['thick','et']
+  thicket:['thick','et'],
+  // Curated spelling chunks for the current past-tense pack.
+  // Future Word Packs can override these with their own phonics-reviewed chunks.
+  talked:['talk','ed'],
+  hoped:['hope','d'],
+  missed:['miss','ed'],
+  collected:['col','lect','ed'],
+  emptied:['empt','ied'],
+  grabbed:['grab','b','ed'],
+  wrote:['wr','ote'],
+  bought:['b','ough','t'],
+  drew:['dr','ew'],
+  ate:['ate']
 };
 const rewards=[
 {id:'bunny',xp:0,type:'rabbit',label:'Bunny',icon:'🐰',x:53,y:68},
@@ -114,7 +126,7 @@ function normalizeWord(raw={},old=null){
   while(learn.weak.length<word.length)learn.weak.push(0);
   learn.hints=learn.hints||0;learn.peeks=learn.peeks||0;learn.loops=learn.loops||0;learn.feeling=learn.feeling||'';learn.feelingDate=learn.feelingDate||'';
   return{id:word,word,
-    chunks:window.FiveWordsFocus?.chunks(word,raw.chunks??old?.chunks)||null,
+    chunks:window.FiveWordsFocus?.chunks(word,raw.chunks??old?.chunks??WORD_CHUNKS[word])||null,
     seedFocus:window.FiveWordsFocus?.focus(word,raw.seedFocus??old?.seedFocus)||null,
     meaningEn:raw.meaningEn??old?.meaningEn??'',meaningJa:raw.meaningJa??old?.meaningJa??'',example:raw.example??old?.example??'',
     phonicsFocus:norm(raw.phonicsFocus??old?.phonicsFocus??''),pictureCue:raw.pictureCue??old?.pictureCue??'',pictureEmoji:raw.pictureEmoji??old?.pictureEmoji??emojiFor(word),
@@ -126,13 +138,23 @@ function seedSchoolWords(s){
   for(const raw of SCHOOL_WORDS){const existing=s.lib?.[raw.word];const w=normalizeWord(raw,existing);s.lib[w.id]=w;ids.push(w.id)}
   if(!s.week?.ids?.length)s.week={id:'2026-09-17-unit-5a',title:'Sept 17 · Unit 5A',ids,focusIds:[]};
 }
+function hydrateChunkSeeds(s){
+  if(!window.FiveWordsFocus)return;
+  for(const w of Object.values(s.lib||{})){
+    if(!w?.word)continue;
+    const current=window.FiveWordsFocus.chunks(w.word,w.chunks);
+    if(current){w.chunks=current;continue}
+    const seeded=window.FiveWordsFocus.chunks(w.word,WORD_CHUNKS[w.word]);
+    if(seeded)w.chunks=seeded;
+  }
+}
 function loadState(){
   let s;try{s=JSON.parse(localStorage.getItem(STORAGE_KEY))}catch{}
   if(!s)s=defaultState();
   if(s.version===2){s.version=3;s.stats=s.stats||{answers:0,sessions:0};s.settings=s.settings||{sound:true,voice:''};s.garden=s.garden||{growth:0,pos:{}};s.week=s.week||{id:'',title:'This Week',ids:[]};const next={};for(const [id,w] of Object.entries(s.lib||{})){const n=normalizeWord(w,w);next[n.id||id]=n}s.lib=next}
   if(s.version!==3)s={...defaultState(),...s,version:3};
   s.lib=s.lib||{};s.stats=s.stats||{answers:0,sessions:0};s.garden=s.garden||{growth:0,pos:{},bunnySeated:false,stored:[]};s.garden.pos=s.garden.pos||{};if(typeof s.garden.bunnySeated!=='boolean')s.garden.bunnySeated=false;if(!Array.isArray(s.garden.stored))s.garden.stored=[];s.settings=s.settings||{sound:true,music:true,musicV2:true,voice:'',audioDefaultV17:true};if(typeof s.settings.sound!=='boolean')s.settings.sound=true;if(typeof s.settings.music!=='boolean')s.settings.music=true;if(!s.settings.audioDefaultV17){s.settings.sound=true;s.settings.music=true;s.settings.audioDefaultV17=true}s.settings.musicV2=true;
-  s.recentWords=Array.isArray(s.recentWords)?s.recentWords:[];seedSchoolWords(s);ensureLearningGroups(s);window.LivingGarden?.migrate(s);localStorage.setItem(STORAGE_KEY,JSON.stringify(s));return s;
+  s.recentWords=Array.isArray(s.recentWords)?s.recentWords:[];seedSchoolWords(s);hydrateChunkSeeds(s);ensureLearningGroups(s);window.LivingGarden?.migrate(s);localStorage.setItem(STORAGE_KEY,JSON.stringify(s));return s;
 }
 let state=loadState();
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));renderTopbar()}
