@@ -8,7 +8,7 @@ function fixture(ids=['butterfly','cricket','insect','raisin','ladybug'],lane='w
  const state={lib:Object.fromEntries(ids.map(id=>[id,{id,word:id,learn:{attempts:0,correct:0,first:0,mistakes:0,loops:prior.includes(id)?1:0,stageMist:{4:0},last:''}}])),stats:{answers:0,sessions:0},recentWords:[]};
  const nodes=new Map(),root={innerHTML:'',querySelector(id){if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',onclick:null,addEventListener(){},querySelector(){return{}}});return nodes.get(id)}};
  const saved=[],reward=[];const ctx={window:{},setTimeout(){},navigator:{}};vm.createContext(ctx);vm.runInContext(selection,ctx);vm.runInContext(focusSource,ctx);vm.runInContext(src,ctx);
- const core=ctx.window.FiveWordsCore.create({lane,ids,state,root,save:()=>saved.push(JSON.stringify(state)),audio(){},resolveAudio:async()=>{},normalize:s=>String(s||'').toLowerCase().replace(/[^a-z]/g,''),escape:s=>s,diff:(a,b)=>a+' → '+b,sfx(){},markResult:ctx.window.FiveWordsSelection.markResult,focus:ctx.window.FiveWordsFocus,home(){},more(){},onRemembered:w=>reward.push(w.id)});
+ const core=ctx.window.FiveWordsCore.create({lane,ids,state,root,save:()=>saved.push(JSON.stringify(state)),audio(){},resolveAudio:async()=>{},normalize:s=>String(s||'').toLowerCase().replace(/[^a-z]/g,''),escape:s=>s,diff:(a,b)=>a+' → '+b,attemptDiff:(a,b)=>'<span class="five-attempt-char is-wrong">'+a+'</span>',sfx(){},markResult:ctx.window.FiveWordsSelection.markResult,focus:ctx.window.FiveWordsFocus,home(){},more(){},onRemembered:w=>reward.push(w.id)});
  return{core,state,root,saved,reward};
 }
 test('New words: look and listen, write in view, then hidden audio-only check and five-word finish',()=>{
@@ -26,7 +26,7 @@ test('Recall mistake opens a paper Practice Pad: model visible, three Pencil lin
  const x=fixture(['cricket'],'my',['cricket']),w=x.state.lib.cricket;
  assert.equal(x.core.run.phase,'hidden');assert.doesNotMatch(x.root.innerHTML,/cricket/);
  x.core.check('criket');assert.equal(x.core.run.phase,'practice');
- assert.match(x.root.innerHTML,/Practice Pad.*You wrote.*criket.*correct spelling.*cricket/s);
+ assert.match(x.root.innerHTML,/Practice Pad.*You wrote.*five-attempt-char is-wrong.*criket.*correct spelling.*cricket/s);
  assert.equal((x.root.innerHTML.match(/five-practice-line/g)||[]).length,3);
  assert.match(x.root.innerHTML,/Need help\? Trace once/,'Trace is optional help, not a required step');
  x.core.completePractice();assert.equal(x.core.run.phase,'practice','three handwritten lines are required');
@@ -47,7 +47,7 @@ test('New-word mistake is practiced on paper, then becomes audio-only recall on 
  const ctx={window:{},setTimeout(){},navigator:{}};vm.createContext(ctx);vm.runInContext(focusSource,ctx);vm.runInContext(src,ctx);
  const resumed=ctx.window.FiveWordsCore.create({lane:'week',ids:['butterfly'],state:y.state,root:y.root,save(){},audio(){},resolveAudio:async()=>{},normalize:s=>s,escape:s=>s,diff:()=>'',sfx(){},focus:ctx.window.FiveWordsFocus,markResult(){},home(){},more(){},onRemembered(){}});
  assert.equal(resumed.run.phase,'hidden');assert.deepEqual(Array.from(resumed.run.ids),['butterfly']);
- assert(page.includes('five-words-core.js?v=20261002-v62')&&page.includes('five-words-core.css?v=20261002-v62'));
+ assert(page.includes('five-words-core.js?v=20261002-v63')&&page.includes('five-words-core.css?v=20261002-v63'));
 });
 test('Play entry gives This Week and My Words their own exact pool, even for an overlapping word',()=>{
  const app=fs.readFileSync('app.js','utf8'),start=app.indexOf('function fiveManual(lane){'),end=app.indexOf('// A weekly exam',start);
