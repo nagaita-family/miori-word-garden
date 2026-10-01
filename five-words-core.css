@@ -26,7 +26,13 @@
 .five-paper-pad{width:min(740px,100%);margin:12px auto 0}
 .five-you-wrote{display:flex;align-items:baseline;justify-content:center;gap:9px;margin:6px auto 10px;color:#8b778c}
 .five-you-wrote small{font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.07em}
-.five-you-wrote span{font-size:22px;text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:#c9a2aa}
+.five-you-wrote .five-attempt-view{font-size:22px;letter-spacing:.035em}
+.five-attempt-char{display:inline-block;min-width:.54em;text-align:center}
+.five-attempt-char.is-match{color:#9a8f9b}
+.five-attempt-char.is-wrong{color:#a64f62;background:#fbe8ed;border-bottom:2px solid #c86a7c;border-radius:5px 5px 2px 2px}
+.five-attempt-char.is-extra{color:#a64f62;background:#fbe8ed;text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:#bd6274;border-radius:5px}
+.five-attempt-char.is-missing{color:#b95c70;border-bottom:2px dashed #c86a7c;font-weight:900}
+.five-attempt-empty{color:#a64f62;font-style:italic}
 .five-practice-model{display:grid;place-items:center;gap:4px;margin:8px auto 16px;padding:10px 12px 13px;border-radius:18px;background:#fffaf0}
 .five-practice-model small{font-size:11px;font-weight:850;color:#7b6a75}
 .five-practice-model .five-target{font-size:clamp(30px,5.6vw,52px)}
