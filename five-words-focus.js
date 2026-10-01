@@ -24,11 +24,21 @@ function remember(f,spot){
  f.mistakeHits[key]=(f.mistakeHits[key]||0)+1;
  if(f.mistakeHits[key]>=2)f.mioriFocus={...spot};
 }
-function active(w,temp){return focus(w.word,temp)||focus(w.word,w.learn?.five?.mioriFocus)||focus(w.word,w.seedFocus)}
+function ensureFive(w){
+ if(!w.learn)w.learn={};
+ if(!w.learn.five)w.learn.five={introduced:!!((w.learn.loops||0)>0||(w.learn.stageMist?.[4]||0)>0),recallSuccess:0,needsRecall:false};
+ return w.learn.five;
+}
+function setParent(w,raw){
+ const f=ensureFive(w),spot=focus(w.word,raw);
+ if(spot)f.parentFocus={...spot};else delete f.parentFocus;
+ return spot;
+}
+function active(w,temp){return focus(w.word,temp)||focus(w.word,w.learn?.five?.parentFocus)||focus(w.word,w.learn?.five?.mioriFocus)||focus(w.word,w.seedFocus)}
 function display(w,temp,escape){
  const word=w.word,spot=active(w,temp);
  if(spot)return escape(word.slice(0,spot.start))+'<mark class="five-focus">'+escape(word.slice(spot.start,spot.start+spot.length))+'</mark>'+escape(word.slice(spot.start+spot.length));
  const parts=chunks(word,w.chunks);return parts?parts.map(x=>'<span class="five-chunk">'+escape(x)+'</span>').join(''):escape(word);
 }
-window.FiveWordsFocus={chunks,focus,mistake,remember,active,display};
+window.FiveWordsFocus={chunks,focus,mistake,remember,setParent,active,display};
 })();
