@@ -930,7 +930,7 @@ function openFiveFocusEditor(id){
   const selectedRange=()=>first==null?null:{start:Math.min(first,last??first),end:Math.max(first,last??first)};
   const renderPick=()=>{
     const range=selectedRange();
-    $('[data-focus-letter]',$('#focusLetterPicker')).forEach(btn=>{
+    $$('[data-focus-letter]',$('#focusLetterPicker')).forEach(btn=>{
       const i=Number(btn.dataset.focusLetter),on=range&&i>=range.start&&i<=range.end;
       btn.classList.toggle('selected',!!on)
     });
@@ -943,7 +943,7 @@ function openFiveFocusEditor(id){
   };
   $('#modalRoot').innerHTML=`<div class="modal"><div class="modal-card focus-picker-modal"><div class="modal-head"><div><p class="eyebrow">FOCUS SPOT</p><h2>${esc(w.word)}</h2><p>覚えてほしい部分だけを蛍光ペンで見せます。</p></div><button id="closeFocusPicker" class="icon-btn">×</button></div><div id="focusPreview" class="focus-picker-preview"></div><div id="focusLetterPicker" class="focus-letter-picker">${[...w.word].map((ch,i)=>`<button type="button" data-focus-letter="${i}">${esc(ch)}</button>`).join('')}</div><p id="focusPickerNote" class="focus-picker-note"></p><p class="focus-picker-help">Manual Focusは自動Focusより優先します。間違えた直後だけは、その場の間違い箇所を優先表示します。</p><div class="modal-actions"><button id="clearFocusPicker" type="button" class="secondary-btn">Clear Focus</button><button id="cancelFocusPicker" type="button" class="secondary-btn">Cancel</button><button id="saveFocusPicker" type="button" class="primary-btn">Save Focus</button></div></div></div>`;
   $('#closeFocusPicker').onclick=$('#cancelFocusPicker').onclick=()=>$('#modalRoot').innerHTML='';
-  $('[data-focus-letter]',$('#focusLetterPicker')).forEach(btn=>btn.onclick=()=>{
+  $$('[data-focus-letter]',$('#focusLetterPicker')).forEach(btn=>btn.onclick=()=>{
     const i=Number(btn.dataset.focusLetter);
     if(first==null||last!=null){first=i;last=null}else last=i;
     renderPick()
