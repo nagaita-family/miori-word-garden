@@ -925,33 +925,26 @@ function recentWordsHtml(){
 function learningSummary(w){const l=w.learn||learning(w.word),weak=Math.max(0,...(l.weak||[])),wi=weak?(l.weak||[]).indexOf(weak):-1;return{loops:l.loops||0,correct:l.correct||0,mistakes:l.mistakes||0,weak:wi>=0?w.word.slice(wi,Math.min(w.word.length,wi+2)):'—',last:l.last||'Not practiced yet'}}
 function openFiveFocusEditor(id){
   const w=state.lib[id];if(!w)return;
-  const current=window.FiveWordsFocus.focus(w.word,w.learn?.five?.parentFocus);
-  let first=current?.start??null,last=current?current.start+current.length-1:null;
-  const selectedRange=()=>first==null?null:{start:Math.min(first,last??first),end:Math.max(first,last??first)};
+  const selected=new Set(window.FiveWordsFocus.positions(w.word,w.learn?.five?.parentFocus));
   const renderPick=()=>{
-    const range=selectedRange();
     $$('[data-focus-letter]',$('#focusLetterPicker')).forEach(btn=>{
-      const i=Number(btn.dataset.focusLetter),on=range&&i>=range.start&&i<=range.end;
-      btn.classList.toggle('selected',!!on)
+      btn.classList.toggle('selected',selected.has(Number(btn.dataset.focusLetter)))
     });
     const preview=$('#focusPreview'),note=$('#focusPickerNote');
-    if(preview){
-      const r=selectedRange();
-      preview.innerHTML=r?esc(w.word.slice(0,r.start))+'<mark>'+esc(w.word.slice(r.start,r.end+1))+'</mark>'+esc(w.word.slice(r.end+1)):esc(w.word)
-    }
-    if(note)note.textContent=first==null?'Tap the first letter.':last==null?'Tap the last letter, or Save for one letter.':'Selected. Tap a new letter to start again.'
+    if(preview)preview.innerHTML=[...w.word].map((ch,i)=>selected.has(i)?'<mark>'+esc(ch)+'</mark>':esc(ch)).join('');
+    if(note)note.textContent=selected.size?'Tap any letter to turn its highlight on or off.':'Tap the letters you want to highlight.'
   };
-  $('#modalRoot').innerHTML=`<div class="modal"><div class="modal-card focus-picker-modal"><div class="modal-head"><div><p class="eyebrow">FOCUS SPOT</p><h2>${esc(w.word)}</h2><p>覚えてほしい部分だけを蛍光ペンで見せます。</p></div><button id="closeFocusPicker" class="icon-btn">×</button></div><div id="focusPreview" class="focus-picker-preview"></div><div id="focusLetterPicker" class="focus-letter-picker">${[...w.word].map((ch,i)=>`<button type="button" data-focus-letter="${i}">${esc(ch)}</button>`).join('')}</div><p id="focusPickerNote" class="focus-picker-note"></p><p class="focus-picker-help">Manual Focusは自動Focusより優先します。間違えた直後だけは、その場の間違い箇所を優先表示します。</p><div class="modal-actions"><button id="clearFocusPicker" type="button" class="secondary-btn">Clear Focus</button><button id="cancelFocusPicker" type="button" class="secondary-btn">Cancel</button><button id="saveFocusPicker" type="button" class="primary-btn">Save Focus</button></div></div></div>`;
+  $('#modalRoot').innerHTML=`<div class="modal"><div class="modal-card focus-picker-modal"><div class="modal-head"><div><p class="eyebrow">FOCUS SPOT</p><h2>${esc(w.word)}</h2><p>覚えてほしい文字だけを蛍光ペンで見せます。</p></div><button id="closeFocusPicker" class="icon-btn">×</button></div><div id="focusPreview" class="focus-picker-preview"></div><div id="focusLetterPicker" class="focus-letter-picker">${[...w.word].map((ch,i)=>`<button type="button" data-focus-letter="${i}">${esc(ch)}</button>`).join('')}</div><p id="focusPickerNote" class="focus-picker-note"></p><p class="focus-picker-help">1文字ずつ自由に選べます。間を空けて複数の文字を選んでもOKです。</p><div class="modal-actions"><button id="clearFocusPicker" type="button" class="secondary-btn">Clear Focus</button><button id="cancelFocusPicker" type="button" class="secondary-btn">Cancel</button><button id="saveFocusPicker" type="button" class="primary-btn">Save Focus</button></div></div></div>`;
   $('#closeFocusPicker').onclick=$('#cancelFocusPicker').onclick=()=>$('#modalRoot').innerHTML='';
   $$('[data-focus-letter]',$('#focusLetterPicker')).forEach(btn=>btn.onclick=()=>{
     const i=Number(btn.dataset.focusLetter);
-    if(first==null||last!=null){first=i;last=null}else last=i;
+    if(selected.has(i))selected.delete(i);else selected.add(i);
     renderPick()
   });
   $('#clearFocusPicker').onclick=()=>{window.FiveWordsFocus.setParent(w,null);save();$('#modalRoot').innerHTML='';renderParent();toast(`${w.word}: Manual Focusを外しました。`)};
   $('#saveFocusPicker').onclick=()=>{
-    const r=selectedRange();if(!r)return toast('Choose at least one letter.');
-    window.FiveWordsFocus.setParent(w,{start:r.start,length:r.end-r.start+1});save();$('#modalRoot').innerHTML='';renderParent();toast(`${w.word}: Focus Spotを保存しました。`)
+    const indices=[...selected].sort((a,b)=>a-b);if(!indices.length)return toast('Choose at least one letter.');
+    window.FiveWordsFocus.setParent(w,{indices});save();$('#modalRoot').innerHTML='';renderParent();toast(`${w.word}: Focus Spotを保存しました。`)
   };
   renderPick()
 }
@@ -966,7 +959,7 @@ function renderFiveParentControls(){
     for(const card of grid.querySelectorAll('.group-word-card')){
       const id=card.dataset.id,w=state.lib[id];if(!w)continue;
       const bar=document.createElement('div');bar.className='five-parent-controls';
-      const manualFocus=window.FiveWordsFocus.focus(w.word,w.learn?.five?.parentFocus),focusText=manualFocus?w.word.slice(manualFocus.start,manualFocus.start+manualFocus.length):'';
+      const manualFocus=window.FiveWordsFocus.focus(w.word,w.learn?.five?.parentFocus),focusPositions=window.FiveWordsFocus.positions(w.word,manualFocus),focusText=focusPositions.map(i=>w.word[i]).join('·');
       bar.innerHTML=`<button type="button" class="five-star-toggle ${w.learn?.five?.starred?'selected':''}" aria-pressed="${!!w.learn?.five?.starred}">${w.learn?.five?.starred?'⭐ 要注意':'☆ 要注意'}</button><button type="button" class="five-focus-edit ${manualFocus?'selected':''}">${manualFocus?`🖍 Focus: ${esc(focusText)}`:'🖍 Focus Spot'}</button><label><input type="checkbox" ${plan.ids.includes(id)?'checked':''}> Next 5</label>`;
       card.appendChild(bar);
       bar.querySelector('.five-star-toggle').onclick=()=>{w.learn.five=w.learn.five||{introduced:!!((w.learn.loops||0)>0||(w.learn.stageMist?.[4]||0)>0),recallSuccess:0,needsRecall:false};w.learn.five.starred=!w.learn.five.starred;save();renderParent()};
