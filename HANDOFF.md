@@ -269,3 +269,12 @@ v60 changes both letter-list lookups to the multi-element helper `$$`. A focused
 All 32 repository test files were syntax-scanned after current-version assertion updates; no stale v59 current-app/version assertions remain. A full Node suite is not available in the connector runtime, so physical iPad Parent picker → Save → Play highlight verification remains the next check.
 
 Publication: v60 was squash-merged to `main` as `3638cc9c28d7618f73a19ba09f6cf3db01e530a5`; GitHub Pages run `36928971199` completed successfully. The interaction harness verified the real Parent flow for `bought`: all letter buttons bind, selecting positions 1–4 previews `b<mark>ough</mark>t`, Save persists `parentFocus={start:1,length:4}`, rerenders Parent, and closes the modal.
+
+## Noncontiguous Parent Focus letters — v61, 2026-10-02
+
+Parent Focus is no longer limited to one contiguous range. Each letter button in the Focus Spot picker is now an independent toggle, so Dad can highlight separated letters (for example positions 1 and 3 in `bought`) while leaving the letters between them unhighlighted. The picker preview reflects each selected letter immediately, and Save persists the selection as `learn.five.parentFocus.indices`.
+
+Backward compatibility is preserved: older saved Parent Focus objects in `{start,length}` form still render and reopen correctly, and the next Save converts them naturally to the new `indices` representation. Temporary current-mistake Focus still has top priority and remains contiguous; Miori automatic Focus and seed Focus continue to work unchanged. Chunk underlines continue to coexist with sparse Parent Focus, and the Play renderer can highlight selected letters across or within chunk boundaries.
+
+The Parent card label summarizes the chosen letters with middle dots (for example `Focus: o·g`) rather than assuming a contiguous substring. Focus and app assets are cache-busted to v61. Focused interaction verification covered sparse preview/save/toggle behavior, old contiguous Parent Focus compatibility, temporary-mistake override, Chunk+Focus rendering, and current asset markers. All 32 repository test files were syntax-scanned and no stale v60 app/version or old Focus JS assertions remain. Physical iPad Parent picker → Play visual verification is still recommended.
+
