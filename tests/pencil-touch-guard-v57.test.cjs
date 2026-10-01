@@ -73,5 +73,5 @@ test('guard covers every current Apple Pencil writing family',()=>{
 test('v57 palm guard assets are cache-busted',()=>{
   assert(html.includes('pencil-touch-guard.css?v=20261001-v57'));
   assert(html.includes('pencil-touch-guard.js?v=20261001-v57'));
-  assert(html.includes('v57 · Oct 1'));
+  assert(html.includes('v58 · Oct 1'));
 });
