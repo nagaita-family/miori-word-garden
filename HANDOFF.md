@@ -293,3 +293,12 @@ Palm handling is extended to the new `.five-practice-line` surfaces. They accept
 Regression updates cover: wrong recall → Practice Pad directly, exactly three handwriting lines, optional trace, refusal to finish before all three lines have ink, completion leaving `needsRecall=true`, no Garden mastery/reward, no immediate hidden retest, raw-ink rather than Scribble practice rows, palm protection, and v62 assets. All repository test files were syntax-scanned after current-version updates; focused runtime verification exercised the wrong-recall → three-line practice → delayed-recall state transition. Physical iPad Pencil feel, line spacing and narrow-screen comfort remain the next device checks.
 
 Publication: v62 was squash-merged to `main` as `801aaf9aea6aadb294f679836c34f4cd0cdf07b4`; GitHub Pages run `36932611456` completed successfully. Focused runtime verification exercised a wrong recall through direct Practice Pad entry, three required raw-Pencil lines, completion with `needsRecall=true`, and no immediate hidden retest. The new Practice Pad and palm-guard assets are live under v62 cache markers.
+
+## Practice Pad mistake comparison clarity — v63, 2026-10-02
+
+Device feedback after v62: the paper-style Practice Pad feels good, but the small “You wrote” line was hard to compare because the whole misspelling had a single strike-through. v63 keeps the successful hierarchy — wrong attempt small/subtle, correct spelling large with Chunk underline + Focus — and changes only the wrong-attempt visualization.
+
+The existing edit-distance alignment helper now exposes a compact `renderAttempt` view for Practice Pad. Matching letters stay quiet gray. A substituted letter alone gets a soft red highlight/underline, an extra letter alone gets a soft red strike, and a missing letter appears as a red dashed gap marker at the correct position. The Practice Pad does **not** duplicate the full “correct spelling” diff row; the large correct model immediately below remains the single source of truth. This preserves simplicity while making the exact error visible at a glance.
+
+Examples verified in the focused runtime harness: `tolked → talked` marks only `o`; `criket → cricket` shows one missing-letter gap between `i` and `k`; `talkked → talked` strikes only the extra `k`. The v62 three raw-Pencil lines, optional Trace, delayed recall, Chunk/Focus model, and palm behavior are otherwise unchanged. v63 cache-busts the comparison helper, Five Words core JS/CSS, and app integration.
+
