@@ -1,3 +1,24 @@
-.five-target:has(.five-chunk){display:inline-flex;gap:.24em;align-items:baseline;flex-wrap:wrap;justify-content:center}
-.five-chunk{display:inline-block}
-.five-focus{color:inherit;background:linear-gradient(transparent 36%,#ffeda4 36%,#ffeda4 88%,transparent 88%);padding:0 .025em;border-radius:3px}
+/* v59: show phonics-aware spelling chunks as quiet underline groups.
+   The spelling itself stays ordinary; Focus remains the only color highlight. */
+.five-target:has(.five-chunk){
+  display:inline-flex;
+  align-items:baseline;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:0;
+}
+.five-chunk{
+  display:inline-block;
+  position:relative;
+  padding:0 .015em .17em;
+  margin-right:.09em;
+  border-bottom:.075em solid #8f7c9a;
+  line-height:1.08;
+}
+.five-chunk:last-child{margin-right:0}
+.five-focus{
+  color:inherit;
+  background:linear-gradient(transparent 36%,#ffeda4 36%,#ffeda4 88%,transparent 88%);
+  padding:0 .025em;
+  border-radius:3px;
+}
