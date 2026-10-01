@@ -1,9 +1,9 @@
 (function(){
 'use strict';
 function chunks(word,raw){
- if(!Array.isArray(raw)||raw.length<2||raw.length>4)return null;
+ if(!Array.isArray(raw)||raw.length<1||raw.length>6)return null;
  const parts=raw.map(x=>String(x).toLowerCase().replace(/[^a-z]/g,''));
- return parts.every(x=>x.length>=2)&&parts.join('')===word?parts:null;
+ return parts.every(x=>x.length>=1)&&parts.join('')===word?parts:null;
 }
 function focus(word,raw){
  if(!raw||!Number.isInteger(raw.start)||!Number.isInteger(raw.length))return null;
@@ -35,10 +35,22 @@ function setParent(w,raw){
  return spot;
 }
 function active(w,temp){return focus(w.word,temp)||focus(w.word,w.learn?.five?.parentFocus)||focus(w.word,w.learn?.five?.mioriFocus)||focus(w.word,w.seedFocus)}
+function markedSlice(word,start,end,spot,escape){
+ if(!spot||spot.start>=end||spot.start+spot.length<=start)return escape(word.slice(start,end));
+ const a=Math.max(start,spot.start),b=Math.min(end,spot.start+spot.length);
+ return escape(word.slice(start,a))+'<mark class="five-focus">'+escape(word.slice(a,b))+'</mark>'+escape(word.slice(b,end));
+}
 function display(w,temp,escape){
- const word=w.word,spot=active(w,temp);
- if(spot)return escape(word.slice(0,spot.start))+'<mark class="five-focus">'+escape(word.slice(spot.start,spot.start+spot.length))+'</mark>'+escape(word.slice(spot.start+spot.length));
- const parts=chunks(word,w.chunks);return parts?parts.map(x=>'<span class="five-chunk">'+escape(x)+'</span>').join(''):escape(word);
+ const word=w.word,spot=active(w,temp),parts=chunks(word,w.chunks);
+ if(parts){
+  let pos=0;
+  return parts.map(part=>{
+   const start=pos,end=pos+part.length;pos=end;
+   return '<span class="five-chunk">'+markedSlice(word,start,end,spot,escape)+'</span>';
+  }).join('');
+ }
+ if(spot)return markedSlice(word,0,word.length,spot,escape);
+ return escape(word);
 }
 window.FiveWordsFocus={chunks,focus,mistake,remember,setParent,active,display};
 })();
