@@ -259,3 +259,12 @@ The currently imported past-tense set is hydrated on load when its saved words h
 Regression coverage: existing Focus tests now cover one-letter chunks and Focus+Chunk coexistence; `tests/phonics-chunk-underlines-v59.test.cjs` covers underline rendering, current-pack hydration, v59 cache markers, and the separation between Chunk underline and Focus highlighter. All repository test files were syntax-scanned after version assertion updates. A full Node test run is not available in the current connector environment; physical iPad visual QA remains required.
 
 Publication: v59 was squash-merged to `main` as `c7487441d41af0071add84449f9df18f8bf19cce`; GitHub Pages run `36859014522` completed successfully. Focused verification confirms `b/ough/t` and `wr/ote` render as separate Chunk spans, Parent Focus can highlight inside the underlined chunks, all ten current past-tense seed definitions are present, existing saved words are hydrated without re-import, and the v59 assets are cache-busted.
+
+## Parent Focus picker interaction fix — v60, 2026-10-02
+
+Physical Parent QA found that opening Focus Spot did not actually let the selected letters change/save. Root cause was a DOM helper typo in `openFiveFocusEditor`: the picker used the single-element helper `$` and then called `.forEach`, so initialization stopped before letter buttons received their click handlers. This was not a Focus persistence or Play rendering problem.
+
+v60 changes both letter-list lookups to the multi-element helper `$$`. A focused interaction harness now opens the picker for `bought`, selects letters 1–4, verifies the preview becomes `b<mark>ough</mark>t`, saves `parentFocus={start:1,length:4}`, rerenders Parent, and closes the modal. A dedicated regression file `tests/parent-focus-picker-v60.test.cjs` protects the real interaction path. The current app asset is cache-busted to `app.js?v=20261002-v60` and the visible badge is `v60 · Oct 2`. Chunk v59 and Parent Focus priority semantics are otherwise unchanged.
+
+All 32 repository test files were syntax-scanned after current-version assertion updates; no stale v59 current-app/version assertions remain. A full Node suite is not available in the connector runtime, so physical iPad Parent picker → Save → Play highlight verification remains the next check.
+
