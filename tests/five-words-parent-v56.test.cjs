@@ -9,10 +9,16 @@ test('Parent star and one-off Next 5 persist, can be queued, and stay in their l
   const grid={before(toolbar){toolbars[lane]=toolbar},querySelectorAll(){return[card]}};
   return{querySelector:()=>grid}};
  const panes={week:pane('week'),my:pane('my')};
- const document={querySelector:s=>panes[s.match(/"(week|my)"/)?.[1]],createElement:()=>{const controls={button:{},input:{checked:false}};return{className:'',innerHTML:'',querySelector:s=>s==='button'?controls.button:s==='input'?controls.input:controls.button}}};
- const ctx={state,document,save:()=>saved.push(JSON.stringify(state)),renderParent(){},toast(){},esc:s=>s};vm.createContext(ctx);vm.runInContext(app.slice(start,end)+app.slice(uiStart,uiEnd),ctx);
+ const document={querySelector:s=>panes[s.match(/"(week|my)"/)?.[1]],createElement:()=>{
+  const controls={star:{},focus:{},input:{checked:false}};
+  return{className:'',innerHTML:'',querySelector:s=>s==='.five-star-toggle'?controls.star:s==='.five-focus-edit'?controls.focus:s==='input'?controls.input:controls.star}
+ }};
+ const focusApi={focus:()=>null};
+ const ctx={state,document,window:{FiveWordsFocus:focusApi},save:()=>saved.push(JSON.stringify(state)),renderParent(){},toast(){},esc:s=>s,openFiveFocusEditor(){}};
+ vm.createContext(ctx);vm.runInContext(app.slice(start,end)+app.slice(uiStart,uiEnd),ctx);
  ctx.renderFiveParentControls();
- bars.week.querySelector('button').onclick();assert.equal(state.lib.apple.learn.five.starred,true);
+ bars.week.querySelector('.five-star-toggle').onclick();assert.equal(state.lib.apple.learn.five.starred,true);
+ assert.equal(typeof bars.week.querySelector('.five-focus-edit').onclick,'function','Parent Focus editor is wired in both lanes');
  bars.week.querySelector('input').onchange({target:{checked:true}});assert.deepEqual(Array.from(state.fiveWordManual.week.ids),['apple']);
  toolbars.week.querySelector('[data-queue-five]').onclick();assert.equal(state.fiveWordManual.week.pending,true);
  const restored=JSON.parse(saved.at(-1));assert.equal(restored.lib.apple.learn.five.starred,true);assert.deepEqual(restored.fiveWordManual.week.ids,['apple']);
@@ -23,5 +29,5 @@ test('Parent UI is wired for both groups and Practice 5 consumes a queued manual
  assert(app.includes('renderFiveParentControls()'));
  assert(app.includes('manual:manual.pending?manual.ids:[]'));
  assert(app.includes('manual.ids=[];manual.pending=false;save()'));
- assert(fs.readFileSync('index.html','utf8').includes('five-words-parent.css?v=20260930-parent'));
+ assert(fs.readFileSync('index.html','utf8').includes('five-words-parent.css?v=20261001-v58'));
 });
