@@ -6,11 +6,20 @@ function chunks(word,raw){
  return parts.every(x=>x.length>=1)&&parts.join('')===word?parts:null;
 }
 function focus(word,raw){
- if(!raw||!Number.isInteger(raw.start)||!Number.isInteger(raw.length))return null;
+ if(!raw)return null;
+ if(Array.isArray(raw.indices)){
+  const indices=[...new Set(raw.indices.filter(Number.isInteger).filter(i=>i>=0&&i<word.length))].sort((a,b)=>a-b);
+  return indices.length?{indices}:null;
+ }
+ if(!Number.isInteger(raw.start)||!Number.isInteger(raw.length))return null;
  return raw.start>=0&&raw.length>=1&&raw.start+raw.length<=word.length?{start:raw.start,length:raw.length}:null;
 }
+function positions(word,raw){
+ const spot=focus(word,raw);if(!spot)return[];
+ if(Array.isArray(spot.indices))return spot.indices;
+ return Array.from({length:spot.length},(_,i)=>spot.start+i);
+}
 function mistake(word,raw,normalized){
- // Scribble candidates altered by normalization or an ambiguous edit are display-only.
  if(typeof raw!=='string'||!/^[a-z]+$/i.test(raw)||raw.toLowerCase()!==normalized||normalized===word)return null;
  if(normalized.length!==word.length)return null;
  const wrong=[];for(let i=0;i<word.length;i++)if(word[i]!==normalized[i])wrong.push(i);
@@ -31,14 +40,22 @@ function ensureFive(w){
 }
 function setParent(w,raw){
  const f=ensureFive(w),spot=focus(w.word,raw);
- if(spot)f.parentFocus={...spot};else delete f.parentFocus;
+ if(spot)f.parentFocus=Array.isArray(spot.indices)?{indices:[...spot.indices]}:{...spot};else delete f.parentFocus;
  return spot;
 }
 function active(w,temp){return focus(w.word,temp)||focus(w.word,w.learn?.five?.parentFocus)||focus(w.word,w.learn?.five?.mioriFocus)||focus(w.word,w.seedFocus)}
 function markedSlice(word,start,end,spot,escape){
- if(!spot||spot.start>=end||spot.start+spot.length<=start)return escape(word.slice(start,end));
- const a=Math.max(start,spot.start),b=Math.min(end,spot.start+spot.length);
- return escape(word.slice(start,a))+'<mark class="five-focus">'+escape(word.slice(a,b))+'</mark>'+escape(word.slice(b,end));
+ const selected=new Set(positions(word,spot));
+ if(!selected.size)return escape(word.slice(start,end));
+ let out='',open=false;
+ for(let i=start;i<end;i++){
+  const on=selected.has(i);
+  if(on&&!open){out+='<mark class="five-focus">';open=true}
+  if(!on&&open){out+='</mark>';open=false}
+  out+=escape(word[i]);
+ }
+ if(open)out+='</mark>';
+ return out;
 }
 function display(w,temp,escape){
  const word=w.word,spot=active(w,temp),parts=chunks(word,w.chunks);
@@ -52,5 +69,5 @@ function display(w,temp,escape){
  if(spot)return markedSlice(word,0,word.length,spot,escape);
  return escape(word);
 }
-window.FiveWordsFocus={chunks,focus,mistake,remember,setParent,active,display};
+window.FiveWordsFocus={chunks,focus,positions,mistake,remember,setParent,active,display};
 })();
