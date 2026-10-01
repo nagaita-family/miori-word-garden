@@ -302,3 +302,4 @@ The existing edit-distance alignment helper now exposes a compact `renderAttempt
 
 Examples verified in the focused runtime harness: `tolked → talked` marks only `o`; `criket → cricket` shows one missing-letter gap between `i` and `k`; `talkked → talked` strikes only the extra `k`. The v62 three raw-Pencil lines, optional Trace, delayed recall, Chunk/Focus model, and palm behavior are otherwise unchanged. v63 cache-busts the comparison helper, Five Words core JS/CSS, and app integration.
 
+Publication: v63 was squash-merged to `main` as `6190620e742c137ee266599e70b288ed5f5459e5`; GitHub Pages run `36933708681` completed successfully. Focused verification confirmed substitution, missing-letter, and extra-letter cases highlight only the actual error in the small “You wrote” line while the large correct spelling/Chunk/Focus model remains unchanged.
