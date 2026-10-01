@@ -2,15 +2,17 @@
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const ctx={window:{}};vm.createContext(ctx);vm.runInContext(fs.readFileSync('five-words-focus.js','utf8'),ctx);
 const f=ctx.window.FiveWordsFocus,plain=x=>x;
-test('optional chunks only appear when natural parts reconstruct the word',()=>{
+test('phonics chunks reconstruct the word and may be one letter',()=>{
  assert.deepEqual(Array.from(f.chunks('butterfly',['butter','fly'])),['butter','fly']);
- assert.equal(f.chunks('butterfly',['b','utterfly']),null);
+ assert.deepEqual(Array.from(f.chunks('bought',['b','ough','t'])),['b','ough','t']);
+ assert.deepEqual(Array.from(f.chunks('wrote',['wr','ote'])),['wr','ote']);
  assert.equal(f.chunks('butterfly',['butter','flies']),null);
- assert.match(f.display({word:'butterfly',chunks:['butter','fly']},null,plain),/five-chunk.*butter.*five-chunk.*fly/s);
+ assert.equal(f.chunks('bought',['b','','ought']),null);
+ assert.match(f.display({word:'bought',chunks:['b','ough','t']},null,plain),/five-chunk.*b.*five-chunk.*ough.*five-chunk.*t/s);
 });
-test('seed focus is optional; repeated clean recall mistakes replace it without loud chunks',()=>{
+test('Focus highlight and quiet chunk underlines can coexist',()=>{
  const w={word:'butterfly',chunks:['butter','fly'],seedFocus:{start:2,length:2},learn:{five:{}}};
- assert.match(f.display(w,null,plain),/five-focus.*tt/);assert.doesNotMatch(f.display(w,null,plain),/five-chunk/);
+ assert.match(f.display(w,null,plain),/five-chunk.*five-focus.*tt.*five-chunk/s);
  const spot=f.mistake(w.word,'butterfli','butterfli');assert.equal(spot.start,8);
  f.remember(w.learn.five,spot);assert.equal(w.learn.five.mioriFocus,undefined);
  f.remember(w.learn.five,spot);assert.equal(w.learn.five.mioriFocus.start,8);
@@ -29,7 +31,7 @@ test('ambiguous recognition cannot persist an inaccurate Focus',()=>{
 });
 test('new optional Word Pack fields retain older progress when normalized',()=>{
  const app=fs.readFileSync('app.js','utf8'),a=app.indexOf('function normalizeWord('),b=app.indexOf('function seedSchoolWords(',a);
- const local={window:{FiveWordsFocus:f},norm:x=>String(x||'').toLowerCase(),learning:x=>({attempts:0}),emojiFor:()=>'*'};vm.createContext(local);vm.runInContext(app.slice(a,b),local);
+ const local={window:{FiveWordsFocus:f},WORD_CHUNKS:{},norm:x=>String(x||'').toLowerCase(),learning:x=>({attempts:0}),emojiFor:()=>'*'};vm.createContext(local);vm.runInContext(app.slice(a,b),local);
  const old={word:'butterfly',learn:{attempts:4,five:{introduced:true,mioriFocus:{start:3,length:2}}}};
  const w=local.normalizeWord({word:'butterfly',chunks:['butter','fly'],seedFocus:{start:2,length:2}},old);
  assert.equal(w.learn.attempts,4);assert.equal(w.learn.five.mioriFocus.start,3);
