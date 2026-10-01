@@ -9,13 +9,14 @@ const writingStage=()=>!!document.querySelector([
   '#playView #stage4WordInput',
   '#playView .five-words-view .flow-word-input',
   '#playView .five-words-view .five-trace-pad',
+  '#playView .five-words-view .five-practice-line',
   '#playView .weekly-test-view .weekly-answer'
 ].join(','));
 
 const writingInputSelector='input.letter-box,.stage3-gap-flow,#stage4WordInput,.five-words-view .flow-word-input,.weekly-test-view .weekly-answer';
 const activeWritingInput=()=>document.activeElement?.matches?.(writingInputSelector)?document.activeElement:null;
 const isActionTarget=target=>!!target?.closest?.('button,a,label,select,textarea,[role="button"],[data-nav],#exitPlayBtn,#checkAnswerBtn,.help-btn,.mode-btn,.hint-choice,.audio-orb,.listen-card,.cue-picture-tile');
-const isWritingSurface=target=>!!target?.closest?.('.letter-row,.letter-box,.trace-cell,.trace-pad,.stage3-gap-flow,#stage4WordInput,.five-writing .flow-word-input,.five-trace-pad,.weekly-answer');
+const isWritingSurface=target=>!!target?.closest?.('.letter-row,.letter-box,.trace-cell,.trace-pad,.stage3-gap-flow,#stage4WordInput,.five-writing .flow-word-input,.five-practice-line,.five-trace-pad,.weekly-answer');
 const isLegacyPalmZone=target=>!!target?.closest?.('.game-card,.question-area,.spell-wrap');
 const isSelectionZone=target=>!!target?.closest?.('.game-card,.question-area,.spell-wrap,.five-card,.five-writing,.five-trace-pad,.weekly-sheet,.weekly-answer-sheet,.weekly-question');
 

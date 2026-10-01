@@ -54,13 +54,16 @@ test('actual Pencil surfaces reject finger/palm contact and buttons stay usable'
   const input=x.target(['.five-writing','.flow-word-input','.five-card']);
   assert.equal(x.fire('pointerdown',{target:input,pointerType:'touch'}).prevented,1,'5 Words Scribble input rejects touch');
 
+  const paper=x.target(['.five-practice-line','.five-card']);
+  assert.equal(x.fire('touchstart',{target:paper,touches:[{}]}).prevented,1,'paper Practice Pad rejects palm/finger contact');
+
   const action=x.target(['.five-card'],true);
   assert.equal(x.fire('selectstart',{target:action}).prevented,0,'buttons remain normal finger controls');
   assert.equal(x.fire('touchstart',{target:action,touches:[{}]}).prevented,0,'button touch is not swallowed');
 });
 
 test('guard covers every current Apple Pencil writing family',()=>{
-  for(const token of ['.stage3-gap-flow','#stage4WordInput','.five-words-view .flow-word-input','.five-trace-pad','.weekly-test-view .weekly-answer']){
+  for(const token of ['.stage3-gap-flow','#stage4WordInput','.five-words-view .flow-word-input','.five-practice-line','.five-trace-pad','.weekly-test-view .weekly-answer']){
     assert(source.includes(token),token+' is registered in the delegated guard');
   }
   for(const token of ['#playView .spell-wrap','#playView .five-card','#playView .weekly-sheet']){
@@ -70,8 +73,8 @@ test('guard covers every current Apple Pencil writing family',()=>{
   assert(!/\.weekly-answer[^}]*touch-action\s*:\s*none/s.test(css),'weekly Scribble inputs do not disable touch-action');
 });
 
-test('v57 palm guard assets are cache-busted',()=>{
+test('v62 palm guard JS is cache-busted while its CSS remains current',()=>{
   assert(html.includes('pencil-touch-guard.css?v=20261001-v57'));
-  assert(html.includes('pencil-touch-guard.js?v=20261001-v57'));
-  assert(html.includes('v61 · Oct 2'));
+  assert(html.includes('pencil-touch-guard.js?v=20261002-v62'));
+  assert(html.includes('v62 · Oct 2'));
 });

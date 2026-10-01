@@ -22,29 +22,32 @@ test('New words: look and listen, write in view, then hidden audio-only check an
  assert.equal(x.core.run.phase,'done');assert.match(x.root.innerHTML,/5 words done!.*Finish.*5 more/s);assert.equal(x.state.stats.sessions,1);
  assert(x.saved.length>=5,'each completed word saves learning progress');
 });
-test('Recall skips the visible word; wrong answer leads through trace, copy and hidden check without mastery',()=>{
+test('Recall mistake opens a paper Practice Pad: model visible, three Pencil lines, no immediate hidden retest',()=>{
  const x=fixture(['cricket'],'my',['cricket']),w=x.state.lib.cricket;
  assert.equal(x.core.run.phase,'hidden');assert.doesNotMatch(x.root.innerHTML,/cricket/);
- x.core.check('criket');assert.equal(x.core.run.phase,'mistake');assert.match(x.root.innerHTML,/criket → cricket/);
- x.core.advance();assert.equal(x.core.run.phase,'padTrace');
- x.core.advance();assert.equal(x.core.run.phase,'padTrace','trace cannot be skipped');
- x.core.run.traced=true;x.core.advance();assert.equal(x.core.run.phase,'padCopy');
- x.core.run.answer='cricket';x.core.advance();assert.equal(x.core.run.phase,'padHidden');assert.doesNotMatch(x.root.innerHTML,/cricket/);
- x.core.check('cricket');assert.equal(x.core.run.phase,'result');assert.equal(w.learn.five.needsRecall,true);
- assert.equal(w.learn.five.recallSuccess,0);assert.equal(x.reward.length,0,'Practice Pad success is not recall mastery or Garden growth');
+ x.core.check('criket');assert.equal(x.core.run.phase,'practice');
+ assert.match(x.root.innerHTML,/Practice Pad.*You wrote.*criket.*correct spelling.*cricket/s);
+ assert.equal((x.root.innerHTML.match(/five-practice-line/g)||[]).length,3);
+ assert.match(x.root.innerHTML,/Need help\? Trace once/,'Trace is optional help, not a required step');
+ x.core.completePractice();assert.equal(x.core.run.phase,'practice','three handwritten lines are required');
+ x.core.run.practicePaths=[['M0 0L20 20'],['M0 0L20 20'],['M0 0L20 20']];
+ x.core.completePractice();assert.equal(x.core.run.phase,'result');assert.equal(w.learn.five.needsRecall,true);
+ assert.equal(w.learn.five.recallSuccess,0);assert.equal(x.reward.length,0,'Practice Pad completion is not recall mastery or Garden growth');
+ assert.match(x.root.innerHTML,/remember it again later/i);
  x.core.next();assert.equal(x.core.run.phase,'done');
  const restored=JSON.parse(x.saved.at(-1));assert.equal(restored.lib.cricket.learn.five.introduced,true);
 });
-test('New-word mistake becomes an audio-only recall on a later loop; lanes receive only their selected pool',()=>{
+test('New-word mistake is practiced on paper, then becomes audio-only recall on a later loop',()=>{
  const x=fixture(['butterfly'],'week');x.core.advance();x.core.run.answer='butterfly';x.core.advance();x.core.check('buterfly');
- x.core.advance();x.core.run.traced=true;x.core.advance();x.core.run.answer='butterfly';x.core.advance();x.core.check('butterfly');x.core.next();
+ assert.equal(x.core.run.phase,'practice');
+ x.core.run.practicePaths=[['M0 0L20 20'],['M0 0L20 20'],['M0 0L20 20']];x.core.completePractice();x.core.next();
  assert.equal(x.state.lib.butterfly.learn.five.needsRecall,true);
  const y=fixture(['butterfly'],'week');y.state.lib.butterfly.learn=x.state.lib.butterfly.learn;
  // Loading the saved learning record starts on Listen & Write, never LOOK again.
  const ctx={window:{},setTimeout(){},navigator:{}};vm.createContext(ctx);vm.runInContext(focusSource,ctx);vm.runInContext(src,ctx);
  const resumed=ctx.window.FiveWordsCore.create({lane:'week',ids:['butterfly'],state:y.state,root:y.root,save(){},audio(){},resolveAudio:async()=>{},normalize:s=>s,escape:s=>s,diff:()=>'',sfx(){},focus:ctx.window.FiveWordsFocus,markResult(){},home(){},more(){},onRemembered(){}});
  assert.equal(resumed.run.phase,'hidden');assert.deepEqual(Array.from(resumed.run.ids),['butterfly']);
- assert(page.includes('five-words-core.js?v=20260930-focus')&&page.includes('five-words-core.css?v=20260930-core'));
+ assert(page.includes('five-words-core.js?v=20261002-v62')&&page.includes('five-words-core.css?v=20261002-v62'));
 });
 test('Play entry gives This Week and My Words their own exact pool, even for an overlapping word',()=>{
  const app=fs.readFileSync('app.js','utf8'),start=app.indexOf('function fiveManual(lane){'),end=app.indexOf('// A weekly exam',start);
