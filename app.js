@@ -118,6 +118,12 @@ function myWordStatus(w){const l=w?.learn||learning(w?.word||''),loops=l.loops||
 function practiceKindLabel(kind){return kind==='my'?'MY WORD':kind==='past'?'REVIEW':'THIS WEEK'}
 
 function emojiFor(word){return({beetle:'🪲',butterfly:'🦋',cricket:'🦗',grasshopper:'🦗',honeybee:'🐝',insect:'🔎',ladybug:'🐞',raisin:'🍇',riding:'🚲',thicket:'🌿'})[word]||'✦'}
+const WEEKDAY_CAPS=new Set(['sunday','monday','tuesday','wednesday','thursday','friday','saturday']);
+function displayedSpelling(w){
+  const word=w?.word||'';
+  if(typeof w?.displayWord==='string'&&w.displayWord.toLowerCase()===word)return w.displayWord;
+  return WEEKDAY_CAPS.has(word)?word[0].toUpperCase()+word.slice(1):word;
+}
 function normalizeWord(raw={},old=null){
   const word=norm(raw.word||old?.word||'');
   const learn=old?.learn||raw.learn||learning(word);
@@ -126,6 +132,7 @@ function normalizeWord(raw={},old=null){
   while(learn.weak.length<word.length)learn.weak.push(0);
   learn.hints=learn.hints||0;learn.peeks=learn.peeks||0;learn.loops=learn.loops||0;learn.feeling=learn.feeling||'';learn.feelingDate=learn.feelingDate||'';
   return{id:word,word,
+    displayWord:(typeof raw.word==='string'&&raw.word.toLowerCase()===word&&/[A-Z]/.test(raw.word)?raw.word:null)??(typeof old?.displayWord==='string'&&old.displayWord.toLowerCase()===word?old.displayWord:null)??(WEEKDAY_CAPS.has(word)?word[0].toUpperCase()+word.slice(1):word),
     chunks:window.FiveWordsFocus?.chunks(word,raw.chunks??old?.chunks??WORD_CHUNKS[word])||null,
     seedFocus:window.FiveWordsFocus?.focus(word,raw.seedFocus??old?.seedFocus)||null,
     meaningEn:raw.meaningEn??old?.meaningEn??'',meaningJa:raw.meaningJa??old?.meaningJa??'',example:raw.example??old?.example??'',
@@ -153,7 +160,7 @@ function loadState(){
   if(!s)s=defaultState();
   if(s.version===2){s.version=3;s.stats=s.stats||{answers:0,sessions:0};s.settings=s.settings||{sound:true,voice:''};s.garden=s.garden||{growth:0,pos:{}};s.week=s.week||{id:'',title:'This Week',ids:[]};const next={};for(const [id,w] of Object.entries(s.lib||{})){const n=normalizeWord(w,w);next[n.id||id]=n}s.lib=next}
   if(s.version!==3)s={...defaultState(),...s,version:3};
-  s.lib=s.lib||{};s.stats=s.stats||{answers:0,sessions:0};s.garden=s.garden||{growth:0,pos:{},bunnySeated:false,stored:[]};s.garden.pos=s.garden.pos||{};if(typeof s.garden.bunnySeated!=='boolean')s.garden.bunnySeated=false;if(!Array.isArray(s.garden.stored))s.garden.stored=[];s.settings=s.settings||{sound:true,music:true,musicV2:true,voice:'',audioDefaultV17:true};if(typeof s.settings.sound!=='boolean')s.settings.sound=true;if(typeof s.settings.music!=='boolean')s.settings.music=true;if(!s.settings.audioDefaultV17){s.settings.sound=true;s.settings.music=true;s.settings.audioDefaultV17=true}s.settings.musicV2=true;
+  s.lib=s.lib||{};for(const w of Object.values(s.lib)){if(w?.word&&WEEKDAY_CAPS.has(w.word))w.displayWord=displayedSpelling(w)}s.stats=s.stats||{answers:0,sessions:0};s.garden=s.garden||{growth:0,pos:{},bunnySeated:false,stored:[]};s.garden.pos=s.garden.pos||{};if(typeof s.garden.bunnySeated!=='boolean')s.garden.bunnySeated=false;if(!Array.isArray(s.garden.stored))s.garden.stored=[];s.settings=s.settings||{sound:true,music:true,musicV2:true,voice:'',audioDefaultV17:true};if(typeof s.settings.sound!=='boolean')s.settings.sound=true;if(typeof s.settings.music!=='boolean')s.settings.music=true;if(!s.settings.audioDefaultV17){s.settings.sound=true;s.settings.music=true;s.settings.audioDefaultV17=true}s.settings.musicV2=true;
   s.recentWords=Array.isArray(s.recentWords)?s.recentWords:[];seedSchoolWords(s);hydrateChunkSeeds(s);ensureLearningGroups(s);window.LivingGarden?.migrate(s);localStorage.setItem(STORAGE_KEY,JSON.stringify(s));return s;
 }
 let state=loadState();
@@ -904,7 +911,7 @@ function adviceForWord(w,m){
 function priorityButtonHtml(w){if(!inCurrentWeek(w.id))return'';const selected=isCurrentFocus(w.id);return`<button type="button" class="parent-priority-toggle ${selected?'selected':''}" aria-pressed="${selected}">${selected?'★ Focus this week':'☆ Focus this week'}</button>`}
 function guidanceWordCardHtml(w){
   const m=masteryInfo(w),a=adviceForWord(w,m),focus=isCurrentFocus(w.id),feel=m.feeling?`<span class="miori-feel">Miori: ${feelingLabel(m.feeling)}</span>`:'',weak=m.weakText?`<span>focus: ${esc(m.weakText)}</span>`:'';
-  return`<div class="word-row guidance-word-card status-${m.key} ${focus?'parent-priority':''}" data-id="${w.id}"><div><div class="mastery-word-head"><strong>${esc(w.word)}</strong>${focus?'<span class="parent-star-badge">★ This week focus</span>':''}<span class="mastery-status">${m.label}</span></div></div><div class="guidance-actions">${priorityButtonHtml(w)}<button class="audio-preview" aria-label="Hear ${esc(w.word)}">🔊</button><button class="edit-word" aria-label="Edit ${esc(w.word)}">✎</button></div><div class="mastery-meta">${feel}${weak}${m.last?`<span>last: ${esc(m.last)}</span>`:''}</div><p class="mastery-reason">${esc(focus&&m.key==='ready'?'アプリではReady。でも今週だけもう一度見たい単語として★を付けています。':m.reason)}</p><div class="try-this"><b>Dad can try</b>${esc(a.jp)}<br><em>“${esc(a.en)}”</em></div></div>`
+  return`<div class="word-row guidance-word-card status-${m.key} ${focus?'parent-priority':''}" data-id="${w.id}"><div><div class="mastery-word-head"><strong>${esc(displayedSpelling(w))}</strong>${focus?'<span class="parent-star-badge">★ This week focus</span>':''}<span class="mastery-status">${m.label}</span></div></div><div class="guidance-actions">${priorityButtonHtml(w)}<button class="audio-preview" aria-label="Hear ${esc(w.word)}">🔊</button><button class="edit-word" aria-label="Edit ${esc(w.word)}">✎</button></div><div class="mastery-meta">${feel}${weak}${m.last?`<span>last: ${esc(m.last)}</span>`:''}</div><p class="mastery-reason">${esc(focus&&m.key==='ready'?'アプリではReady。でも今週だけもう一度見たい単語として★を付けています。':m.reason)}</p><div class="try-this"><b>Dad can try</b>${esc(a.jp)}<br><em>“${esc(a.en)}”</em></div></div>`
 }
 function parentGuidanceCards(week){
   const rows=week.map(w=>({w,m:masteryInfo(w)})),used=new Set(),cards=[];const add=(row,kind,icon,title,text,small='')=>{if(!row||used.has(row.w.id)||cards.length>=3)return;used.add(row.w.id);cards.push(`<div class="guidance-card ${kind}"><div class="guidance-icon">${icon}</div><b>${esc(title)}</b><p>${esc(text)}</p>${small?`<small>${esc(small)}</small>`:''}</div>`)};
@@ -925,16 +932,17 @@ function recentWordsHtml(){
 function learningSummary(w){const l=w.learn||learning(w.word),weak=Math.max(0,...(l.weak||[])),wi=weak?(l.weak||[]).indexOf(weak):-1;return{loops:l.loops||0,correct:l.correct||0,mistakes:l.mistakes||0,weak:wi>=0?w.word.slice(wi,Math.min(w.word.length,wi+2)):'—',last:l.last||'Not practiced yet'}}
 function openFiveFocusEditor(id){
   const w=state.lib[id];if(!w)return;
+  const shown=displayedSpelling(w);
   const selected=new Set(window.FiveWordsFocus.positions(w.word,w.learn?.five?.parentFocus));
   const renderPick=()=>{
     $$('[data-focus-letter]',$('#focusLetterPicker')).forEach(btn=>{
       btn.classList.toggle('selected',selected.has(Number(btn.dataset.focusLetter)))
     });
     const preview=$('#focusPreview'),note=$('#focusPickerNote');
-    if(preview)preview.innerHTML=[...w.word].map((ch,i)=>selected.has(i)?'<mark>'+esc(ch)+'</mark>':esc(ch)).join('');
+    if(preview)preview.innerHTML=[...shown].map((ch,i)=>selected.has(i)?'<mark>'+esc(ch)+'</mark>':esc(ch)).join('');
     if(note)note.textContent=selected.size?'Tap any letter to turn its highlight on or off.':'Tap the letters you want to highlight.'
   };
-  $('#modalRoot').innerHTML=`<div class="modal"><div class="modal-card focus-picker-modal"><div class="modal-head"><div><p class="eyebrow">FOCUS SPOT</p><h2>${esc(w.word)}</h2><p>覚えてほしい文字だけを蛍光ペンで見せます。</p></div><button id="closeFocusPicker" class="icon-btn">×</button></div><div id="focusPreview" class="focus-picker-preview"></div><div id="focusLetterPicker" class="focus-letter-picker">${[...w.word].map((ch,i)=>`<button type="button" data-focus-letter="${i}">${esc(ch)}</button>`).join('')}</div><p id="focusPickerNote" class="focus-picker-note"></p><p class="focus-picker-help">1文字ずつ自由に選べます。間を空けて複数の文字を選んでもOKです。</p><div class="modal-actions"><button id="clearFocusPicker" type="button" class="secondary-btn">Clear Focus</button><button id="cancelFocusPicker" type="button" class="secondary-btn">Cancel</button><button id="saveFocusPicker" type="button" class="primary-btn">Save Focus</button></div></div></div>`;
+  $('#modalRoot').innerHTML=`<div class="modal"><div class="modal-card focus-picker-modal"><div class="modal-head"><div><p class="eyebrow">FOCUS SPOT</p><h2>${esc(shown)}</h2><p>覚えてほしい文字だけを蛍光ペンで見せます。</p></div><button id="closeFocusPicker" class="icon-btn">×</button></div><div id="focusPreview" class="focus-picker-preview"></div><div id="focusLetterPicker" class="focus-letter-picker">${[...shown].map((ch,i)=>`<button type="button" data-focus-letter="${i}">${esc(ch)}</button>`).join('')}</div><p id="focusPickerNote" class="focus-picker-note"></p><p class="focus-picker-help">1文字ずつ自由に選べます。間を空けて複数の文字を選んでもOKです。</p><div class="modal-actions"><button id="clearFocusPicker" type="button" class="secondary-btn">Clear Focus</button><button id="cancelFocusPicker" type="button" class="secondary-btn">Cancel</button><button id="saveFocusPicker" type="button" class="primary-btn">Save Focus</button></div></div></div>`;
   $('#closeFocusPicker').onclick=$('#cancelFocusPicker').onclick=()=>$('#modalRoot').innerHTML='';
   $$('[data-focus-letter]',$('#focusLetterPicker')).forEach(btn=>btn.onclick=()=>{
     const i=Number(btn.dataset.focusLetter);
@@ -959,7 +967,7 @@ function renderFiveParentControls(){
     for(const card of grid.querySelectorAll('.group-word-card')){
       const id=card.dataset.id,w=state.lib[id];if(!w)continue;
       const bar=document.createElement('div');bar.className='five-parent-controls';
-      const manualFocus=window.FiveWordsFocus.focus(w.word,w.learn?.five?.parentFocus),focusPositions=window.FiveWordsFocus.positions(w.word,manualFocus),focusText=focusPositions.map(i=>w.word[i]).join('·');
+      const manualFocus=window.FiveWordsFocus.focus(w.word,w.learn?.five?.parentFocus),focusPositions=window.FiveWordsFocus.positions(w.word,manualFocus),focusText=focusPositions.map(i=>displayedSpelling(w)[i]).join('·');
       bar.innerHTML=`<button type="button" class="five-star-toggle ${w.learn?.five?.starred?'selected':''}" aria-pressed="${!!w.learn?.five?.starred}">${w.learn?.five?.starred?'⭐ 要注意':'☆ 要注意'}</button><button type="button" class="five-focus-edit ${manualFocus?'selected':''}">${manualFocus?`🖍 Focus: ${esc(focusText)}`:'🖍 Focus Spot'}</button><label><input type="checkbox" ${plan.ids.includes(id)?'checked':''}> Next 5</label>`;
       card.appendChild(bar);
       bar.querySelector('.five-star-toggle').onclick=()=>{w.learn.five=w.learn.five||{introduced:!!((w.learn.loops||0)>0||(w.learn.stageMist?.[4]||0)>0),recallSuccess:0,needsRecall:false};w.learn.five.starred=!w.learn.five.starred;save();renderParent()};
