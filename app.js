@@ -121,8 +121,9 @@ function emojiFor(word){return({beetle:'🪲',butterfly:'🦋',cricket:'🦗',gr
 const WEEKDAY_CAPS=new Set(['sunday','monday','tuesday','wednesday','thursday','friday','saturday']);
 function displayedSpelling(w){
   const word=w?.word||'';
+  if(WEEKDAY_CAPS.has(word))return word[0].toUpperCase()+word.slice(1);
   if(typeof w?.displayWord==='string'&&w.displayWord.toLowerCase()===word)return w.displayWord;
-  return WEEKDAY_CAPS.has(word)?word[0].toUpperCase()+word.slice(1):word;
+  return word;
 }
 function normalizeWord(raw={},old=null){
   const word=norm(raw.word||old?.word||'');
@@ -132,7 +133,7 @@ function normalizeWord(raw={},old=null){
   while(learn.weak.length<word.length)learn.weak.push(0);
   learn.hints=learn.hints||0;learn.peeks=learn.peeks||0;learn.loops=learn.loops||0;learn.feeling=learn.feeling||'';learn.feelingDate=learn.feelingDate||'';
   return{id:word,word,
-    displayWord:(typeof raw.word==='string'&&raw.word.toLowerCase()===word&&/[A-Z]/.test(raw.word)?raw.word:null)??(typeof old?.displayWord==='string'&&old.displayWord.toLowerCase()===word?old.displayWord:null)??(WEEKDAY_CAPS.has(word)?word[0].toUpperCase()+word.slice(1):word),
+    displayWord:WEEKDAY_CAPS.has(word)?word[0].toUpperCase()+word.slice(1):(typeof raw.word==='string'&&raw.word.toLowerCase()===word&&/[A-Z]/.test(raw.word)?raw.word:null)??(typeof old?.displayWord==='string'&&old.displayWord.toLowerCase()===word?old.displayWord:null)??(WEEKDAY_CAPS.has(word)?word[0].toUpperCase()+word.slice(1):word),
     chunks:window.FiveWordsFocus?.chunks(word,raw.chunks??old?.chunks??WORD_CHUNKS[word])||null,
     seedFocus:window.FiveWordsFocus?.focus(word,raw.seedFocus??old?.seedFocus)||null,
     meaningEn:raw.meaningEn??old?.meaningEn??'',meaningJa:raw.meaningJa??old?.meaningJa??'',example:raw.example??old?.example??'',
