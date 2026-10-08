@@ -58,7 +58,7 @@ function markedSlice(word,start,end,spot,escape){
  return out;
 }
 function display(w,temp,escape){
- const weekday=/^(sunday|monday|tuesday|wednesday|thursday|friday|saturday)$/.test(w.word),word=weekday?w.word[0].toUpperCase()+w.word.slice(1):(typeof w.displayWord==='string'&&w.displayWord.toLowerCase()===w.word)?w.displayWord:w.word,spot=active(w,temp),parts=chunks(w.word,w.chunks);
+ const word=(typeof w.displayWord==='string'&&w.displayWord.toLowerCase()===w.word)?w.displayWord:w.word,spot=active(w,temp),parts=chunks(w.word,w.chunks);
  if(parts){
   let pos=0;
   return parts.map(part=>{
