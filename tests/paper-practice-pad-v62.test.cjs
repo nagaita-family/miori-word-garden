@@ -29,5 +29,5 @@ test('v62 assets are cache-busted',()=>{
   assert(html.includes('five-words-core.css?v=20261002-v63'));
   assert(html.includes('five-words-core.js?v=20261002-v63'));
   assert(html.includes('pencil-touch-guard.js?v=20261002-v62'));
-  assert(html.includes('v63 · Oct 2'));
+  assert(html.includes('v64 · Oct 8'));
 });
