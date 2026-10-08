@@ -36,7 +36,7 @@ test('current saved past-tense words receive curated chunks without re-importing
 
 test('v59 chunk assets are cache-busted',()=>{
   assert(html.includes('five-words-focus.css?v=20261001-v59'));
-  assert(html.includes('five-words-focus.js?v=20261008-v64'));
-  assert(html.includes('app.js?v=20261008-v64'));
-  assert(html.includes('v64 · Oct 8'));
+  assert(html.includes('five-words-focus.js?v=20261008-v65'));
+  assert(html.includes('app.js?v=20261008-v65'));
+  assert(html.includes('v65 · Oct 8'));
 });
