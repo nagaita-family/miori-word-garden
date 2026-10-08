@@ -58,7 +58,7 @@ function markedSlice(word,start,end,spot,escape){
  return out;
 }
 function display(w,temp,escape){
- const word=w.word,spot=active(w,temp),parts=chunks(word,w.chunks);
+ const word=(typeof w.displayWord==='string'&&w.displayWord.toLowerCase()===w.word)?w.displayWord:w.word,spot=active(w,temp),parts=chunks(w.word,w.chunks);
  if(parts){
   let pos=0;
   return parts.map(part=>{
