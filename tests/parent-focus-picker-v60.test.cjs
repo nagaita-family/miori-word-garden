@@ -24,7 +24,7 @@ test('Parent Focus picker toggles individual letters, allows gaps, and saves the
   const $=(selector)=>selector==='[data-focus-letter]'?buttons[0]:map[selector]||null;
   const $$=(selector,root)=>selector==='[data-focus-letter]'&&root===picker?buttons:[];
   let saves=0,renders=0,lastToast='';
-  const ctx={window:{},state,$,$$,esc:s=>String(s),save:()=>saves++,renderParent:()=>renders++,toast:s=>{lastToast=s}};
+  const ctx={window:{},state,$,$,esc:s=>String(s),displayedSpelling:w=>w.displayWord||w.word,save:()=>saves++,renderParent:()=>renders++,toast:s=>{lastToast=s}};
   vm.createContext(ctx);vm.runInContext(focusSource,ctx);vm.runInContext(app.slice(start,end),ctx);
 
   assert.doesNotThrow(()=>ctx.openFiveFocusEditor('bought'),'opening the picker must not treat one Element as a list');
