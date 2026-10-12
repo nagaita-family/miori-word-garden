@@ -118,7 +118,6 @@ function myWordStatus(w){const l=w?.learn||learning(w?.word||''),loops=l.loops||
 function practiceKindLabel(kind){return kind==='my'?'MY WORD':kind==='past'?'REVIEW':'THIS WEEK'}
 
 function emojiFor(word){return({beetle:'🪲',butterfly:'🦋',cricket:'🦗',grasshopper:'🦗',honeybee:'🐝',insect:'🔎',ladybug:'🐞',raisin:'🍇',riding:'🚲',thicket:'🌿'})[word]||'✦'}
-const WEEKDAY_CAPS=new Set(['sunday','monday','tuesday','wednesday','thursday','friday','saturday']);
 function displayedSpelling(w){
   const word=w?.word||'';
   return typeof w?.displayWord==='string'&&norm(w.displayWord)===word?w.displayWord:word;
@@ -159,7 +158,7 @@ function loadState(){
   if(!s)s=defaultState();
   if(s.version===2){s.version=3;s.stats=s.stats||{answers:0,sessions:0};s.settings=s.settings||{sound:true,voice:''};s.garden=s.garden||{growth:0,pos:{}};s.week=s.week||{id:'',title:'This Week',ids:[]};const next={};for(const [id,w] of Object.entries(s.lib||{})){const n=normalizeWord(w,w);next[n.id||id]=n}s.lib=next}
   if(s.version!==3)s={...defaultState(),...s,version:3};
-  s.lib=s.lib||{};for(const w of Object.values(s.lib)){if(w?.word&&WEEKDAY_CAPS.has(w.word)&&(!w.displayWord||w.displayWord===w.word))w.displayWord=w.word[0].toUpperCase()+w.word.slice(1)}s.stats=s.stats||{answers:0,sessions:0};s.garden=s.garden||{growth:0,pos:{},bunnySeated:false,stored:[]};s.garden.pos=s.garden.pos||{};if(typeof s.garden.bunnySeated!=='boolean')s.garden.bunnySeated=false;if(!Array.isArray(s.garden.stored))s.garden.stored=[];s.settings=s.settings||{sound:true,music:true,musicV2:true,voice:'',audioDefaultV17:true};if(typeof s.settings.sound!=='boolean')s.settings.sound=true;if(typeof s.settings.music!=='boolean')s.settings.music=true;if(!s.settings.audioDefaultV17){s.settings.sound=true;s.settings.music=true;s.settings.audioDefaultV17=true}s.settings.musicV2=true;
+  s.lib=s.lib||{};s.stats=s.stats||{answers:0,sessions:0};s.garden=s.garden||{growth:0,pos:{},bunnySeated:false,stored:[]};s.garden.pos=s.garden.pos||{};if(typeof s.garden.bunnySeated!=='boolean')s.garden.bunnySeated=false;if(!Array.isArray(s.garden.stored))s.garden.stored=[];s.settings=s.settings||{sound:true,music:true,musicV2:true,voice:'',audioDefaultV17:true};if(typeof s.settings.sound!=='boolean')s.settings.sound=true;if(typeof s.settings.music!=='boolean')s.settings.music=true;if(!s.settings.audioDefaultV17){s.settings.sound=true;s.settings.music=true;s.settings.audioDefaultV17=true}s.settings.musicV2=true;
   s.recentWords=Array.isArray(s.recentWords)?s.recentWords:[];seedSchoolWords(s);hydrateChunkSeeds(s);ensureLearningGroups(s);window.LivingGarden?.migrate(s);localStorage.setItem(STORAGE_KEY,JSON.stringify(s));return s;
 }
 let state=loadState();
@@ -178,6 +177,7 @@ async function refreshSchoolPack(force=false){
    const response=await fetch(SCHOOL_PACK_URL+'?t='+Date.now(),{cache:'no-store'});
    if(!response.ok)throw Error('School Word Pack HTTP '+response.status);
    const pack=await response.json();
+   if(fiveWords||session)return; // user may have started playing while fetch was in flight
    const result=window.SchoolPackSync.apply(state,pack,{norm,normalizeWord,archiveWeek,ensureLearningGroups});
    if(result.status==='updated'){
     save();
