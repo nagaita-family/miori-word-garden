@@ -310,3 +310,19 @@ Prior Days of Week Word Pack mistakenly contained lowercase names. Import also n
 
 ## v66 Word Pack spelling display source, 2026-10-08
 Parent This Week still displayed lowercase after v65 because thisWeekGroupCard directly rendered w.word (the lowercase lookup ID). v66 fixes the actual Parent card and replaces the weekday-specific runtime renderer with the data-based displayWord convention. Word Pack raw.word / raw.displayWord becomes the canonical display spelling; w.word remains normalized stable ID for deduplication, history and case-insensitive grading. Existing incorrectly imported lowercase weekdays are migrated on load only when no proper-case displayWord is present; the renderer itself does not synthesize weekday spelling. Play, Parent and Focus picker read the same saved displayWord. Older learning history is retained; no reimport needed. Version v66; physical iPad verification still required.
+
+## Phase — GitHub-delivered This Week / local My Words (v67, 2026-10-12)
+
+The user approved switching English weekly school Word Packs from local file import to the same GitHub publishing workflow used for Miori Kanji Quest. The This Week word source is now the checked-in `word-packs/current.json` (currently Oct 8 Days of the Week, taken from the user's actual downloaded Word Pack). Future weekly updates replace only that JSON. See `word-packs/README.md`; no weekly hardcoded source edits to `app.js`.
+
+Implementation:
+- `school-pack-sync.js`: validate complete pack first (id/title, unique normalized words, chunks, seed Focus), then idempotently merge into saved local state. Source fingerprint avoids repeated writes. New `weekId` archives previous This Week once; same-week corrections retain the current test draft and week Focus. Parent manual Focus, recall/learning, starred priority, Garden, and My Words membership and notes are not reset.
+- `app.js`: fetch GitHub Pages relative `./word-packs/current.json` with no-store on opening and Play/Parent navigation (short throttle); when fetch fails keep saved local pack silently. Do not switch while a Pencil/session is active. The Parent shows GitHub status; manual Import remains backup. Manual override is honored until the next GitHub week. On a shared school + My Word, the user's local definition is retained in the library and school meaning is kept in `week.schoolMeaningById`.
+- `index.html`: loads the sync module before `app.js`; v67 cache keys.
+- Removed the old one-off `WEEKDAY_CAPS` and localStorage weekday migration; the Word Pack spelling is now the sole displayWord source. Existing devices already have correct capitalization; this week's new canonical remote pack also carries the correct capital letters.
+- Added `tests/school-pack-sync-v67.test.cjs`, checks for malformed/duplicate packs, archival, idempotency, overlapping My Word history, Parent Focus and starred priority, and manual fallback, plus `.github/workflows/verify.yml` for real Node regression checks on PRs.
+
+Safety / follow-up:
+- Do not claim device-to-device learning sync: learning remains in iPad localStorage; only public curriculum is delivered via GitHub Pages.
+- Check actual iPad navigation after publishing; Chrome/Safari cache must load v67 and show Oct 8 Days of the Week.
+- Preserve `HANDOFF`, history, and uncommitted changes. No Living Garden / completed Phase C/D rework.
