@@ -108,6 +108,7 @@ test('app uses GitHub Pages fetch, live local state and two isolated five-word p
  assert.match(app,/fetch\(SCHOOL_PACK_URL/);
  assert.match(app,/cache:'no-store'/);
  assert.match(app,/SchoolPackSync\.apply\(state,pack/);
+ assert(app.includes('if(fiveWords||session||weeklyTest)return;'),'sync waits for all live writing sessions');
  assert.match(app,/lane==='week'\?state\.week\.ids:Object\.keys\(state\.myWords\|\|\{\}\)/);
  assert.match(app,/schoolMeaningById\?\.\[w\.id\]/);
  assert.match(app,/manualOverrideSourceWeekId/);
