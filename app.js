@@ -1127,7 +1127,7 @@ async function restoreBackup(file){
     localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
     state=loadState();
     renderParent();
-    toast('Backup restored. Open Garden to see the saved progress.');void refreshSchoolPack(true);
+    toast('Backup restored. Open Garden to see the saved progress.');if(typeof refreshSchoolPack==='function')void refreshSchoolPack(true);
   }catch(e){
     console.error(e);
     try{if(previous===null)localStorage.removeItem(STORAGE_KEY);else localStorage.setItem(STORAGE_KEY,previous);state=loadState();renderParent()}catch(rollbackError){console.error(rollbackError)}
