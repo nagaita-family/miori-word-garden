@@ -1,0 +1,103 @@
+{
+  "weekId": "2026-10-08-days-of-week",
+  "weekName": "Oct 8 · Days of the Week",
+  "words": [
+    {
+      "word": "Sunday",
+      "meaningEn": "the second day of the weekend",
+      "chunks": [
+        "sun",
+        "day"
+      ],
+      "seedFocus": null
+    },
+    {
+      "word": "Monday",
+      "meaningEn": "the first day of the school week",
+      "chunks": [
+        "mon",
+        "day"
+      ],
+      "seedFocus": null
+    },
+    {
+      "word": "Tuesday",
+      "meaningEn": "the second day of the school week; English day",
+      "chunks": [
+        "tues",
+        "day"
+      ],
+      "seedFocus": null
+    },
+    {
+      "word": "Wednesday",
+      "meaningEn": "the third day of the school week",
+      "chunks": [
+        "wed",
+        "nes",
+        "day"
+      ],
+      "seedFocus": {
+        "start": 2,
+        "length": 1
+      }
+    },
+    {
+      "word": "Thursday",
+      "meaningEn": "the fourth day of the school week; English day",
+      "chunks": [
+        "thurs",
+        "day"
+      ],
+      "seedFocus": null
+    },
+    {
+      "word": "Friday",
+      "meaningEn": "the fifth day of the school week; English day",
+      "chunks": [
+        "fri",
+        "day"
+      ],
+      "seedFocus": null
+    },
+    {
+      "word": "Saturday",
+      "meaningEn": "the first day of the weekend",
+      "chunks": [
+        "sat",
+        "ur",
+        "day"
+      ],
+      "seedFocus": null
+    },
+    {
+      "word": "yesterday",
+      "meaningEn": "the day before today",
+      "chunks": [
+        "yes",
+        "ter",
+        "day"
+      ],
+      "seedFocus": null
+    },
+    {
+      "word": "today",
+      "meaningEn": "the current day",
+      "chunks": [
+        "to",
+        "day"
+      ],
+      "seedFocus": null
+    },
+    {
+      "word": "tomorrow",
+      "meaningEn": "the day after today",
+      "chunks": [
+        "to",
+        "mor",
+        "row"
+      ],
+      "seedFocus": null
+    }
+  ]
+}
