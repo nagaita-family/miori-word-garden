@@ -13,7 +13,7 @@ test('Parent star and one-off Next 5 persist, can be queued, and stay in their l
   const controls={star:{},focus:{},input:{checked:false}};
   return{className:'',innerHTML:'',querySelector:s=>s==='.five-star-toggle'?controls.star:s==='.five-focus-edit'?controls.focus:s==='input'?controls.input:controls.star}
  }};
- const focusApi={focus:()=>null};
+ const focusApi={focus:()=>null,positions:()=>[]};
  const ctx={state,document,window:{FiveWordsFocus:focusApi},save:()=>saved.push(JSON.stringify(state)),renderParent(){},toast(){},esc:s=>s,openFiveFocusEditor(){}};
  vm.createContext(ctx);vm.runInContext(app.slice(start,end)+app.slice(uiStart,uiEnd),ctx);
  ctx.renderFiveParentControls();
