@@ -77,7 +77,7 @@ test('a new school pack shares one ID with My Words without mixing their practic
  assert.equal(state.lib.journal.learn.loops,5);
  assert.equal(state.lib.journal.meaningEn,'an account of my day');
  assert.equal(state.week.schoolMeaningById.journal,'school definition');
- assert.deepEqual(state.week.ids,['journal','jason']);
+ assert.deepEqual(Array.from(state.week.ids),['journal','jason']);
  assert.deepEqual(Object.keys(state.myWords),['journal']);
  assert.equal(state.lib.jason.displayWord,'Jason');
 });
