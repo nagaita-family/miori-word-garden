@@ -326,3 +326,5 @@ Safety / follow-up:
 - Do not claim device-to-device learning sync: learning remains in iPad localStorage; only public curriculum is delivered via GitHub Pages.
 - Check actual iPad navigation after publishing; Chrome/Safari cache must load v67 and show Oct 8 Days of the Week.
 - Preserve `HANDOFF`, history, and uncommitted changes. No Living Garden / completed Phase C/D rework.
+
+Publication: v67 squash-merged into `main` as `bad98dbe377e7aa3e05b52ecc8f60ca65393a9a2`. GitHub Actions verification run `38245941359` succeeded (**93/93 tests**). GitHub Pages deployment run `38246063420` also completed successfully. Next human check: on Miori's iPad reload until `v67 · Oct 12`, open This Week (currently Oct 8 Days of the Week), ensure the 10 spellings are correct, try Practice 5, and verify My Words / Parent Focus / previous progress are intact. Future weekly school photo workflow: update only `word-packs/current.json`, commit to main, and let the app fetch it automatically.
