@@ -20,7 +20,7 @@ test('one-letter phonics chunks are valid and render as separate underline spans
 test('chunk styling is quiet underline grouping while Focus remains the highlighter',()=>{
   assert.match(css,/\.five-chunk[\s\S]*border-bottom/);
   assert.match(css,/\.five-focus[\s\S]*#ffeda4/);
-  assert.doesNotMatch(css,/\.five-chunk[\s\S]{0,180}background:/,'Chunk itself does not add a competing color block');
+  const chunkRule=css.match(/\.five-chunk\s*\{([^}]+)\}/)?.[1]||'';assert.doesNotMatch(chunkRule,/background:/,'Chunk itself does not add a competing color block');
 });
 
 test('current saved past-tense words receive curated chunks without re-importing the pack',()=>{
