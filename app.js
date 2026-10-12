@@ -170,14 +170,14 @@ async function refreshSchoolPack(force=false){
  if(schoolPackSyncInFlight)return schoolPackSyncInFlight;
  if(!force&&Date.now()-schoolPackLastCheck<60000)return;
  // Never swap the spelling test in the middle of a live writing session.
- if(fiveWords||session)return;
+ if(fiveWords||session||weeklyTest)return;
  schoolPackLastCheck=Date.now();
  schoolPackSyncInFlight=(async()=>{
   try{
    const response=await fetch(SCHOOL_PACK_URL+'?t='+Date.now(),{cache:'no-store'});
    if(!response.ok)throw Error('School Word Pack HTTP '+response.status);
    const pack=await response.json();
-   if(fiveWords||session)return; // user may have started playing while fetch was in flight
+   if(fiveWords||session||weeklyTest)return; // user may have started playing while fetch was in flight
    const result=window.SchoolPackSync.apply(state,pack,{norm,normalizeWord,archiveWeek,ensureLearningGroups});
    if(result.status==='updated'){
     save();
