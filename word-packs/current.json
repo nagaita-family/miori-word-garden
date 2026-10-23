@@ -1,100 +1,134 @@
 {
-  "weekId": "2026-10-22-unit-6b",
-  "weekName": "Oct 22 · Unit 6b",
+  "weekId": "2026-10-23-halloween",
+  "weekName": "Oct 23 · Halloween Words",
   "words": [
     {
-      "word": "calendar",
-      "meaningEn": "a list of the days, weeks and months in a year",
+      "word": "bizarre",
+      "meaningEn": "strange and weird",
+      "meaningJa": "奇妙な、変わった",
+      "example": "A bizarre shadow appeared on the wall.",
       "chunks": [
-        "cal",
-        "en",
-        "dar"
+        "bi",
+        "zarre"
       ],
-      "seedFocus": null
+      "seedFocus": null,
+      "pictureCue": "a strange purple shadow in a moonlit room",
+      "pictureEmoji": "🌀"
     },
     {
-      "word": "describe",
-      "meaningEn": "to say what someone or something is like",
+      "word": "cackle",
+      "meaningEn": "a witch’s laugh",
+      "meaningJa": "魔女のような笑い声",
+      "example": "The witch gave a loud cackle.",
       "chunks": [
-        "de",
-        "scribe"
+        "cack",
+        "le"
       ],
-      "seedFocus": null
+      "seedFocus": null,
+      "pictureCue": "a friendly witch laughing under the moon",
+      "pictureEmoji": "🧙‍♀️"
     },
     {
-      "word": "exact",
-      "meaningEn": "completely correct",
+      "word": "carve",
+      "meaningEn": "to cut a picture into a pumpkin",
+      "meaningJa": "カボチャなどに絵や形を彫る",
+      "example": "We carve a face into a pumpkin.",
       "chunks": [
-        "ex",
-        "act"
+        "carve"
       ],
-      "seedFocus": null
+      "seedFocus": null,
+      "pictureCue": "a carved jack-o-lantern pumpkin",
+      "pictureEmoji": "🎃"
     },
     {
-      "word": "imagine",
-      "meaningEn": "to make a picture of something in your mind",
+      "word": "flashlight",
+      "meaningEn": "used to light your way at night",
+      "meaningJa": "懐中電灯",
+      "example": "I use a flashlight in the dark.",
       "chunks": [
-        "im",
-        "ag",
-        "ine"
+        "flash",
+        "light"
       ],
-      "seedFocus": null
+      "seedFocus": null,
+      "pictureCue": "a flashlight shining a beam of light at night",
+      "pictureEmoji": "🔦"
     },
     {
-      "word": "interesting",
-      "meaningEn": "exciting, holds your attention",
+      "word": "graveyard",
+      "meaningEn": "where dead people are buried",
+      "meaningJa": "墓地",
+      "example": "A graveyard has many old stones.",
       "chunks": [
-        "in",
-        "ter",
-        "est",
-        "ing"
+        "grave",
+        "yard"
       ],
-      "seedFocus": null
+      "seedFocus": null,
+      "pictureCue": "a quiet graveyard with small gravestones",
+      "pictureEmoji": "🪦"
     },
     {
-      "word": "observe",
-      "meaningEn": "to watch or see someone or something",
+      "word": "hayride",
+      "meaningEn": "ride on a truck full of hay",
+      "meaningJa": "干し草を積んだ車に乗ること",
+      "example": "We went on a hayride at the farm.",
       "chunks": [
-        "ob",
-        "serve"
+        "hay",
+        "ride"
       ],
-      "seedFocus": null
+      "seedFocus": null,
+      "pictureCue": "a wagon full of hay riding past a farm",
+      "pictureEmoji": "🚜"
     },
     {
-      "word": "shake",
-      "meaningEn": "to move back an forth with quick short movements (a wet dog shaking dry)",
+      "word": "magic",
+      "meaningEn": "to make things happen with a wand",
+      "meaningJa": "魔法",
+      "example": "The wizard made magic with a wand.",
       "chunks": [
-        "sh",
-        "ake"
+        "mag",
+        "ic"
       ],
-      "seedFocus": null
+      "seedFocus": null,
+      "pictureCue": "a sparkling magic wand with stars",
+      "pictureEmoji": "🪄"
     },
     {
-      "word": "silent",
-      "meaningEn": "no noise or sound",
+      "word": "skull",
+      "meaningEn": "your head bone",
+      "meaningJa": "頭蓋骨、頭の骨",
+      "example": "A skull protects the brain.",
       "chunks": [
-        "si",
-        "lent"
+        "skull"
       ],
-      "seedFocus": null
+      "seedFocus": null,
+      "pictureCue": "a cartoon skull with a friendly smile",
+      "pictureEmoji": "💀"
     },
     {
-      "word": "surprise",
-      "meaningEn": "a sudden feeling of wonder and joy",
+      "word": "spook",
+      "meaningEn": "to scare someone",
+      "meaningJa": "人を怖がらせる",
+      "example": "Don't spook your friends in the dark.",
       "chunks": [
-        "sur",
-        "prise"
+        "sp",
+        "ook"
       ],
-      "seedFocus": null
+      "seedFocus": null,
+      "pictureCue": "a friendly little ghost popping out",
+      "pictureEmoji": "👻"
     },
     {
-      "word": "winking",
-      "meaningEn": "choosing to close and open one eye",
+      "word": "wicked",
+      "meaningEn": "evil and mean",
+      "meaningJa": "邪悪な、意地悪な",
+      "example": "The story has a wicked witch.",
       "chunks": [
-        "wink",
-        "ing"
+        "wick",
+        "ed"
       ],
-      "seedFocus": null
+      "seedFocus": null,
+      "pictureCue": "a storybook witch with a pointed hat",
+      "pictureEmoji": "🧙"
     }
   ]
 }
