@@ -17,7 +17,7 @@ function readPack(data,norm){
   if(spot!=null&&(!Number.isInteger(spot.start)||!Number.isInteger(spot.length)||spot.start<0||spot.length<1||spot.start+spot.length>id.length))throw Error('Invalid Focus');
   if(w.meaningEn!=null&&typeof w.meaningEn!=='string')throw Error('Invalid meaning');
   if(w.meaningJa!=null&&typeof w.meaningJa!=='string')throw Error('Invalid Japanese meaning');
-  if(w.image!=null&&(typeof w.image!=='string'||!/^\.\/word-images\/[a-z0-9-]+\.svg$/.test(w.image)))throw Error('Invalid image path');
+  if(w.image!=null&&(typeof w.image!=='string'||!/^\.\/word-images\/[a-z0-9-]+\.(?:svg|png|webp)$/.test(w.image)))throw Error('Invalid image path');
   seen.add(id);ids.push(id);
  }
  return {weekId,title,ids,words:data.words,signature:JSON.stringify({weekId,title,words:data.words})};
