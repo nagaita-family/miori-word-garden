@@ -26,8 +26,8 @@ test('paper lines have real ink styling and palm protection',()=>{
 });
 
 test('v62 assets are cache-busted',()=>{
-  assert(html.includes('five-words-core.css?v=20261002-v63'));
-  assert(html.includes('five-words-core.js?v=20261002-v63'));
+  assert(html.includes('five-words-core.css?v=20261026-v68'));
+  assert(html.includes('five-words-core.js?v=20261026-v68'));
   assert(html.includes('pencil-touch-guard.js?v=20261002-v62'));
-  assert(html.includes('v67 · Oct 12'));
+  assert(html.includes('v68 · Oct 26'));
 });
