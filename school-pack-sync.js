@@ -28,7 +28,8 @@ function apply(state,data,deps){
  const current=state.week||{};
  const sameWeek=current.id===pack.weekId;
  const sameIds=sameWeek&&current.ids?.length===pack.ids.length&&pack.ids.every((id,i)=>current.ids[i]===id);
- if(previous.signature===pack.signature&&sameIds&&current.title===pack.title)return {status:'unchanged',weekId:pack.weekId};
+ const hasSchoolJa=pack.ids.every((id,i)=>(current.schoolMeaningJaById?.[id]||'')===(pack.words[i].meaningJa||''));
+ if(previous.signature===pack.signature&&sameIds&&current.title===pack.title&&hasSchoolJa)return {status:'unchanged',weekId:pack.weekId};
  // Do not discard journal/reading entries or manually selected Focus / learning.
  const newWords={};
  for(let i=0;i<pack.ids.length;i++){
