@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280" role="img" aria-label="Illustrated vocabulary picture"><defs><linearGradient id="bg" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#c6b4de"/><stop offset=".62" stop-color="#766eaa"/><stop offset="1" stop-color="#3e4670"/></linearGradient></defs><rect width="400" height="280" rx="25" fill="url(#bg)"/><circle cx="72" cy="52" r="70" fill="#fff" opacity=".09"/><circle cx="343" cy="220" r="78" fill="#fff" opacity=".08"/><ellipse cx="210" cy="255" rx="145" ry="18" fill="#344260" opacity=".25"/>
+<path d="M104 247 Q102 173 148 153 L262 153 Q315 197 303 247Z" fill="#423453" stroke="#33334e" stroke-width="7"/>
+<path d="M143 110 Q124 82 163 58 L201 8 Q242 48 246 88 L269 113Z" fill="#453254" stroke="#333047" stroke-width="7"/>
+<path d="M114 112 Q204 95 291 113 Q290 137 115 132Z" fill="#332f49"/>
+<path d="M161 106 L254 110" stroke="#b874ab" stroke-width="10"/>
+<ellipse cx="204" cy="166" rx="68" ry="69" fill="#9abd79" stroke="#456b69" stroke-width="6"/>
+<path d="M158 142 L192 152 M249 142 L216 152" stroke="#3c4a58" stroke-width="9" stroke-linecap="round"/>
+<ellipse cx="176" cy="163" rx="6" ry="9" fill="#3a4358"/><ellipse cx="231" cy="163" rx="6" ry="9" fill="#3a4358"/>
+<path d="M169 207 Q205 183 236 211" fill="none" stroke="#67455c" stroke-width="7" stroke-linecap="round"/><path d="M204 163 L188 191 L214 194" fill="#80a865" stroke="#456b69" stroke-width="5"/>
+<g transform="translate(242 180)"><path d="M-7 31 L85 31 L69 86 Q33 103 7 86Z" fill="#424363" stroke="#30314e" stroke-width="7"/><ellipse cx="39" cy="31" rx="48" ry="14" fill="#605574"/><ellipse cx="39" cy="26" rx="42" ry="9" fill="#b5e0a3"/><path d="M6 -4 Q-10 -29 13 -46 M43 -7 Q30 -34 47 -51" fill="none" stroke="#a3f1b0" stroke-width="6" stroke-linecap="round"/><circle cx="24" cy="12" r="7" fill="#e4a6ef"/><circle cx="59" cy="17" r="8" fill="#e8eaa5"/></g>
+<circle cx="68" cy="54" r="10" fill="#f7d4a5"/><path d="M75 179 l9 -21 l8 21 l21 8 l-21 8 l-8 21 l-9 -21 l-21 -8Z" fill="#cce6bc"/></svg>
