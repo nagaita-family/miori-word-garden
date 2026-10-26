@@ -47,7 +47,7 @@ test('New-word mistake is practiced on paper, then becomes audio-only recall on 
  const ctx={window:{},setTimeout(){},navigator:{}};vm.createContext(ctx);vm.runInContext(focusSource,ctx);vm.runInContext(src,ctx);
  const resumed=ctx.window.FiveWordsCore.create({lane:'week',ids:['butterfly'],state:y.state,root:y.root,save(){},audio(){},resolveAudio:async()=>{},normalize:s=>s,escape:s=>s,diff:()=>'',sfx(){},focus:ctx.window.FiveWordsFocus,markResult(){},home(){},more(){},onRemembered(){}});
  assert.equal(resumed.run.phase,'hidden');assert.deepEqual(Array.from(resumed.run.ids),['butterfly']);
- assert(page.includes('five-words-core.js?v=20261002-v63')&&page.includes('five-words-core.css?v=20261002-v63'));
+ assert(page.includes('five-words-core.js?v=20261026-v68')&&page.includes('five-words-core.css?v=20261026-v68'));
 });
 test('Play entry gives This Week and My Words their own exact pool, even for an overlapping word',()=>{
  const app=fs.readFileSync('app.js','utf8'),start=app.indexOf('function fiveManual(lane){'),end=app.indexOf('// A weekly exam',start);
