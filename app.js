@@ -133,6 +133,7 @@ function normalizeWord(raw={},old=null){
     displayWord:(typeof raw.displayWord==='string'&&norm(raw.displayWord)===word?raw.displayWord:null)??(typeof raw.word==='string'&&norm(raw.word)===word?raw.word:null)??(typeof old?.displayWord==='string'&&norm(old.displayWord)===word?old.displayWord:null)??word,
     chunks:window.FiveWordsFocus?.chunks(word,raw.chunks??old?.chunks??WORD_CHUNKS[word])||null,
     seedFocus:window.FiveWordsFocus?.focus(word,raw.seedFocus??old?.seedFocus)||null,
+    image:raw.image??old?.image??'',
     meaningEn:raw.meaningEn??old?.meaningEn??'',meaningJa:raw.meaningJa??old?.meaningJa??'',example:raw.example??old?.example??'',
     phonicsFocus:norm(raw.phonicsFocus??old?.phonicsFocus??''),pictureCue:raw.pictureCue??old?.pictureCue??'',pictureEmoji:raw.pictureEmoji??old?.pictureEmoji??emojiFor(word),
     mioriSpelling:norm(raw.mioriSpelling??old?.mioriSpelling??''),pronunciationUrl:raw.pronunciationUrl??old?.pronunciationUrl??'',
