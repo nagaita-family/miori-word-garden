@@ -16,6 +16,7 @@ function readPack(data,norm){
   const spot=w.seedFocus;
   if(spot!=null&&(!Number.isInteger(spot.start)||!Number.isInteger(spot.length)||spot.start<0||spot.length<1||spot.start+spot.length>id.length))throw Error('Invalid Focus');
   if(w.meaningEn!=null&&typeof w.meaningEn!=='string')throw Error('Invalid meaning');
+  if(w.meaningJa!=null&&typeof w.meaningJa!=='string')throw Error('Invalid Japanese meaning');
   seen.add(id);ids.push(id);
  }
  return {weekId,title,ids,words:data.words,signature:JSON.stringify({weekId,title,words:data.words})};
@@ -45,10 +46,13 @@ function apply(state,data,deps){
  }
  if(!sameWeek&&current.ids?.length)archiveWeek(state,current);
  state.lib=state.lib||{};Object.assign(state.lib,newWords);
- const schoolMeaningById={};
- for(let i=0;i<pack.ids.length;i++)schoolMeaningById[pack.ids[i]]=pack.words[i].meaningEn||'';
+ const schoolMeaningById={},schoolMeaningJaById={};
+ for(let i=0;i<pack.ids.length;i++){
+  schoolMeaningById[pack.ids[i]]=pack.words[i].meaningEn||'';
+  schoolMeaningJaById[pack.ids[i]]=pack.words[i].meaningJa||'';
+ }
  state.week={id:pack.weekId,title:pack.title,ids:pack.ids,
-  focusIds:sameWeek?(current.focusIds||[]).filter(id=>pack.ids.includes(id)):[],schoolMeaningById};
+  focusIds:sameWeek?(current.focusIds||[]).filter(id=>pack.ids.includes(id)):[],schoolMeaningById,schoolMeaningJaById};
  ensureLearningGroups(state);
  if(!sameWeek)delete state.weekTestDraft;
  state.schoolPackSync={weekId:pack.weekId,signature:pack.signature};
