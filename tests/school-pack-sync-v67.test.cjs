@@ -25,9 +25,9 @@ const fresh=()=>({
 test('the published school pack has 10 correct-case words and valid chunk metadata',()=>{
  const checked=sync.readPack(current,norm);
  assert.equal(checked.ids.length,10);
- assert.equal(current.words[0].word,'Sunday');
- assert.equal(current.words[3].word,'Wednesday');
- assert.equal(current.words[9].word,'tomorrow');
+ assert(checked.ids.every((id,i)=>id===norm(current.words[i].word)));
+ assert(current.words.every(w=>typeof w.meaningEn==='string'&&w.meaningEn.length>0));
+ assert(current.words.every(w=>typeof w.image==='string'&&w.image.startsWith('./word-images/')));
 });
 test('a first GitHub update replaces only This Week and archives once',()=>{
  archives=0;
@@ -39,8 +39,9 @@ test('a first GitHub update replaces only This Week and archives once',()=>{
  assert.equal(archives,1);
  assert.equal(state.week.id,current.weekId);
  assert.equal(state.week.ids.length,10);
- assert.equal(state.lib.Sunday,undefined,'normalized IDs are lowercase');
- assert.equal(state.lib.sunday.displayWord,'Sunday');
+ const firstId=norm(current.words[0].word);
+ assert.equal(state.lib[current.words[0].word.toUpperCase()],undefined,'IDs are normalized lowercase');
+ assert.equal(state.lib[firstId].displayWord,current.words[0].word);
  assert.deepEqual(state.myWords.journal,{addedAt:'2026-10-01',source:'Reading',note:'Never remove'});
  assert.equal(state.lib.journal.learn.loops,3);
  assert.equal(state.garden.growth,12);
@@ -52,19 +53,21 @@ test('a first GitHub update replaces only This Week and archives once',()=>{
 test('existing spelling history, parent Focus, stars, journal notes and manual meanings are preserved',()=>{
  archives=0;
  const state=fresh();
- state.week={id:current.weekId,title:current.weekName,ids:current.words.map(w=>norm(w.word)),focusIds:['monday']};
- state.myWords.monday={addedAt:'2026-10-01',source:'Journal',note:'My own sentence'};
+ const sharedId=norm(current.words[0].word),sharedSpelling=current.words[0].word;
+ state.week={id:current.weekId,title:current.weekName,ids:current.words.map(w=>norm(w.word)),focusIds:[sharedId]};
+ state.myWords[sharedId]={addedAt:'2026-10-01',source:'Journal',note:'My own sentence'};
  const learn={loops:7,mistakes:2,five:{parentFocus:{indices:[0,3]},starred:true,recallSuccess:2}};
- state.lib.monday={id:'monday',word:'monday',displayWord:'Monday',meaningEn:'My own explanation',learn};
+ state.lib[sharedId]={id:sharedId,word:sharedId,displayWord:sharedSpelling,meaningEn:'My own explanation',learn};
  state.weekTestDraft={weekId:current.weekId};
  const result=sync.apply(state,current,deps);
  assert.equal(result.status,'updated');
  assert.equal(result.changedWeek,false);
- assert.equal(state.lib.monday.learn,learn);
- assert.equal(state.lib.monday.meaningEn,'My own explanation','personal My Words meaning wins');
- assert.equal(state.week.schoolMeaningById.monday,'the first day of the school week','school definition remains available separately');
- assert.equal(state.myWords.monday.note,'My own sentence');
- assert.deepEqual(state.week.focusIds,['monday']);
+ assert.equal(state.lib[sharedId].learn,learn);
+ assert.equal(state.lib[sharedId].meaningEn,'My own explanation','personal My Words meaning wins');
+ assert.equal(state.week.schoolMeaningById[sharedId],current.words[0].meaningEn,'school definition remains available separately');
+ assert.equal(state.week.schoolImageById[sharedId],current.words[0].image,'school picture stays in week');
+ assert.equal(state.myWords[sharedId].note,'My own sentence');
+ assert.deepEqual(state.week.focusIds,[sharedId]);
  assert.deepEqual(state.weekTestDraft,{weekId:current.weekId});
  assert.equal(archives,0);
 });
@@ -113,7 +116,7 @@ test('app uses GitHub Pages fetch, live local state and two isolated five-word p
  assert.match(app,/schoolMeaningById\?\.\[w\.id\]/);
  assert.match(app,/manualOverrideSourceWeekId/);
  assert(!app.includes('WEEKDAY_CAPS'),'obsolete one-off weekday migration is removed');
- assert(page.includes('school-pack-sync.js?v=20261012-v67'));
- assert(page.includes('app.js?v=20261012-v67'));
- assert(page.includes('v67 · Oct 12'));
+ assert(page.includes('school-pack-sync.js?v=20261026-v68'));
+ assert(page.includes('app.js?v=20261026-v68'));
+ assert(page.includes('v68 · Oct 26'));
 });
