@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280" role="img" aria-label="Illustrated vocabulary picture">
+<defs><linearGradient id="bg" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#6b76ba"/><stop offset=".62" stop-color="#777caf"/><stop offset="1" stop-color="#3e5678"/></linearGradient></defs>
+<rect width="400" height="280" rx="25" fill="url(#bg)"/><circle cx="72" cy="52" r="70" fill="#fff" opacity=".09"/><circle cx="343" cy="220" r="78" fill="#fff" opacity=".08"/>
+<circle cx="312" cy="59" r="30" fill="#fff0bd"/><circle cx="300" cy="54" r="30" fill="#7280b1"/>
+  <path d="M0 213 Q65 175 140 211 Q225 165 302 203 Q347 179 400 203 L400 280 L0 280Z" fill="#4d806f"/>
+  <path d="M0 240 Q82 215 155 236 Q232 197 400 235 L400 280 L0 280Z" fill="#315d63"/>
+  <g stroke="#6c6a79" stroke-width="6" fill="#bcc4d0">
+    <path d="M72 243 L72 140 Q103 90 133 140 L133 243Z"/>
+    <path d="M180 255 L180 122 Q220 81 259 122 L259 255Z"/>
+    <path d="M298 250 L298 162 Q331 116 363 162 L363 250Z"/>
+  </g>
+  <g stroke="#9aa8bb" stroke-width="6" stroke-linecap="round"><path d="M89 163 L116 163 M102 150 L102 198"/><path d="M199 146 L242 146 M220 123 L220 198"/><path d="M320 184 L342 184 M332 169 L332 213"/></g>
+  <g fill="#cad7cb"><ellipse cx="48" cy="247" rx="30" ry="13"/><ellipse cx="280" cy="255" rx="39" ry="15"/></g>
+  <g fill="#ffebc6"><circle cx="38" cy="84" r="3"/><circle cx="270" cy="48" r="2"/><circle cx="160" cy="71" r="4"/></g>
+</svg>
