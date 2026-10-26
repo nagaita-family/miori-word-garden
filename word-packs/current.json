@@ -13,7 +13,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a strange purple shadow in a moonlit room",
-      "pictureEmoji": "🌀"
+      "pictureEmoji": "🌀",
+      "image": "./word-images/bizarre.svg"
     },
     {
       "word": "cackle",
@@ -26,7 +27,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a friendly witch laughing under the moon",
-      "pictureEmoji": "🧙‍♀️"
+      "pictureEmoji": "🧙‍♀️",
+      "image": "./word-images/cackle.svg"
     },
     {
       "word": "carve",
@@ -38,7 +40,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a carved jack-o-lantern pumpkin",
-      "pictureEmoji": "🎃"
+      "pictureEmoji": "🎃",
+      "image": "./word-images/carve.svg"
     },
     {
       "word": "flashlight",
@@ -51,7 +54,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a flashlight shining a beam of light at night",
-      "pictureEmoji": "🔦"
+      "pictureEmoji": "🔦",
+      "image": "./word-images/flashlight.svg"
     },
     {
       "word": "graveyard",
@@ -64,7 +68,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a quiet graveyard with small gravestones",
-      "pictureEmoji": "🪦"
+      "pictureEmoji": "🪦",
+      "image": "./word-images/graveyard.svg"
     },
     {
       "word": "hayride",
@@ -77,7 +82,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a wagon full of hay riding past a farm",
-      "pictureEmoji": "🚜"
+      "pictureEmoji": "🚜",
+      "image": "./word-images/hayride.svg"
     },
     {
       "word": "magic",
@@ -90,7 +96,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a sparkling magic wand with stars",
-      "pictureEmoji": "🪄"
+      "pictureEmoji": "🪄",
+      "image": "./word-images/magic.svg"
     },
     {
       "word": "skull",
@@ -102,7 +109,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a cartoon skull with a friendly smile",
-      "pictureEmoji": "💀"
+      "pictureEmoji": "💀",
+      "image": "./word-images/skull.svg"
     },
     {
       "word": "spook",
@@ -115,7 +123,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a friendly little ghost popping out",
-      "pictureEmoji": "👻"
+      "pictureEmoji": "👻",
+      "image": "./word-images/spook.svg"
     },
     {
       "word": "wicked",
@@ -128,7 +137,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a storybook witch with a pointed hat",
-      "pictureEmoji": "🧙"
+      "pictureEmoji": "🧙",
+      "image": "./word-images/wicked.svg"
     }
   ]
 }
