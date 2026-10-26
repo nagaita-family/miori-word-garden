@@ -8,7 +8,7 @@ function create(d){
  // Pictures carry meaning without translating or revealing the spelling.
  function pictureOf(w){
   const path=run.lane==='week'?(state.week?.schoolImageById?.[w.id]||w.image):w.image;
-  return typeof path==='string'&&/^\.\/word-images\/[a-z0-9-]+\.svg$/.test(path)?path:'';
+  return typeof path==='string'&&/^\.\/word-images\/[a-z0-9-]+\.(?:svg|png|webp)$/.test(path)?path:'';
  }
  function englishMeaningOf(w){
   return String((run.lane==='week'?state.week?.schoolMeaningById?.[w.id]:null)||w.meaningEn||'').trim();
