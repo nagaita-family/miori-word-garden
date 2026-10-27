@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280" role="img" aria-label="Illustrated vocabulary picture">
+<defs><linearGradient id="bg" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#eddcff"/><stop offset=".62" stop-color="#bcafff"/><stop offset="1" stop-color="#6451a7"/></linearGradient></defs>
+<rect width="400" height="280" rx="25" fill="url(#bg)"/><circle cx="72" cy="52" r="70" fill="#fff" opacity=".09"/><circle cx="343" cy="220" r="78" fill="#fff" opacity=".08"/>
+<g transform="translate(4 4)">
+    <g transform="rotate(-19 188 139)">
+      <ellipse cx="189" cy="223" rx="97" ry="15" fill="#806b9a" opacity=".24"/>
+      <path d="M124 104 Q112 91 127 86 L240 86 Q261 91 245 108 L236 170 Q231 198 192 198 L159 198 Q122 197 122 172Z" fill="#fbba6c" stroke="#69468c" stroke-width="7"/>
+      <path d="M245 115 C302 84 292 181 241 169" fill="none" stroke="#69468c" stroke-width="19"/>
+      <path d="M239 116 C287 92 283 159 245 154" fill="none" stroke="#fbba6c" stroke-width="10"/>
+      <path d="M123 124 Q71 117 57 146 Q102 146 127 160" fill="#fbba6c" stroke="#69468c" stroke-width="6"/>
+      <ellipse cx="185" cy="87" rx="63" ry="12" fill="#f5d99c" stroke="#69468c" stroke-width="6"/>
+      <path d="M184 195 L184 210" stroke="#69468c" stroke-width="8" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(28 -4) rotate(18 86 142)"><path d="M44 125 Q83 89 133 123 Q80 167 44 125Z" fill="#80d9d4" stroke="#4e6b9f" stroke-width="5"/><path d="M136 125 L157 98 L158 148 Z" fill="#80d9d4" stroke="#4e6b9f" stroke-width="5"/><circle cx="73" cy="121" r="5" fill="#3a4c67"/></g>
+    <path d="M267 41 L274 55 L289 58 L276 70 L278 87 L263 78 L248 87 L251 69 L239 58 L255 55Z" fill="#ffe4a3" stroke="#9d79ba" stroke-width="3"/>
+    <g transform="rotate(27 315 190)"><circle cx="315" cy="190" r="42" fill="#fff7ec" stroke="#7e65a8" stroke-width="7"/><path d="M315 190 L315 165 M315 190 L333 201" stroke="#7e65a8" stroke-width="6" stroke-linecap="round"/><circle cx="315" cy="190" r="4" fill="#7e65a8"/></g>
+  </g>
+</svg>

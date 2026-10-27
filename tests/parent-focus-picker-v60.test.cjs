@@ -45,6 +45,6 @@ test('Parent Focus picker toggles individual letters, allows gaps, and saves the
 
 test('v61 app cache/version markers are current',()=>{
   const html=fs.readFileSync('index.html','utf8');
-  assert(html.includes('app.js?v=20261012-v67'));
-  assert(html.includes('v67 · Oct 12'));
+  assert(html.includes('app.js?v=20261026-v68'));
+  assert(html.includes('v68 · Oct 26'));
 });

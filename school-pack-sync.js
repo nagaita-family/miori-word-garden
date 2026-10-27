@@ -16,6 +16,8 @@ function readPack(data,norm){
   const spot=w.seedFocus;
   if(spot!=null&&(!Number.isInteger(spot.start)||!Number.isInteger(spot.length)||spot.start<0||spot.length<1||spot.start+spot.length>id.length))throw Error('Invalid Focus');
   if(w.meaningEn!=null&&typeof w.meaningEn!=='string')throw Error('Invalid meaning');
+  if(w.meaningJa!=null&&typeof w.meaningJa!=='string')throw Error('Invalid Japanese meaning');
+  if(w.image!=null&&(typeof w.image!=='string'||!/^\.\/word-images\/[a-z0-9-]+\.(?:svg|png|webp)$/.test(w.image)))throw Error('Invalid image path');
   seen.add(id);ids.push(id);
  }
  return {weekId,title,ids,words:data.words,signature:JSON.stringify({weekId,title,words:data.words})};
@@ -27,7 +29,9 @@ function apply(state,data,deps){
  const current=state.week||{};
  const sameWeek=current.id===pack.weekId;
  const sameIds=sameWeek&&current.ids?.length===pack.ids.length&&pack.ids.every((id,i)=>current.ids[i]===id);
- if(previous.signature===pack.signature&&sameIds&&current.title===pack.title)return {status:'unchanged',weekId:pack.weekId};
+ const hasSchoolJa=pack.ids.every((id,i)=>(current.schoolMeaningJaById?.[id]||'')===(pack.words[i].meaningJa||''));
+ const hasSchoolImages=pack.ids.every((id,i)=>(current.schoolImageById?.[id]||'')===(pack.words[i].image||''));
+ if(previous.signature===pack.signature&&sameIds&&current.title===pack.title&&hasSchoolJa&&hasSchoolImages)return {status:'unchanged',weekId:pack.weekId};
  // Do not discard journal/reading entries or manually selected Focus / learning.
  const newWords={};
  for(let i=0;i<pack.ids.length;i++){
@@ -39,16 +43,21 @@ function apply(state,data,deps){
    example:old.example||raw.example,
    pictureCue:old.pictureCue||raw.pictureCue,
    pictureEmoji:old.pictureEmoji||raw.pictureEmoji,
+   image:old.image||'',
    displayWord:old.displayWord&&old.displayWord!==old.word?old.displayWord:raw.word
   }:raw;
   newWords[id]=normalizeWord(protectedRaw,old);
  }
  if(!sameWeek&&current.ids?.length)archiveWeek(state,current);
  state.lib=state.lib||{};Object.assign(state.lib,newWords);
- const schoolMeaningById={};
- for(let i=0;i<pack.ids.length;i++)schoolMeaningById[pack.ids[i]]=pack.words[i].meaningEn||'';
+ const schoolMeaningById={},schoolMeaningJaById={},schoolImageById={};
+ for(let i=0;i<pack.ids.length;i++){
+  schoolMeaningById[pack.ids[i]]=pack.words[i].meaningEn||'';
+  schoolMeaningJaById[pack.ids[i]]=pack.words[i].meaningJa||'';
+  schoolImageById[pack.ids[i]]=pack.words[i].image||'';
+ }
  state.week={id:pack.weekId,title:pack.title,ids:pack.ids,
-  focusIds:sameWeek?(current.focusIds||[]).filter(id=>pack.ids.includes(id)):[],schoolMeaningById};
+  focusIds:sameWeek?(current.focusIds||[]).filter(id=>pack.ids.includes(id)):[],schoolMeaningById,schoolMeaningJaById,schoolImageById};
  ensureLearningGroups(state);
  if(!sameWeek)delete state.weekTestDraft;
  state.schoolPackSync={weekId:pack.weekId,signature:pack.signature};

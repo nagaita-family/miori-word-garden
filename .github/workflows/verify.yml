@@ -22,5 +22,20 @@ jobs:
         run: |
           node --check app.js
           node --check school-pack-sync.js
+      - name: Validate picture XML and local asset paths
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          data=json.loads(Path('word-packs/current.json').read_text())
+          for word in data['words']:
+            path=Path(word['image'].removeprefix('./'))
+            assert path.is_file(), f"Missing picture: {path}"
+            if path.suffix == '.svg':
+              root=ET.parse(path).getroot()
+              assert root.tag.endswith('svg')
+          print(f"Validated {len(data['words'])} local meaning pictures")
+          PY
       - name: All regression tests
         run: node --test tests/*.test.cjs

@@ -55,3 +55,24 @@
  .five-practice-model{margin-bottom:10px}
  .five-you-wrote{margin-bottom:6px}
 }
+
+/* v68 — a visual clue is the primary meaning anchor; all in-game copy is English-only. */
+.five-picture-cue{width:min(620px,100%);margin:10px auto 6px;display:flex;flex-direction:column;align-items:center;gap:7px}
+.five-picture-frame{width:clamp(150px,23vw,208px);height:clamp(102px,15vw,142px);border-radius:17px;background:#f0e8f3;overflow:hidden;box-shadow:0 3px 12px #6b617018}
+.five-picture{display:block;width:100%;height:100%;object-fit:cover;user-select:none;-webkit-user-drag:none}
+.five-picture-placeholder{display:grid;place-items:center;width:100%;height:100%;font-size:48px}
+.five-picture-detail{display:flex;flex-direction:column;align-items:center;gap:4px;color:#72637b;font-size:12px;font-weight:750}
+.five-meaning-reveal{border:1px solid #e3d7e8;border-radius:13px;padding:5px 13px;min-height:30px;background:#fcf9ff;color:#766381;font-size:12px;font-weight:750;cursor:pointer}
+.five-meaning-en{font-size:13px;line-height:1.4;max-width:490px;margin:2px 0 0;padding:5px 12px;border-radius:12px;background:#f7f4fa;color:#493e4b}
+.five-meaning-en[hidden]{display:none}
+.five-picture-cue.is-practice{margin:2px auto 4px}
+.five-picture-cue.is-practice .five-picture-frame{width:150px;height:103px}
+.five-picture-cue.is-practice .five-picture-detail{font-size:11px}
+.five-words-view .five-picture-cue+.five-guide{margin-top:8px;margin-bottom:4px;min-height:60px}
+@media(max-width:700px){
+ .five-picture-frame{width:165px;height:112px}
+ .five-picture-cue{margin:3px auto 5px;gap:4px}
+ .five-picture-cue.is-practice .five-picture-frame{width:125px;height:86px}
+ .five-picture-detail{font-size:11px}
+ .five-words-view .five-picture-cue+.five-guide{margin-top:5px}
+}

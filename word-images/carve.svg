@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280" role="img" aria-label="Illustrated vocabulary picture">
+<defs><linearGradient id="bg" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#f7e1b1"/><stop offset=".62" stop-color="#efb57d"/><stop offset="1" stop-color="#9f6c7e"/></linearGradient></defs>
+<rect width="400" height="280" rx="25" fill="url(#bg)"/><circle cx="72" cy="52" r="70" fill="#fff" opacity=".09"/><circle cx="343" cy="220" r="78" fill="#fff" opacity=".08"/>
+<ellipse cx="204" cy="254" rx="132" ry="16" fill="#9b755f" opacity=".2"/>
+  <path d="M189 86 Q186 67 205 55" stroke="#4c7c55" stroke-width="16" stroke-linecap="round"/>
+  <path d="M120 109 Q87 78 74 130 Q60 180 104 226 Q154 261 211 237 Q271 264 308 225 Q356 165 324 108 Q300 83 266 110 Q221 87 189 102Z" fill="#fba64a" stroke="#b95f44" stroke-width="8"/>
+  <path d="M151 109 Q104 173 148 235 M249 110 Q301 171 260 238" fill="none" stroke="#e57e46" stroke-width="11" opacity=".8"/>
+  <path d="M111 158 L156 144 L143 181Z M241 144 L291 157 L257 182Z" fill="#48384f" stroke="#63465a" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M149 208 Q206 248 262 205 L253 197 L232 208 L211 197 L190 210 L171 199Z" fill="#48384f" stroke="#63465a" stroke-width="5"/>
+  <path d="M303 75 L347 45 L356 60 L316 92Z" fill="#9ab7c6" stroke="#5e758c" stroke-width="4"/>
+  <path d="M300 80 L307 92" stroke="#55445c" stroke-width="11" stroke-linecap="round"/>
+  <path d="M80 218 Q48 208 35 185" fill="none" stroke="#6c9a70" stroke-width="7" stroke-linecap="round"/><circle cx="332" cy="215" r="9" fill="#f7cd73"/>
+</svg>

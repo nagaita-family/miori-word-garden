@@ -31,7 +31,7 @@ assert(js.includes('weeklyAnswerText(draft.answers[id],state.lib[id].word)'),'Sa
 assert(js.includes('weeklyAnswerText(input.value,state.lib[id].word)'),'Live Scribble answer is normalized on input');
 assert(js.includes('weeklyAnswerText(input.value,state.lib[input.dataset.id].word)'),'Final last-field grading normalizes identically');
 assert(js.includes('storeWeeklyAnswer(!e.isComposing)')&&js.includes("'compositionend'"),'IME composition remains visible until commit');
-assert(page.includes('app.js?v=20261012-v67')&&/v[0-9]+ · Oct 12/.test(page),'Fresh current JS is loaded');
+assert(page.includes('app.js?v=20261026-v68')&&/v[0-9]+ · Oct 26/.test(page),'Fresh current JS is loaded');
 assert(page.includes('weekly-lowercase-v28.css?v=20260917-v28'),'Lowercase visual stylesheet is loaded');
 assert(css.includes('.weekly-test-view .weekly-answer')&&css.includes('text-transform:lowercase'),'Writing fields show lowercase');
 assert(page.includes('weekly-test-palm-v25.js?v=20260917-listen-fix-v27'),'Listen and grading protection unchanged');

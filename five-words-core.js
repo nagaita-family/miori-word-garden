@@ -5,6 +5,27 @@ function create(d){
  const {state,root}=d;
  const run={lane:d.lane,ids:[...d.ids],index:0,phase:'',answer:'',attempt:'',tempFocus:null,tracePaths:[],practicePaths:[[],[],[]],traceOpen:false,audioPhase:'',finished:false};
  const word=()=>state.lib[run.ids[run.index]];
+ // Pictures carry meaning without translating or revealing the spelling.
+ function pictureOf(w){
+  const path=run.lane==='week'?(state.week?.schoolImageById?.[w.id]||w.image):w.image;
+  return typeof path==='string'&&/^\.\/word-images\/[a-z0-9-]+\.(?:svg|png|webp)$/.test(path)?path:'';
+ }
+ function englishMeaningOf(w){
+  return String((run.lane==='week'?state.week?.schoolMeaningById?.[w.id]:null)||w.meaningEn||'').trim();
+ }
+ function safeMeaning(w){
+  const en=englishMeaningOf(w);
+  // Never leak the target spelling in the reveal: even English definitions can repeat it.
+  return d.escape(en.replace(new RegExp(w.word,'gi'),'_____'));
+ }
+ function meaningMarkup(w,phase){
+  const e=d.escape,path=pictureOf(w),en=safeMeaning(w);
+  const picture=path?'<img class="five-picture" src="'+e(path)+'" alt="Picture clue" draggable="false" loading="eager">':'<span class="five-picture-placeholder" aria-hidden="true">💭</span>';
+  const prompt=phase==='look'?'Look at the picture. What does it mean?':
+    phase==='hidden'?'What does the picture mean? Say it.':'Think of the picture and the meaning.';
+  const seeEnglish=en?'<button id="fiveMeaningReveal" class="five-meaning-reveal" type="button" aria-expanded="false">Show English meaning</button><p id="fiveMeaningAnswer" class="five-meaning-en" hidden>'+en+'</p>':'';
+  return '<div class="five-picture-cue '+(phase==='practice'?'is-practice':'')+'"><div class="five-picture-frame">'+picture+'</div><div class="five-picture-detail"><span>'+prompt+'</span>'+seeEnglish+'</div></div>';
+ }
  function record(w){const l=w.learn;if(!l.five)l.five={introduced:!!((l.loops||0)>0||(l.stageMist?.[4]||0)>0),recallSuccess:0,needsRecall:false};return l.five}
  function message(s){const el=root.querySelector('#fiveMessage');if(el)el.textContent=s}
  function enter(phase){run.phase=phase;run.answer='';run.audioPhase='';render()}
@@ -99,12 +120,20 @@ function create(d){
   const traceHelp=run.traceOpen?'<div class="five-trace-help"><div class="five-trace-pad" id="fiveTracePad" aria-label="Trace '+e(w.word)+' with Apple Pencil"><svg class="five-trace-guide" viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true"><text x="300" y="73" text-anchor="middle" style="font-size:'+font+'px">'+e(w.word)+'</text></svg><svg class="five-trace-ink" viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true">'+run.tracePaths.map(path=>'<path d="'+e(path)+'"/>').join('')+'</svg></div></div>':'';
   const attemptView=d.attemptDiff?d.attemptDiff(run.attempt,w.word):e(run.attempt);
   const practice=phase==='practice'?'<div class="five-paper-pad"><div class="five-you-wrote"><small>You wrote</small><span class="five-attempt-view">'+attemptView+'</span></div><div class="five-practice-model"><small>Look at the correct spelling</small><strong class="five-target">'+d.focus.display(w,run.tempFocus,e)+'</strong></div><div class="five-practice-sheet">'+run.practicePaths.map((paths,i)=>'<div class="five-practice-row"><span class="five-practice-number">'+(i+1)+'</span><div class="five-practice-line" data-row="'+i+'" aria-label="Practice '+e(w.word)+' line '+(i+1)+' with Apple Pencil"><svg class="five-practice-ink" viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true">'+paths.map(path=>'<path d="'+e(path)+'"/>').join('')+'</svg></div><button class="five-row-clear" type="button" data-clear-practice="'+i+'" aria-label="Clear practice line '+(i+1)+'">×</button></div>').join('')+'</div><button id="fiveTraceHelp" class="five-trace-help-btn secondary-btn" type="button">'+(run.traceOpen?'Hide trace':'Need help? Trace once')+'</button>'+traceHelp+'<div class="five-actions"><button id="fivePracticeDone" class="primary-btn" type="button">Done →</button></div></div>':'';
+  const meaningPanel=meaningMarkup(w,phase);
   const comparison=phase==='result'&&!run.resultCorrect&&!run.padCorrect?'<div class="flow-word-diff">'+d.diff(run.attempt,w.word)+'</div>':'';
   const response=phase==='result'?'<div class="five-actions"><button id="fiveAction" class="primary-btn">Next word →</button></div>':phase==='look'?'<div class="five-actions"><button id="fiveAction" class="primary-btn">Write →</button></div>':'';
-  const sub=phase==='look'?'Look at the word and listen.':phase==='guided'?'Keep the word in view as you write.':phase==='hidden'?'Listen, then write the whole word.':phase==='practice'?'Look at the spelling. Write it three times with your Pencil.':run.padCorrect?'Good. We’ll remember it again later.':run.resultCorrect?'You remembered it!':'We’ll try it again later.';
-  root.innerHTML='<div class="play-view five-words-view"><div class="five-top"><button id="fiveExit" class="icon-btn" aria-label="Exit practice">×</button><span>'+(run.lane==='week'?'THIS WEEK':'MY WORDS')+' · '+(run.index+1)+' / '+run.ids.length+'</span><div class="five-progress"><i style="width:'+run.index/run.ids.length*100+'%"></i></div></div><div class="five-card"><p class="eyebrow">'+(phase==='practice'?'PRACTICE PAD':'5 WORDS')+'</p><h1>'+title+'</h1><p class="five-sub">'+sub+'</p><button id="fiveAudio" class="audio-orb word-sound-button" type="button" aria-label="Listen to the word">🔊 <small>Listen</small></button>'+guide+practice+writing+comparison+response+'<p id="fiveMessage" class="five-message" role="status"></p></div></div>';
+  const sub=phase==='look'?'Look at the picture and listen.':phase==='guided'?'Keep the word in view as you write.':phase==='hidden'?'Listen, picture the meaning, then write.':phase==='practice'?'Look at the spelling. Write it three times with your Pencil.':run.padCorrect?'Good. We’ll remember it again later.':run.resultCorrect?'You remembered it!':'We’ll try it again later.';
+  root.innerHTML='<div class="play-view five-words-view"><div class="five-top"><button id="fiveExit" class="icon-btn" aria-label="Exit practice">×</button><span>'+(run.lane==='week'?'THIS WEEK':'MY WORDS')+' · '+(run.index+1)+' / '+run.ids.length+'</span><div class="five-progress"><i style="width:'+run.index/run.ids.length*100+'%"></i></div></div><div class="five-card"><p class="eyebrow">'+(phase==='practice'?'PRACTICE PAD':'5 WORDS')+'</p><h1>'+title+'</h1><p class="five-sub">'+sub+'</p><button id="fiveAudio" class="audio-orb word-sound-button" type="button" aria-label="Listen to the word">🔊 <small>Listen</small></button>'+meaningPanel+guide+practice+writing+comparison+response+'<p id="fiveMessage" class="five-message" role="status"></p></div></div>';
   root.querySelector('#fiveExit').onclick=d.home;
   root.querySelector('#fiveAudio').onclick=()=>d.audio(w,true);
+  const reveal=root.querySelector('#fiveMeaningReveal'),answer=root.querySelector('#fiveMeaningAnswer');
+  if(reveal&&answer)reveal.onclick=()=>{
+   const showing=answer.hidden;
+   answer.hidden=!showing;reveal.textContent=showing?'Hide meaning':'Check meaning';
+   reveal.setAttribute('aria-expanded',String(showing));
+  };
+
   root.querySelector('#fiveAction')?.addEventListener('click',()=>phase==='hidden'?check(root.querySelector('#fiveInput')?.value):advance());
   bindWriting();if(phase==='practice'){bindPracticeInk();if(run.traceOpen)bindTrace()}
   if(run.audioPhase!==phase&&['look','hidden'].includes(phase)){run.audioPhase=phase;setTimeout(()=>{if(run.phase===phase)d.audio(w,false)},100)}
