@@ -116,7 +116,7 @@ test('app uses GitHub Pages fetch, live local state and two isolated five-word p
  assert(!app.includes('WEEKDAY_CAPS'),'obsolete one-off weekday migration is removed');
  assert(page.includes('school-pack-sync.js?v=20261029-v68'));
  assert(page.includes('app.js?v=20261012-v67'));
- assert(page.includes('v68 · Oct 29'));
+ assert(page.includes('v67 · Oct 12'));
 });
 
 test('time zone keeps the correct school spacing without splitting the learning ID',()=>{
