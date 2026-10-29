@@ -58,16 +58,25 @@ function markedSlice(word,start,end,spot,escape){
  return out;
 }
 function display(w,temp,escape){
- const word=(typeof w.displayWord==='string'&&w.displayWord.toLowerCase()===w.word)?w.displayWord:w.word,spot=active(w,temp),parts=chunks(w.word,w.chunks);
+ const source=typeof w.displayWord==='string'&&w.displayWord.toLowerCase().replace(/[^a-z]/g,'')===w.word?w.displayWord:w.word;
+ const word=source.replace(/[^a-z]/gi,''),spot=active(w,temp),parts=chunks(w.word,w.chunks);
+ // Learning indexes always refer to letters; preserve visible spaces between words.
+ const gaps={};let letters=0;
+ for(const character of source){if(/[a-z]/i.test(character))letters++;else if(/\s/.test(character))gaps[letters]=(gaps[letters]||'')+character}
  if(parts){
   let pos=0;
   return parts.map(part=>{
    const start=pos,end=pos+part.length;pos=end;
-   return '<span class="five-chunk">'+markedSlice(word,start,end,spot,escape)+'</span>';
+   return '<span class="five-chunk">'+markedSlice(word,start,end,spot,escape)+'</span>'+escape(gaps[end]||'');
   }).join('');
  }
- if(spot)return markedSlice(word,0,word.length,spot,escape);
- return escape(word);
+ if(spot&&!Object.keys(gaps).length)return markedSlice(word,0,word.length,spot,escape);
+ if(spot){
+  let output='';
+  for(let i=0;i<word.length;i++)output+=markedSlice(word,i,i+1,spot,escape)+escape(gaps[i+1]||'');
+  return output;
+ }
+ return escape(source);
 }
 window.FiveWordsFocus={chunks,focus,positions,mistake,remember,setParent,active,display};
 })();
