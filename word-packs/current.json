@@ -11,7 +11,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a large clock with the short hour hand highlighted",
-      "pictureEmoji": "🕒"
+      "pictureEmoji": "🕒",
+      "meaningJa": ""
     },
     {
       "word": "midnight",
@@ -22,7 +23,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a clock striking 12 at night under stars and the moon",
-      "pictureEmoji": "🌙"
+      "pictureEmoji": "🌙",
+      "meaningJa": ""
     },
     {
       "word": "minute",
@@ -33,7 +35,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a clock with the long minute hand highlighted",
-      "pictureEmoji": "⏱️"
+      "pictureEmoji": "⏱️",
+      "meaningJa": ""
     },
     {
       "word": "month",
@@ -43,7 +46,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a calendar page filled with days and weeks",
-      "pictureEmoji": "🗓️"
+      "pictureEmoji": "🗓️",
+      "meaningJa": ""
     },
     {
       "word": "noon",
@@ -55,7 +59,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a bright sun high in the sky over a clock showing 12",
-      "pictureEmoji": "☀️"
+      "pictureEmoji": "☀️",
+      "meaningJa": ""
     },
     {
       "word": "orbit",
@@ -66,7 +71,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "the moon moving in a circular path around Earth",
-      "pictureEmoji": "🪐"
+      "pictureEmoji": "🪐",
+      "meaningJa": ""
     },
     {
       "word": "second",
@@ -77,7 +83,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a clock showing its thin second hand sweeping forward",
-      "pictureEmoji": "⏰"
+      "pictureEmoji": "⏰",
+      "meaningJa": ""
     },
     {
       "word": "spin",
@@ -88,7 +95,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a colorful toy spinning top whirling in place",
-      "pictureEmoji": "🌀"
+      "pictureEmoji": "🌀",
+      "meaningJa": ""
     },
     {
       "word": "time zone",
@@ -100,7 +108,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a world map with clocks showing different local times",
-      "pictureEmoji": "🌍"
+      "pictureEmoji": "🌍",
+      "meaningJa": ""
     },
     {
       "word": "year",
@@ -110,7 +119,8 @@
       ],
       "seedFocus": null,
       "pictureCue": "a January-to-December calendar showing four seasons",
-      "pictureEmoji": "📅"
+      "pictureEmoji": "📅",
+      "meaningJa": ""
     }
   ]
 }
