@@ -39,3 +39,10 @@ test('new optional Word Pack fields retain older progress when normalized',()=>{
  assert.deepEqual(Array.from(w.chunks),['butter','fly']);assert.equal(w.seedFocus.start,2);
  const legacy=local.normalizeWord({word:'insect'},null);assert.equal(legacy.chunks,null);assert.equal(legacy.seedFocus,null);
 });
+
+test('school phrases retain a visible word boundary while Focus uses letter indexes',()=>{
+ const w={word:'timezone',displayWord:'time zone',chunks:['time','zone'],learn:{five:{parentFocus:{indices:[4]}}}};
+ const html=f.display(w,null,plain);
+ assert.match(html,/<span class="five-chunk">time<\/span> <span class="five-chunk"><mark class="five-focus">z<\/mark>one<\/span>/);
+ assert.equal((html.match(/class="five-chunk"/g)||[]).length,2);
+});

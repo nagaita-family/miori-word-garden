@@ -9,7 +9,7 @@ function readPack(data,norm){
  if(!Array.isArray(data.words)||data.words.length<1||data.words.length>30)throw Error('Invalid school words');
  const ids=[],seen=new Set();
  for(const w of data.words){
-  if(!w||typeof w.word!=='string'||!/^[A-Za-z]+$/.test(w.word))throw Error('Invalid spelling');
+  if(!w||typeof w.word!=='string'||!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(w.word))throw Error('Invalid spelling');
   const id=norm(w.word);
   if(!id||seen.has(id))throw Error('Duplicate school word');
   if(w.chunks!=null&&(!Array.isArray(w.chunks)||w.chunks.length<1||w.chunks.length>6||w.chunks.some(c=>typeof c!=='string'||!c.length)||w.chunks.join('').toLowerCase()!==id))throw Error('Invalid chunks');

@@ -1,134 +1,126 @@
 {
-  "weekId": "2026-10-23-halloween",
-  "weekName": "Oct 23 · Halloween Words",
+  "weekId": "2026-11-05-unit-7a",
+  "weekName": "Nov 5 · Unit 7a",
   "words": [
     {
-      "word": "bizarre",
-      "meaningEn": "strange and weird",
-      "meaningJa": "奇妙な、変わった",
-      "example": "A bizarre shadow appeared on the wall.",
+      "word": "hour",
+      "meaningEn": "a measure of time that is 60 minutes long; the short hand of the clock",
       "chunks": [
-        "bi",
-        "zarre"
+        "h",
+        "our"
       ],
       "seedFocus": null,
-      "pictureCue": "a strange purple shadow in a moonlit room",
-      "pictureEmoji": "🌀"
+      "pictureCue": "a large clock with the short hour hand highlighted",
+      "pictureEmoji": "🕒",
+      "meaningJa": ""
     },
     {
-      "word": "cackle",
-      "meaningEn": "a witch’s laugh",
-      "meaningJa": "魔女のような笑い声",
-      "example": "The witch gave a loud cackle.",
+      "word": "midnight",
+      "meaningEn": "12 o’clock in the night, 12:00, 12 am",
       "chunks": [
-        "cack",
-        "le"
+        "mid",
+        "night"
       ],
       "seedFocus": null,
-      "pictureCue": "a friendly witch laughing under the moon",
-      "pictureEmoji": "🧙‍♀️"
+      "pictureCue": "a clock striking 12 at night under stars and the moon",
+      "pictureEmoji": "🌙",
+      "meaningJa": ""
     },
     {
-      "word": "carve",
-      "meaningEn": "to cut a picture into a pumpkin",
-      "meaningJa": "カボチャなどに絵や形を彫る",
-      "example": "We carve a face into a pumpkin.",
+      "word": "minute",
+      "meaningEn": "a measure of time that is 60 seconds long; the long hand of the clock",
       "chunks": [
-        "carve"
+        "min",
+        "ute"
       ],
       "seedFocus": null,
-      "pictureCue": "a carved jack-o-lantern pumpkin",
-      "pictureEmoji": "🎃"
+      "pictureCue": "a clock with the long minute hand highlighted",
+      "pictureEmoji": "⏱️",
+      "meaningJa": ""
     },
     {
-      "word": "flashlight",
-      "meaningEn": "used to light your way at night",
-      "meaningJa": "懐中電灯",
-      "example": "I use a flashlight in the dark.",
+      "word": "month",
+      "meaningEn": "a measure of time that is 30 or 31 days long, or 4 weeks long",
       "chunks": [
-        "flash",
-        "light"
+        "month"
       ],
       "seedFocus": null,
-      "pictureCue": "a flashlight shining a beam of light at night",
-      "pictureEmoji": "🔦"
+      "pictureCue": "a calendar page filled with days and weeks",
+      "pictureEmoji": "🗓️",
+      "meaningJa": ""
     },
     {
-      "word": "graveyard",
-      "meaningEn": "where dead people are buried",
-      "meaningJa": "墓地",
-      "example": "A graveyard has many old stones.",
+      "word": "noon",
+      "meaningEn": "12 o’clock in the day, 12:00, 12 pm",
       "chunks": [
-        "grave",
-        "yard"
+        "n",
+        "oo",
+        "n"
       ],
       "seedFocus": null,
-      "pictureCue": "a quiet graveyard with small gravestones",
-      "pictureEmoji": "🪦"
+      "pictureCue": "a bright sun high in the sky over a clock showing 12",
+      "pictureEmoji": "☀️",
+      "meaningJa": ""
     },
     {
-      "word": "hayride",
-      "meaningEn": "ride on a truck full of hay",
-      "meaningJa": "干し草を積んだ車に乗ること",
-      "example": "We went on a hayride at the farm.",
+      "word": "orbit",
+      "meaningEn": "to move around something (planets around a sun, moon around Earth)",
       "chunks": [
-        "hay",
-        "ride"
+        "or",
+        "bit"
       ],
       "seedFocus": null,
-      "pictureCue": "a wagon full of hay riding past a farm",
-      "pictureEmoji": "🚜"
+      "pictureCue": "the moon moving in a circular path around Earth",
+      "pictureEmoji": "🪐",
+      "meaningJa": ""
     },
     {
-      "word": "magic",
-      "meaningEn": "to make things happen with a wand",
-      "meaningJa": "魔法",
-      "example": "The wizard made magic with a wand.",
+      "word": "second",
+      "meaningEn": "the smallest measure of time on a clock; the thin fast hand on a clock",
       "chunks": [
-        "mag",
-        "ic"
+        "sec",
+        "ond"
       ],
       "seedFocus": null,
-      "pictureCue": "a sparkling magic wand with stars",
-      "pictureEmoji": "🪄"
+      "pictureCue": "a clock showing its thin second hand sweeping forward",
+      "pictureEmoji": "⏰",
+      "meaningJa": ""
     },
     {
-      "word": "skull",
-      "meaningEn": "your head bone",
-      "meaningJa": "頭蓋骨、頭の骨",
-      "example": "A skull protects the brain.",
-      "chunks": [
-        "skull"
-      ],
-      "seedFocus": null,
-      "pictureCue": "a cartoon skull with a friendly smile",
-      "pictureEmoji": "💀"
-    },
-    {
-      "word": "spook",
-      "meaningEn": "to scare someone",
-      "meaningJa": "人を怖がらせる",
-      "example": "Don't spook your friends in the dark.",
+      "word": "spin",
+      "meaningEn": "to turn around quickly in place",
       "chunks": [
         "sp",
-        "ook"
+        "in"
       ],
       "seedFocus": null,
-      "pictureCue": "a friendly little ghost popping out",
-      "pictureEmoji": "👻"
+      "pictureCue": "a colorful toy spinning top whirling in place",
+      "pictureEmoji": "🌀",
+      "meaningJa": ""
     },
     {
-      "word": "wicked",
-      "meaningEn": "evil and mean",
-      "meaningJa": "邪悪な、意地悪な",
-      "example": "The story has a wicked witch.",
+      "word": "time zone",
+      "displayWord": "time zone",
+      "meaningEn": "one of the 24 areas that the world is divided into",
       "chunks": [
-        "wick",
-        "ed"
+        "time",
+        "zone"
       ],
       "seedFocus": null,
-      "pictureCue": "a storybook witch with a pointed hat",
-      "pictureEmoji": "🧙"
+      "pictureCue": "a world map with clocks showing different local times",
+      "pictureEmoji": "🌍",
+      "meaningJa": ""
+    },
+    {
+      "word": "year",
+      "meaningEn": "a measure of time; 365 days; 12 months, January 1~December 31",
+      "chunks": [
+        "year"
+      ],
+      "seedFocus": null,
+      "pictureCue": "a January-to-December calendar showing four seasons",
+      "pictureEmoji": "📅",
+      "meaningJa": ""
     }
   ]
 }

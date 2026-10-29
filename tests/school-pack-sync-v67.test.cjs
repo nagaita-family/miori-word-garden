@@ -22,12 +22,13 @@ const fresh=()=>({
  pastWeeks:[],myWords:{journal:{addedAt:'2026-10-01',source:'Reading',note:'Never remove'}},
  garden:{growth:12},stats:{answers:41},weekTestDraft:{weekId:'legacy-week'}
 });
-test('the published school pack has 10 correct-case words and valid chunk metadata',()=>{
+test('the published school pack has 10 Unit 7a spellings and valid chunk metadata',()=>{
  const checked=sync.readPack(current,norm);
  assert.equal(checked.ids.length,10);
- assert.equal(current.words[0].word,'Sunday');
- assert.equal(current.words[3].word,'Wednesday');
- assert.equal(current.words[9].word,'tomorrow');
+ assert.equal(current.words[0].word,'hour');
+ assert.equal(current.words[3].word,'month');
+ assert.equal(current.words[8].word,'time zone');
+ assert.equal(current.words[9].word,'year');
 });
 test('a first GitHub update replaces only This Week and archives once',()=>{
  archives=0;
@@ -39,8 +40,8 @@ test('a first GitHub update replaces only This Week and archives once',()=>{
  assert.equal(archives,1);
  assert.equal(state.week.id,current.weekId);
  assert.equal(state.week.ids.length,10);
- assert.equal(state.lib.Sunday,undefined,'normalized IDs are lowercase');
- assert.equal(state.lib.sunday.displayWord,'Sunday');
+ assert.equal(state.lib.Hour,undefined,'normalized IDs are lowercase');
+ assert.equal(state.lib.hour.displayWord,'hour');
  assert.deepEqual(state.myWords.journal,{addedAt:'2026-10-01',source:'Reading',note:'Never remove'});
  assert.equal(state.lib.journal.learn.loops,3);
  assert.equal(state.garden.growth,12);
@@ -52,19 +53,19 @@ test('a first GitHub update replaces only This Week and archives once',()=>{
 test('existing spelling history, parent Focus, stars, journal notes and manual meanings are preserved',()=>{
  archives=0;
  const state=fresh();
- state.week={id:current.weekId,title:current.weekName,ids:current.words.map(w=>norm(w.word)),focusIds:['monday']};
- state.myWords.monday={addedAt:'2026-10-01',source:'Journal',note:'My own sentence'};
+ state.week={id:current.weekId,title:current.weekName,ids:current.words.map(w=>norm(w.word)),focusIds:['minute']};
+ state.myWords.minute={addedAt:'2026-10-01',source:'Journal',note:'My own sentence'};
  const learn={loops:7,mistakes:2,five:{parentFocus:{indices:[0,3]},starred:true,recallSuccess:2}};
- state.lib.monday={id:'monday',word:'monday',displayWord:'Monday',meaningEn:'My own explanation',learn};
+ state.lib.minute={id:'minute',word:'minute',displayWord:'minute',meaningEn:'My own explanation',learn};
  state.weekTestDraft={weekId:current.weekId};
  const result=sync.apply(state,current,deps);
  assert.equal(result.status,'updated');
  assert.equal(result.changedWeek,false);
- assert.equal(state.lib.monday.learn,learn);
- assert.equal(state.lib.monday.meaningEn,'My own explanation','personal My Words meaning wins');
- assert.equal(state.week.schoolMeaningById.monday,'the first day of the school week','school definition remains available separately');
- assert.equal(state.myWords.monday.note,'My own sentence');
- assert.deepEqual(state.week.focusIds,['monday']);
+ assert.equal(state.lib.minute.learn,learn);
+ assert.equal(state.lib.minute.meaningEn,'My own explanation','personal My Words meaning wins');
+ assert.equal(state.week.schoolMeaningById.minute,'a measure of time that is 60 seconds long; the long hand of the clock','school definition remains available separately');
+ assert.equal(state.myWords.minute.note,'My own sentence');
+ assert.deepEqual(state.week.focusIds,['minute']);
  assert.deepEqual(state.weekTestDraft,{weekId:current.weekId});
  assert.equal(archives,0);
 });
@@ -85,8 +86,8 @@ test('invalid data never changes saved state or silently restores a full backup'
  for(const bad of [
   {version:3,lib:{a:{}},week:{ids:[]}},
   {...current,words:[current.words[0],current.words[0]]},
-  {...current,words:[{word:'Sunday',chunks:['sun','dee']}]},
-  {...current,words:[{word:'Sunday',seedFocus:{start:50,length:3}}]},
+  {...current,words:[{word:'hour',chunks:['hou','rzz']}]},
+  {...current,words:[{word:'hour',seedFocus:{start:50,length:3}}]},
   {...current,weekId:''}
  ]){
   const state=fresh(),before=JSON.stringify(state);
@@ -113,7 +114,17 @@ test('app uses GitHub Pages fetch, live local state and two isolated five-word p
  assert.match(app,/schoolMeaningById\?\.\[w\.id\]/);
  assert.match(app,/manualOverrideSourceWeekId/);
  assert(!app.includes('WEEKDAY_CAPS'),'obsolete one-off weekday migration is removed');
- assert(page.includes('school-pack-sync.js?v=20261012-v67'));
+ assert(page.includes('school-pack-sync.js?v=20261029-v68'));
  assert(page.includes('app.js?v=20261012-v67'));
  assert(page.includes('v67 · Oct 12'));
+});
+
+test('time zone keeps the correct school spacing without splitting the learning ID',()=>{
+ const pack=sync.readPack(current,norm);
+ assert(Array.from(pack.ids).includes('timezone'));
+ const state=fresh();sync.apply(state,current,deps);
+ assert.equal(state.lib.timezone.displayWord,'time zone');
+ assert.deepEqual(Array.from(state.lib.timezone.chunks),['time','zone']);
+ assert.equal(state.week.schoolMeaningById.timezone,'one of the 24 areas that the world is divided into');
+ assert.equal(state.lib.timezone.meaningJa,'');
 });
