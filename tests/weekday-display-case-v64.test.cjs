@@ -20,5 +20,5 @@ test('import remains case-insensitive and avoids duplicate IDs',()=>{
  assert(app.includes('const key=norm(raw.word),old=state.lib[key]'));
  assert(app.includes('uniqueWordIds(ids)'));
  assert(html.includes('app.js?v=20261012-v67'));
- assert(html.includes('five-words-focus.js?v=20261008-v66'));
+ assert(html.includes('five-words-focus.js?v=20261029-v68'));
 });
