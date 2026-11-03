@@ -12,7 +12,10 @@
       "seedFocus": null,
       "pictureCue": "a large clock with the short hour hand highlighted",
       "pictureEmoji": "🕒",
-      "meaningJa": ""
+      "meaningJa": "",
+      "phonicsSilent": [
+        0
+      ]
     },
     {
       "word": "midnight",
@@ -47,7 +50,13 @@
       "seedFocus": null,
       "pictureCue": "a calendar page filled with days and weeks",
       "pictureEmoji": "🗓️",
-      "meaningJa": ""
+      "meaningJa": "",
+      "phonicsChunks": [
+        "m",
+        "o",
+        "n",
+        "th"
+      ]
     },
     {
       "word": "noon",
@@ -120,7 +129,11 @@
       "seedFocus": null,
       "pictureCue": "a January-to-December calendar showing four seasons",
       "pictureEmoji": "📅",
-      "meaningJa": ""
+      "meaningJa": "",
+      "phonicsChunks": [
+        "y",
+        "ear"
+      ]
     }
   ]
 }
