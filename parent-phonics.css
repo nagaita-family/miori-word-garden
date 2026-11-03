@@ -1,0 +1,9 @@
+/* Parent / This Week: phonics-informed spelling groups and comfortable audio controls. */
+.group-word-head .parent-phonics-spelling{display:inline;color:inherit;font:inherit;letter-spacing:normal}
+.parent-phonics-chunk{display:inline-block;border-bottom:.085em solid #9582a6;padding:0 .015em .13em;margin-right:.095em;line-height:1.13}
+.parent-phonics-chunk:last-child{margin-right:0}
+.parent-phonics-gap{white-space:pre}
+.parent-phonics-silent{opacity:.45;text-decoration:underline dotted;text-underline-offset:.11em;text-decoration-thickness:.075em}
+.group-word-actions .group-audio,.group-word-actions .group-audio-slow{min-height:40px;min-width:44px;font-size:13px;touch-action:manipulation}
+.group-word-actions .group-audio-slow{background:#ede6f6;color:#5b4476}
+.group-word-actions .group-audio:focus-visible,.group-word-actions .group-audio-slow:focus-visible{outline:2px solid #7858a0;outline-offset:2px}
