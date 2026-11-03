@@ -15,6 +15,8 @@ function readPack(data,norm){
   if(w.chunks!=null&&(!Array.isArray(w.chunks)||w.chunks.length<1||w.chunks.length>6||w.chunks.some(c=>typeof c!=='string'||!c.length)||w.chunks.join('').toLowerCase()!==id))throw Error('Invalid chunks');
   const spot=w.seedFocus;
   if(spot!=null&&(!Number.isInteger(spot.start)||!Number.isInteger(spot.length)||spot.start<0||spot.length<1||spot.start+spot.length>id.length))throw Error('Invalid Focus');
+  if(w.phonicsChunks!=null&&(!Array.isArray(w.phonicsChunks)||!w.phonicsChunks.length||w.phonicsChunks.length>12||w.phonicsChunks.some(c=>typeof c!=='string'||!/^[A-Za-z]+$/.test(c))||w.phonicsChunks.join('').toLowerCase()!==id))throw Error('Invalid phonics chunks');
+  if(w.phonicsSilent!=null&&(!Array.isArray(w.phonicsSilent)||w.phonicsSilent.some(i=>!Number.isInteger(i)||i<0||i>=id.length)||new Set(w.phonicsSilent).size!==w.phonicsSilent.length))throw Error('Invalid silent-letter positions');
   if(w.meaningEn!=null&&typeof w.meaningEn!=='string')throw Error('Invalid meaning');
   seen.add(id);ids.push(id);
  }
