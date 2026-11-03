@@ -343,3 +343,13 @@ Implementation:
 Regression: `tests/parent-phonics-audio-v69.test.cjs` covers spacing, silent h, grouping, audio wiring, Word Pack validity, and cache keys. Historical UI-version assertions were brought up to the new visible badge. PR #14 Verify Word Garden Actions run `41595456606`: completed/success (full Node suite, including syntax checks).
 
 Device follow-up: On iPad Safari and installed PWA, open Parent → This Week, listen/slow-listen to `hour`, `month`, `time zone`, and `year`; verify no repeated iOS voice surprises, the silent h styling, long school meanings and wrapping. A Chrome/Node test cannot guarantee the voice selected on iPad. Confirm Pages deployment and production assets after merge.
+
+## Parent audio button binding hotfix — v70, 2026-11-04
+
+User reported Parent pronunciation buttons produced no sound. Root cause confirmed in v69 `bindWordGroupControls`: the newly inserted `$('.group-audio').forEach(...)` and `$('.group-audio-slow').forEach(...)` used the single-element `$` helper, not the NodeList-returning `$$`. In JavaScript this throws a TypeError before those audio buttons (and subsequent Parent actions) can receive their click handlers. This is a deterministic code defect, not an iPad volume setting.
+
+Fix only the two selectors to `$$`. The existing human-audio/TTS player, school meanings, phonics markup, Five Words learning, handwriting and saved progress are unchanged. In the v69 authoring script, the accidental collapse happened because `String.replace` treats `$$` in a replacement string as an escaped dollar sign. This patch constructs the replacement via a callback so both literal dollar signs survive.
+
+Added `tests/parent-audio-clicks-v70.test.cjs`: run the actual Parent binder in a controlled VM, check multiple normal/slow button handlers and verify calling them passes the right word, speed and userInitiated flag; ensure later Parent edit controls are also bound. Updated release badge to `v70 · Nov 4` and cache-busted app JS so iPad/PWA can load the fix. Historical badge assertions updated; tests are not otherwise modified.
+
+CI/PR publication status: verify the pull-request regression suite, merge to main, confirm GitHub Pages deployment and live v70. On iPad/PWA reopen and verify Parent → This Week → Listen and Slow on multiple words, plus Focus and Edit. Device audio rendering is still a physical QA check.
