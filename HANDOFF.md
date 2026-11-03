@@ -328,3 +328,18 @@ Safety / follow-up:
 - Preserve `HANDOFF`, history, and uncommitted changes. No Living Garden / completed Phase C/D rework.
 
 Publication: v67 squash-merged into `main` as `bad98dbe377e7aa3e05b52ecc8f60ca65393a9a2`. GitHub Actions verification run `38245941359` succeeded (**93/93 tests**). GitHub Pages deployment run `38246063420` also completed successfully. Next human check: on Miori's iPad reload until `v67 · Oct 12`, open This Week (currently Oct 8 Days of the Week), ensure the 10 spellings are correct, try Practice 5, and verify My Words / Parent Focus / previous progress are intact. Future weekly school photo workflow: update only `word-packs/current.json`, commit to main, and let the app fetch it automatically.
+
+## Parent paper-study pronunciation and phonics — v69, 2026-11-03
+
+User feedback: paper spelling practice was slowed by repeated Google pronunciation searches. Rather than building a separate paper mode, keep the existing Parent → This Week list and let Dad hear each word immediately.
+
+Implementation:
+- Existing This Week cards now have explicit `🔊 Listen` and `🐢 Slow` buttons, both wired to the **existing** `playWordAudio` path with user-initiated playback. Human recordings remain first choice; when unavailable the device voice is used. Slow uses the existing human audio playbackRate and device TTS rate. This does not embed or scrape Google's pronunciation card.
+- Parent-only `parent-phonics.js` and `parent-phonics.css` underline the spelling chunks without adding a second practice flow. By default reuse the validated school `chunks`; optional `phonicsChunks` override only the Parent visualization and never change the existing Five Words chunks. The new helper preserves letter case and spaces (notably `time zone`).
+- Optional `phonicsSilent` positions render faded/dotted silent letters (current pack: `hour` h). Current Nov 5 Unit 7a adds Parent phonics groups for `month` and `year`; the other words reuse current chunks. These are visual spelling hints, not chopped/synthesized sound clips.
+- `school-pack-sync.js` validates the new optional metadata before applying. `normalizeWord` retains the fields in local state, and same-week Word Pack updates keep history/Focus/⭐/My Words/Garden. School English meanings remain unchanged and visible; Japanese is not added. No learning credit or history is recorded by listening to audio.
+- `index.html` loads the Parent helper before `app.js`, new CSS, cache-busts the changed app and displays `v69 · Nov 3`. The `5 Words` flow and handwriting paths are untouched.
+
+Regression: `tests/parent-phonics-audio-v69.test.cjs` covers spacing, silent h, grouping, audio wiring, Word Pack validity, and cache keys. Historical UI-version assertions were brought up to the new visible badge. PR #14 Verify Word Garden Actions run `41595456606`: completed/success (full Node suite, including syntax checks).
+
+Device follow-up: On iPad Safari and installed PWA, open Parent → This Week, listen/slow-listen to `hour`, `month`, `time zone`, and `year`; verify no repeated iOS voice surprises, the silent h styling, long school meanings and wrapping. A Chrome/Node test cannot guarantee the voice selected on iPad. Confirm Pages deployment and production assets after merge.
