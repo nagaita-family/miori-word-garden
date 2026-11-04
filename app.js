@@ -795,7 +795,7 @@ function speakLearningText(text,{lang='en-US',button=null}={}){
 }
 function speak(text,{slow=false}={}){if(!text||!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text),v=chosenVoice();if(v)u.voice=v;u.lang=v?.lang||'en-US';u.rate=slow?.52:.88;u.pitch=1.03;const btn=$('#audioBtn');btn?.classList.add('playing');u.onend=u.onerror=()=>btn?.classList.remove('playing');speechSynthesis.speak(u)}
 // Apply after src selection as iPad/WebKit may reset playbackRate when loading a recording.
-function setHumanWordRate(audio,slow){const rate=slow?.60:1;audio.defaultPlaybackRate=rate;audio.playbackRate=rate;return rate}
+function setHumanWordRate(audio,slow){const rate=slow?.60:1;try{audio.defaultPlaybackRate=rate}catch{}audio.playbackRate=rate;return rate}
 
 async function playWordAudio(word,slow=false,{auto=false,userInitiated=false}={}){
   if('speechSynthesis'in window)speechSynthesis.cancel();$$('.listen-card.speaking').forEach(b=>b.classList.remove('speaking'));
@@ -810,7 +810,7 @@ async function playWordAudio(word,slow=false,{auto=false,userInitiated=false}={}
     let finished=false,timer=null;const btn=$('#audioBtn');
     const cleanup=(audio)=>{if(timer)clearTimeout(timer);btn?.classList.remove('playing');if(currentAudio===audio)currentAudio=null};
     const fallback=(audio,reason='')=>{
-      if(finished)return;finished=true;cleanup(audio);word.audioTried=true;save();
+      if(finished)return;finished=true;try{audio.pause()}catch{}cleanup(audio);word.audioTried=true;save();
       // Never erase a stored human URL because of a transient iPad/network/autoplay failure.
       setPill('○ Human audio unavailable now · device voice','device-fallback');
       speak(word.word,{slow})
