@@ -45,8 +45,8 @@ test('Parent This Week has normal and slow audio using existing player, without 
  assert.match(app,/playWordAudio\(w,true,\{userInitiated:true\}\)/);
  assert.match(app,/playWordAudio\(w,false,\{userInitiated:true\}\)/);
  assert.match(app,/schoolMeaning\|\|w\.meaningEn/);
- assert.match(app,/audio\.playbackRate=slow\?\.82:1/);
- assert.match(app,/u\.rate=slow\?\.62:\.88/);
+ assert.match(app,/function setHumanWordRate\(audio,slow\)/);
+ assert.match(app,/u\.rate=slow\?\.52:\.88/);
  assert.match(css,/\.parent-phonics-chunk\{[^}]*border-bottom/);
  assert.match(css,/\.parent-phonics-silent/);
 });
