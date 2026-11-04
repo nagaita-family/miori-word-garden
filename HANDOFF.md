@@ -353,3 +353,15 @@ Fix only the two selectors to `$$`. The existing human-audio/TTS player, school 
 Added `tests/parent-audio-clicks-v70.test.cjs`: run the actual Parent binder in a controlled VM, check multiple normal/slow button handlers and verify calling them passes the right word, speed and userInitiated flag; ensure later Parent edit controls are also bound. Updated release badge to `v70 · Nov 4` and cache-busted app JS so iPad/PWA can load the fix. Historical badge assertions updated; tests are not otherwise modified.
 
 CI/PR publication status: verify the pull-request regression suite, merge to main, confirm GitHub Pages deployment and live v70. On iPad/PWA reopen and verify Parent → This Week → Listen and Slow on multiple words, plus Focus and Edit. Device audio rendering is still a physical QA check.
+
+## Parent slow pronunciation correction — v71, 2026-11-04
+
+User verified v70 Parent pronunciation buttons now make sound, but Turtle/Slow did not sound slower. The previous human-recording rate was `0.82x`, a subtle difference; additionally it was assigned before `audio.src` and could be lost when the media element loads. The exact iPad browser runtime mechanism has not been captured, so neither is claimed as independently proven.
+
+Scoped repair:
+- Human recording on Slow uses a pronounced `0.60x` rate, set as both `defaultPlaybackRate` and `playbackRate` after assigning the media `src`, and reapplied on `loadedmetadata`. Read back the active rate on `playing`; if the platform reports that the rate is unsupported, stop that recording and fall back to slowed device speech.
+- Device speech synthesis Slow is now `0.52` instead of `0.62`. Normal recording remains `1.0`, normal TTS remains `0.88`. The Parent button shows `🐢 Slow 0.6×`; actual device-TTS rate is different by design.
+- Keep human recording first where the browser supports speed changes. No external API, downloaded Google pronunciation, changes to Word Pack, phonics/Chunk, school meaning or learning state.
+- `tests/parent-slow-audio-v71.test.cjs` mocks audio source change resetting rate to 1, then checks reapplication; it also checks unsupported-rate fallback and normal-speed parity. Tests that assert the visible version are updated to v71; `index.html` bumps app JS cache.
+
+Publication status: PR/CI, squash merge, GitHub Pages success and real iPad/PWA audible QA must be separately recorded. Pay particular attention to very short human recordings, since pitch-preserving slowdown may still sound different from Google's slow-pronunciation tool.
