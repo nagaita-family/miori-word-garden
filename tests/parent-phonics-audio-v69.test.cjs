@@ -71,5 +71,5 @@ test('new helpers load before app and have fresh cache keys',()=>{
  assert.match(html,/parent-phonics\.js\?v=20261103-v69/);
  assert(html.indexOf('parent-phonics.js')<html.indexOf('app.js?v='));
  assert.match(html,/app\.js\?v=20261012-v67-parent-phonics-v69/);
- assert.match(html,/v70 · Nov 4/);
+ assert.match(html,/v71 · Nov 4/);
 });
