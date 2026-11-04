@@ -793,7 +793,10 @@ function speakLearningText(text,{lang='en-US',button=null}={}){
   const u=new SpeechSynthesisUtterance(text),v=chosenVoiceForLang(lang);if(v)u.voice=v;u.lang=v?.lang||lang;u.rate=lang.startsWith('ja')?.86:.9;u.pitch=1.02;
   button?.classList.add('speaking');const done=()=>button?.classList.remove('speaking');u.onend=done;u.onerror=done;speechSynthesis.speak(u)
 }
-function speak(text,{slow=false}={}){if(!text||!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text),v=chosenVoice();if(v)u.voice=v;u.lang=v?.lang||'en-US';u.rate=slow?.62:.88;u.pitch=1.03;const btn=$('#audioBtn');btn?.classList.add('playing');u.onend=u.onerror=()=>btn?.classList.remove('playing');speechSynthesis.speak(u)}
+function speak(text,{slow=false}={}){if(!text||!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text),v=chosenVoice();if(v)u.voice=v;u.lang=v?.lang||'en-US';u.rate=slow?.52:.88;u.pitch=1.03;const btn=$('#audioBtn');btn?.classList.add('playing');u.onend=u.onerror=()=>btn?.classList.remove('playing');speechSynthesis.speak(u)}
+// Apply after src selection as iPad/WebKit may reset playbackRate when loading a recording.
+function setHumanWordRate(audio,slow){const rate=slow?.60:1;audio.defaultPlaybackRate=rate;audio.playbackRate=rate;return rate}
+
 async function playWordAudio(word,slow=false,{auto=false,userInitiated=false}={}){
   if('speechSynthesis'in window)speechSynthesis.cancel();$$('.listen-card.speaking').forEach(b=>b.classList.remove('speaking'));
   if(currentAudio){try{currentAudio.pause()}catch{}currentAudio=null}
@@ -813,20 +816,22 @@ async function playWordAudio(word,slow=false,{auto=false,userInitiated=false}={}
       speak(word.word,{slow})
     };
     try{
-      const audio=new Audio();currentAudio=audio;audio.preload='auto';audio.playbackRate=slow?.82:1;btn?.classList.add('playing');
+      const audio=new Audio();currentAudio=audio;audio.preload='auto';btn?.classList.add('playing');
       setPill('● Human recording','human-ready');
-      audio.onplaying=()=>{if(timer)clearTimeout(timer);setPill('● Human recording','human-ready')};
+      audio.onplaying=()=>{if(timer)clearTimeout(timer);if(slow&&Math.abs(audio.playbackRate-.60)>.05){fallback(audio,'unsupported-rate');return}setPill('● Human recording','human-ready')};
       audio.onended=()=>{finished=true;cleanup(audio)};
       // abort is normally caused by us switching to another sound; it is not evidence that the human file is bad.
       audio.onabort=()=>{finished=true;cleanup(audio)};
       audio.onerror=()=>fallback(audio,'media');
+      audio.onloadedmetadata=()=>{if(!finished&&currentAudio===audio)try{setHumanWordRate(audio,slow)}catch{if(slow)fallback(audio,'unsupported-rate')}};
       audio.src=word.pronunciationUrl;
+      try{setHumanWordRate(audio,slow)}catch{if(slow){fallback(audio,'unsupported-rate');return}}
       timer=setTimeout(()=>{
         if(audio.readyState>=2||finished)return;
         if(auto){finished=true;cleanup(audio);setPill('● Human recording · tap WORD','human-wait');return}
         fallback(audio,'timeout')
       },5000);
-      await audio.play();return
+      if(finished)return;await audio.play();return
     }catch(e){
       const blocked=e?.name==='NotAllowedError'||e?.name==='AbortError';
       const audio=currentAudio;
