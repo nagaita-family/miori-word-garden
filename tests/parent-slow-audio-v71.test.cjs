@@ -21,7 +21,7 @@ function createEnv({ignoresRate=false}={}){
  }
  class Utterance{constructor(text){this.text=text}}
  const ctx={window:{speechSynthesis:synthesis},speechSynthesis:synthesis,SpeechSynthesisUtterance:Utterance,Audio:MockAudio,
-  chosenVoice:()=>({lang:'en-US',voiceURI:'en-us'}),currentAudio:null,
+  chosenVoice:()=>({lang:'en-US',voiceURI:'en-us'}),displayedSpelling:w=>w.displayWord||w.word,currentAudio:null,
   '$':()=>null,'$$':()=>[],storedHumanAudioLooksSafe:()=>true,
   resolveHumanAudioForWord:async()=>false,save:()=>{},toast:()=>{},
   setTimeout,clearTimeout,console
@@ -63,4 +63,12 @@ test('Parent UI labels speed and the app uses the new cache-busted release',()=>
  assert.match(app,/function setHumanWordRate\(audio,slow\)/);
  assert.match(html,/app\.js\?v=[^"]*v71/);
  assert.match(html,/v71 · Nov 4/);
+});
+test('contraction audio says the display spelling rather than the normalized key',async()=>{
+ const {ctx,spoken,played}=createEnv();
+ await ctx.playWordAudio({word:'wont',displayWord:'won’t'},true,{userInitiated:true});
+ assert.equal(played.length,0);
+ assert.equal(spoken.length,1);
+ assert.equal(spoken[0].text,'won’t');
+ assert.equal(spoken[0].rate,.52);
 });

@@ -62,7 +62,7 @@ function display(w,temp,escape){
  const word=source.replace(/[^a-z]/gi,''),spot=active(w,temp),parts=chunks(w.word,w.chunks);
  // Learning indexes always refer to letters; preserve visible spaces between words.
  const gaps={};let letters=0;
- for(const character of source){if(/[a-z]/i.test(character))letters++;else if(/\s/.test(character))gaps[letters]=(gaps[letters]||'')+character}
+ for(const character of source){if(/[a-z]/i.test(character))letters++;else if(/[\s'’]/.test(character))gaps[letters]=(gaps[letters]||'')+character}
  if(parts){
   let pos=0;
   return parts.map(part=>{

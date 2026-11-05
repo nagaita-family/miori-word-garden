@@ -47,7 +47,7 @@ test('New-word mistake is practiced on paper, then becomes audio-only recall on 
  const ctx={window:{},setTimeout(){},navigator:{}};vm.createContext(ctx);vm.runInContext(focusSource,ctx);vm.runInContext(src,ctx);
  const resumed=ctx.window.FiveWordsCore.create({lane:'week',ids:['butterfly'],state:y.state,root:y.root,save(){},audio(){},resolveAudio:async()=>{},normalize:s=>s,escape:s=>s,diff:()=>'',sfx(){},focus:ctx.window.FiveWordsFocus,markResult(){},home(){},more(){},onRemembered(){}});
  assert.equal(resumed.run.phase,'hidden');assert.deepEqual(Array.from(resumed.run.ids),['butterfly']);
- assert(page.includes('five-words-core.js?v=20261002-v63')&&page.includes('five-words-core.css?v=20261002-v63'));
+ assert(page.includes('five-words-core.js?v=20261105-unit7b')&&page.includes('five-words-core.css?v=20261002-v63'));
 });
 test('Play entry gives This Week and My Words their own exact pool, even for an overlapping word',()=>{
  const app=fs.readFileSync('app.js','utf8'),start=app.indexOf('function fiveManual(lane){'),end=app.indexOf('// A weekly exam',start);
@@ -62,4 +62,17 @@ test('Play entry gives This Week and My Words their own exact pool, even for an 
  assert.deepEqual(JSON.parse(JSON.stringify(state.fiveWordManual.week.ids)),['zeta','gamma'],'Next 5 is serializable before a session');
  ctx.startFiveWords('week');assert.deepEqual(Array.from(seen[2].ids).slice(0,2),['zeta','gamma']);
  assert.equal(queued.pending,false);assert.deepEqual(Array.from(queued.ids),[],'one-off selection is consumed after starting');
+});
+
+test('won’t keeps the apostrophe in visible Practice Pad and optional trace',()=>{
+ const x=fixture(['wont'],'week');
+ x.state.lib.wont.displayWord='won’t';
+ x.state.lib.wont.chunks=['won','t'];
+ x.core.render();
+ assert.match(x.root.innerHTML,/won<\/span>’<span class="five-chunk">t<\/span>/);
+ x.core.advance();x.core.run.answer='wont';x.core.advance();x.core.check('wot');
+ assert.equal(x.core.run.phase,'practice');
+ x.core.run.traceOpen=true;x.core.render();
+ assert.match(x.root.innerHTML,/Trace won’t with Apple Pencil/);
+ assert.match(x.root.innerHTML,/text-anchor="middle"[^>]*>won’t<\/text>/);
 });

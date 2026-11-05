@@ -1,139 +1,130 @@
 {
-  "weekId": "2026-11-05-unit-7a",
-  "weekName": "Nov 5 · Unit 7a",
+  "weekId": "2026-11-12-unit-7b",
+  "weekName": "Nov 12 · Unit 7b",
   "words": [
     {
-      "word": "hour",
-      "meaningEn": "a measure of time that is 60 minutes long; the short hand of the clock",
-      "chunks": [
-        "h",
-        "our"
-      ],
-      "seedFocus": null,
-      "pictureCue": "a large clock with the short hour hand highlighted",
-      "pictureEmoji": "🕒",
+      "word": "accurate",
+      "meaningEn": "exactly right; with no mistakes",
       "meaningJa": "",
-      "phonicsSilent": [
-        0
-      ]
-    },
-    {
-      "word": "midnight",
-      "meaningEn": "12 o’clock in the night, 12:00, 12 am",
       "chunks": [
-        "mid",
-        "night"
+        "ac",
+        "cu",
+        "rate"
       ],
       "seedFocus": null,
-      "pictureCue": "a clock striking 12 at night under stars and the moon",
-      "pictureEmoji": "🌙",
-      "meaningJa": ""
+      "pictureCue": "an archer's arrow hitting the exact center of a target",
+      "pictureEmoji": "🎯"
     },
     {
-      "word": "minute",
-      "meaningEn": "a measure of time that is 60 seconds long; the long hand of the clock",
-      "chunks": [
-        "min",
-        "ute"
-      ],
-      "seedFocus": null,
-      "pictureCue": "a clock with the long minute hand highlighted",
-      "pictureEmoji": "⏱️",
-      "meaningJa": ""
-    },
-    {
-      "word": "month",
-      "meaningEn": "a measure of time that is 30 or 31 days long, or 4 weeks long",
-      "chunks": [
-        "month"
-      ],
-      "seedFocus": null,
-      "pictureCue": "a calendar page filled with days and weeks",
-      "pictureEmoji": "🗓️",
+      "word": "axis",
+      "meaningEn": "an imaginary line through the middle of something. The object turns on that line",
       "meaningJa": "",
-      "phonicsChunks": [
-        "m",
-        "o",
-        "n",
-        "th"
-      ]
-    },
-    {
-      "word": "noon",
-      "meaningEn": "12 o’clock in the day, 12:00, 12 pm",
       "chunks": [
-        "n",
-        "oo",
-        "n"
+        "ax",
+        "is"
       ],
       "seedFocus": null,
-      "pictureCue": "a bright sun high in the sky over a clock showing 12",
-      "pictureEmoji": "☀️",
-      "meaningJa": ""
+      "pictureCue": "a spinning globe with a tilted line passing through its center",
+      "pictureEmoji": "🌐"
     },
     {
-      "word": "orbit",
-      "meaningEn": "to move around something (planets around a sun, moon around Earth)",
-      "chunks": [
-        "or",
-        "bit"
-      ],
-      "seedFocus": null,
-      "pictureCue": "the moon moving in a circular path around Earth",
-      "pictureEmoji": "🪐",
-      "meaningJa": ""
-    },
-    {
-      "word": "second",
-      "meaningEn": "the smallest measure of time on a clock; the thin fast hand on a clock",
-      "chunks": [
-        "sec",
-        "ond"
-      ],
-      "seedFocus": null,
-      "pictureCue": "a clock showing its thin second hand sweeping forward",
-      "pictureEmoji": "⏰",
-      "meaningJa": ""
-    },
-    {
-      "word": "spin",
-      "meaningEn": "to turn around quickly in place",
-      "chunks": [
-        "sp",
-        "in"
-      ],
-      "seedFocus": null,
-      "pictureCue": "a colorful toy spinning top whirling in place",
-      "pictureEmoji": "🌀",
-      "meaningJa": ""
-    },
-    {
-      "word": "time zone",
-      "displayWord": "time zone",
-      "meaningEn": "one of the 24 areas that the world is divided into",
-      "chunks": [
-        "time",
-        "zone"
-      ],
-      "seedFocus": null,
-      "pictureCue": "a world map with clocks showing different local times",
-      "pictureEmoji": "🌍",
-      "meaningJa": ""
-    },
-    {
-      "word": "year",
-      "meaningEn": "a measure of time; 365 days; 12 months, January 1~December 31",
-      "chunks": [
-        "year"
-      ],
-      "seedFocus": null,
-      "pictureCue": "a January-to-December calendar showing four seasons",
-      "pictureEmoji": "📅",
+      "word": "multiply",
+      "meaningEn": "to add a number to itself a number of times, the X in math 2x3=6",
       "meaningJa": "",
-      "phonicsChunks": [
-        "y",
-        "ear"
-      ]
+      "chunks": [
+        "mul",
+        "ti",
+        "ply"
+      ],
+      "seedFocus": null,
+      "pictureCue": "three groups of two stars with a multiplication sign",
+      "pictureEmoji": "✖️"
+    },
+    {
+      "word": "opposite",
+      "meaningEn": "a different as possible",
+      "meaningJa": "",
+      "chunks": [
+        "op",
+        "pos",
+        "ite"
+      ],
+      "seedFocus": null,
+      "pictureCue": "two arrows pointing in opposite directions",
+      "pictureEmoji": "↔️"
+    },
+    {
+      "word": "planet",
+      "meaningEn": "a large round object in space that moves around a sun or star",
+      "meaningJa": "",
+      "chunks": [
+        "plan",
+        "et"
+      ],
+      "seedFocus": null,
+      "pictureCue": "a colorful round planet orbiting a distant star",
+      "pictureEmoji": "🪐"
+    },
+    {
+      "word": "suggestion",
+      "meaningEn": "an idea you have for someone else to think over",
+      "meaningJa": "",
+      "chunks": [
+        "sug",
+        "ges",
+        "tion"
+      ],
+      "seedFocus": null,
+      "pictureCue": "two friends talking and one sharing an idea in a thought bubble",
+      "pictureEmoji": "💡"
+    },
+    {
+      "word": "sunrise",
+      "meaningEn": "the time the sun comes up and the day begins",
+      "meaningJa": "",
+      "chunks": [
+        "sun",
+        "rise"
+      ],
+      "seedFocus": null,
+      "pictureCue": "sun rising over the horizon at dawn",
+      "pictureEmoji": "🌅"
+    },
+    {
+      "word": "sunset",
+      "meaningEn": "the time to sun goes away and the day ends",
+      "meaningJa": "",
+      "chunks": [
+        "sun",
+        "set"
+      ],
+      "seedFocus": null,
+      "pictureCue": "sun dipping below the horizon at the end of the day",
+      "pictureEmoji": "🌇"
+    },
+    {
+      "word": "weather",
+      "meaningEn": "how much rain, sun, snow, wind, heat or coldness there is",
+      "meaningJa": "",
+      "chunks": [
+        "wea",
+        "ther"
+      ],
+      "seedFocus": null,
+      "pictureCue": "sunshine rain clouds snow and wind in a colorful sky",
+      "pictureEmoji": "🌦️"
+    },
+    {
+      "word": "won’t",
+      "meaningEn": "will not",
+      "meaningJa": "",
+      "chunks": [
+        "won",
+        "t"
+      ],
+      "seedFocus": null,
+      "pictureCue": "a child gently saying no with a speech bubble",
+      "pictureEmoji": "🚫"
     }
   ]
 }

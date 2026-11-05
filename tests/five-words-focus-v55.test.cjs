@@ -46,3 +46,10 @@ test('school phrases retain a visible word boundary while Focus uses letter inde
  assert.match(html,/<span class="five-chunk">time<\/span> <span class="five-chunk"><mark class="five-focus">z<\/mark>one<\/span>/);
  assert.equal((html.match(/class="five-chunk"/g)||[]).length,2);
 });
+
+test('school contraction renders curly apostrophe at the correct letter boundary',()=>{
+ const w={word:'wont',displayWord:'won’t',chunks:['won','t'],learn:{five:{parentFocus:{indices:[3]}}}};
+ const html=f.display(w,null,plain);
+ assert.match(html,/<span class="five-chunk">won<\/span>’<span class="five-chunk"><mark class="five-focus">t<\/mark><\/span>/);
+ assert.equal((html.match(/class="five-chunk"/g)||[]).length,2);
+});
