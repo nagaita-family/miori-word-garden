@@ -813,7 +813,7 @@ async function playWordAudio(word,slow=false,{auto=false,userInitiated=false}={}
       if(finished)return;finished=true;try{audio.pause()}catch{}cleanup(audio);word.audioTried=true;save();
       // Never erase a stored human URL because of a transient iPad/network/autoplay failure.
       setPill('○ Human audio unavailable now · device voice','device-fallback');
-      speak(word.word,{slow})
+      speak(displayedSpelling(word),{slow})
     };
     try{
       const audio=new Audio();currentAudio=audio;audio.preload='auto';btn?.classList.add('playing');
@@ -841,7 +841,7 @@ async function playWordAudio(word,slow=false,{auto=false,userInitiated=false}={}
       console.warn('Human audio failed for this attempt, using device voice',e);fallback(audio,'play');return
     }
   }
-  setPill('○ Device voice','');speak(word.word,{slow})
+  setPill('○ Device voice','');speak(displayedSpelling(word),{slow})
 }
 function humanAudioTokens(text){
   try{text=decodeURIComponent(String(text||''))}catch{text=String(text||'')}
@@ -876,7 +876,7 @@ async function findHumanAudio(wordText){
     return scored[0]?.url||''
   }catch{return''}
 }
-async function resolveHumanAudioForWord(w,{announce=false}={}){if(!w||w.pronunciationUrl)return false;w.audioTried=true;const found=await findHumanAudio(w.word);if(!found){save();if(announce)toast('No clear human recording found. Device voice will be used.');return false}w.pronunciationUrl=found;w.pronunciationSource='Wikimedia Commons';save();if(announce)toast('Human pronunciation found.');return true}
+async function resolveHumanAudioForWord(w,{announce=false}={}){if(!w||w.pronunciationUrl)return false;w.audioTried=true;if(/[’']/.test(displayedSpelling(w))){save();return false}const found=await findHumanAudio(w.word);if(!found){save();if(announce)toast('No clear human recording found. Device voice will be used.');return false}w.pronunciationUrl=found;w.pronunciationSource='Wikimedia Commons';save();if(announce)toast('Human pronunciation found.');return true}
 function ensureAudioCtx(){
   if(!audioCtx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;audioCtx=new C()}
   if(audioCtx.state==='suspended')audioCtx.resume?.();return audioCtx
@@ -975,17 +975,17 @@ function recentWordsHtml(){
 function learningSummary(w){const l=w.learn||learning(w.word),weak=Math.max(0,...(l.weak||[])),wi=weak?(l.weak||[]).indexOf(weak):-1;return{loops:l.loops||0,correct:l.correct||0,mistakes:l.mistakes||0,weak:wi>=0?w.word.slice(wi,Math.min(w.word.length,wi+2)):'—',last:l.last||'Not practiced yet'}}
 function openFiveFocusEditor(id){
   const w=state.lib[id];if(!w)return;
-  const shown=displayedSpelling(w);
+  const shown=displayedSpelling(w),shownLetters=[...shown].filter(ch=>/[a-z]/i.test(ch));
   const selected=new Set(window.FiveWordsFocus.positions(w.word,w.learn?.five?.parentFocus));
   const renderPick=()=>{
     $$('[data-focus-letter]',$('#focusLetterPicker')).forEach(btn=>{
       btn.classList.toggle('selected',selected.has(Number(btn.dataset.focusLetter)))
     });
     const preview=$('#focusPreview'),note=$('#focusPickerNote');
-    if(preview)preview.innerHTML=[...shown].map((ch,i)=>selected.has(i)?'<mark>'+esc(ch)+'</mark>':esc(ch)).join('');
+    if(preview){let letter=0;preview.innerHTML=[...shown].map(ch=>/[a-z]/i.test(ch)?(selected.has(letter++)?'<mark>'+esc(ch)+'</mark>':esc(ch)):esc(ch)).join('');}
     if(note)note.textContent=selected.size?'Tap any letter to turn its highlight on or off.':'Tap the letters you want to highlight.'
   };
-  $('#modalRoot').innerHTML=`<div class="modal"><div class="modal-card focus-picker-modal"><div class="modal-head"><div><p class="eyebrow">FOCUS SPOT</p><h2>${esc(shown)}</h2><p>覚えてほしい文字だけを蛍光ペンで見せます。</p></div><button id="closeFocusPicker" class="icon-btn">×</button></div><div id="focusPreview" class="focus-picker-preview"></div><div id="focusLetterPicker" class="focus-letter-picker">${[...shown].map((ch,i)=>`<button type="button" data-focus-letter="${i}">${esc(ch)}</button>`).join('')}</div><p id="focusPickerNote" class="focus-picker-note"></p><p class="focus-picker-help">1文字ずつ自由に選べます。間を空けて複数の文字を選んでもOKです。</p><div class="modal-actions"><button id="clearFocusPicker" type="button" class="secondary-btn">Clear Focus</button><button id="cancelFocusPicker" type="button" class="secondary-btn">Cancel</button><button id="saveFocusPicker" type="button" class="primary-btn">Save Focus</button></div></div></div>`;
+  $('#modalRoot').innerHTML=`<div class="modal"><div class="modal-card focus-picker-modal"><div class="modal-head"><div><p class="eyebrow">FOCUS SPOT</p><h2>${esc(shown)}</h2><p>覚えてほしい文字だけを蛍光ペンで見せます。</p></div><button id="closeFocusPicker" class="icon-btn">×</button></div><div id="focusPreview" class="focus-picker-preview"></div><div id="focusLetterPicker" class="focus-letter-picker">${shownLetters.map((ch,i)=>`<button type="button" data-focus-letter="${i}">${esc(ch)}</button>`).join('')}</div><p id="focusPickerNote" class="focus-picker-note"></p><p class="focus-picker-help">1文字ずつ自由に選べます。間を空けて複数の文字を選んでもOKです。</p><div class="modal-actions"><button id="clearFocusPicker" type="button" class="secondary-btn">Clear Focus</button><button id="cancelFocusPicker" type="button" class="secondary-btn">Cancel</button><button id="saveFocusPicker" type="button" class="primary-btn">Save Focus</button></div></div></div>`;
   $('#closeFocusPicker').onclick=$('#cancelFocusPicker').onclick=()=>$('#modalRoot').innerHTML='';
   $$('[data-focus-letter]',$('#focusLetterPicker')).forEach(btn=>btn.onclick=()=>{
     const i=Number(btn.dataset.focusLetter);
