@@ -15,22 +15,22 @@ function renderedWord(word){
  const raw=pack.words.find(w=>w.word===word);
  return phonics.display({word:word.toLowerCase().replace(/[^a-z]/g,''),displayWord:raw.displayWord||raw.word,chunks:raw.chunks,phonicsChunks:raw.phonicsChunks,phonicsSilent:raw.phonicsSilent},escape);
 }
-test('Parent groups use verified school chunks, including silent h and y/ear',()=>{
- const hour=renderedWord('hour');
- assert.match(hour,/parent-phonics-silent[^>]*>h<\/span>/);
- assert.match(hour,/parent-phonics-chunk">our<\/span>/);
- assert.equal((hour.match(/class="parent-phonics-chunk"/g)||[]).length,2);
- assert.equal((renderedWord('year').match(/class="parent-phonics-chunk"/g)||[]).length,2);
- assert.equal((renderedWord('month').match(/class="parent-phonics-chunk"/g)||[]).length,4);
- assert.equal((renderedWord('noon').match(/class="parent-phonics-chunk"/g)||[]).length,3);
+test('Parent displays verified Unit 7b chunks and retains the silent-letter helper',()=>{
+ const sunrise=renderedWord('sunrise');
+ assert.match(sunrise,/parent-phonics-chunk">sun<\/span>/);
+ assert.equal((sunrise.match(/class="parent-phonics-chunk"/g)||[]).length,2);
+ assert.equal((renderedWord('suggestion').match(/class="parent-phonics-chunk"/g)||[]).length,3);
+ assert.equal((renderedWord('weather').match(/class="parent-phonics-chunk"/g)||[]).length,2);
+ const legacy=phonics.display({word:'hour',displayWord:'hour',chunks:['h','our'],phonicsSilent:[0]},escape);
+ assert.match(legacy,/parent-phonics-silent[^>]*>h<\/span>/);
 });
-test('word identity and spaces are unchanged, including school time zone',()=>{
+test('word identity and visible punctuation are unchanged, including school won’t',()=>{
  for(const raw of pack.words){
   const displayed=renderedWord(raw.word);
   assert.equal(displayed.replace(/<[^>]+>/g,''),raw.displayWord||raw.word);
  }
- assert.match(renderedWord('time zone'),/parent-phonics-gap"> <\/span>/);
- assert.equal(phonics.validParts('year',['ye','wrong']),null);
+ assert.match(renderedWord('won’t'),/parent-phonics-gap">’<\/span>/);
+ assert.equal(phonics.validParts('weather',['wea','wrong']),null);
  assert.equal(phonics.display({word:'test',chunks:['te','st'],displayWord:'test'},escape).replace(/<[^>]+>/g,''),'test');
 });
 test('unsafe or invalid metadata is never interpreted as markup',()=>{
@@ -50,18 +50,16 @@ test('Parent This Week has normal and slow audio using existing player, without 
  assert.match(css,/\.parent-phonics-chunk\{[^}]*border-bottom/);
  assert.match(css,/\.parent-phonics-silent/);
 });
-test('parent-only metadata stays in school pack, with unchanged five-word chunks',()=>{
- const month=pack.words.find(w=>w.word==='month');
- assert.equal(month.chunks.join(''),'month');
- assert.deepEqual(month.phonicsChunks,['m','o','n','th']);
- assert.deepEqual(pack.words.find(w=>w.word==='hour').phonicsSilent,[0]);
+test('school pack validates phonics metadata without altering five-word spellings',()=>{
+ const suggestion=pack.words.find(w=>w.word==='suggestion');
+ assert.equal(suggestion.chunks.join(''),'suggestion');
  const syncContext={window:{}};vm.runInNewContext(fs.readFileSync('school-pack-sync.js','utf8'),syncContext);
  const read=syncContext.window.SchoolPackSync.readPack;
  const norm=s=>String(s).toLowerCase().replace(/[^a-z]/g,'');
  assert.equal(read(pack,norm).ids.length,10);
  for(const invalid of [
   {...pack,words:pack.words.map((w,i)=>i? w :{...w,phonicsSilent:[500]})},
-  {...pack,words:pack.words.map((w,i)=>i? w :{...w,phonicsChunks:['h','wrong']})},
+  {...pack,words:pack.words.map((w,i)=>i? w :{...w,phonicsChunks:['a','wrong']})},
   {...pack,words:pack.words.map((w,i)=>i? w :{...w,phonicsSilent:[0,0]})}
  ])assert.throws(()=>read(invalid,norm));
  assert.match(app,/phonicsChunks:window\.ParentPhonics\?\.validParts/);
